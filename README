@@ -1,0 +1,110 @@
+OpenGL/GLES C Framework
+
+Uses Kazmath for most of the math
+
+SELF NOTE ->
+
+CODING STYLE:
+   When adding new object structures, functions related to those must have the structure name as prefix.
+
+   eg. typedef struct {} glObject;
+   glRotateObject( glObject*, params.. ); or glObjectFreeTextures( glObject*, params.. );
+
+   Arguments should also make sense.
+   If it's operation function for object, then the object should always be the first argument.
+
+   If the object can be used outside of the library, then it _SHOULD_ have a reference counter and following operation functions :
+   glObjectNew()        - Allocation
+   glObjectCopy( src )  - Copy
+   glObjectRef( src )   - Reference
+   glObjectFree( obj )  - Free
+
+   You are also encouraged to use the memory managment functions provided in alloc.c/h
+   glMaloc()
+   glCalloc()
+   glRealloc()
+   glFree()
+
+   Since they have some sanity checks and keep track of the memory.
+   If it's internal object or variable then it's not needed to use these, and usually encouraged to not.
+
+   Declariations and code should also not be mixed, put all declarariations at top of the function.
+
+   Variable names should almost always be something you can easily understand.
+
+   I usually use something_this_variable_does naming scheme, but in this project I thought of going with somethingThisVariableDoes scheme and it seems to work quite well so far.
+
+   For iterators using variable like i or i2 and such is OK as long as you don't mix it up.
+
+   Defines and enumerations should always be in uppercase and have a prefix eg. IMAGE_FORMAT_JPEG.
+
+   There should never ever be extern variables, with expection of library core struct.
+
+   Whenever I spot new styles that help me read the code a lot, I usually go and change my old stuff, sometimes I might forgot some places however.
+
+   Might add more to remind myself, when something useful pops up into my mind :)
+
+
+   Freeing objects :
+   if the object has any reference counted objects, free them first!
+   then free only the current object members which are not reference counted when
+   object's reference hits 0.
+
+   glFreeObject( glObject *obj )
+   {
+      /* free members which are ref counted,
+         and mark as NULL, when they are truly freed */
+      if( glFreeRefObject( obj ) == RETURN_OK ) obj = NULL;
+
+      if( --obj->refCounter != 0 )
+         return( RETURN_NOTHING );
+
+      /* free members which are not ref counted */
+      free( obj->awesome_array );
+   }
+
+<- SELF NOTE
+
+TO-DO ->
+   """Adding stuff whenever I get old ones done"""
+
+    +  =  DONE
+   /+  =  PARTIALLY DONE
+    -  =  TO-DO
+
+SCENEOBJECTS:
+   +Plane
+   +Static Model
+
+   -Cube
+   -Sphere
+   -Cone
+   -Cylinder
+   -Animated Model
+
+IMAGE IMPORTERS:
+   +SOIL
+
+   NOTE: Dropped own importers, SOIL is much better :)
+
+MESH IMPORTERS:
+
+   /+OpenCTM
+   /+Assimp wrapper
+   /+PMD Importer (MikuMikuDance)
+
+   -Framework friendly format
+
+GENERAL:
+   +OGL/GLES Context creation
+   +Internal memory managment
+   +Splitted index buffers
+   +UVW && Textures
+   +VBOs
+   +IBOs
+   /+Materials
+
+   -RTTs
+   -Shaders
+
+<- TO-DO
