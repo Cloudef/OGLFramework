@@ -126,23 +126,15 @@ int main( int argc, char **argv )
    obj = mokou;
    glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
 #elif WITH_ASSIMP
-#if 1
-   obj = glNewStaticModel( "model/3dtext.obj" );
-   if(!obj)
-      cleanup(EXIT_FAILURE);
-#else
    obj = glNewStaticModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
-#endif
 
-   /*
    texture = glNewTexture( "model/npc_1.tga" );
    if(!texture)
       cleanup(EXIT_FAILURE);
 
    glObjectAddTexture( obj, 0, texture );
-   */
 
    glScaleObjectf( obj, 0.005, 0.005, 0.005 );
    glPositionObjectf( obj, 0, -0.02, -2 );
@@ -220,7 +212,7 @@ int main( int argc, char **argv )
       if(keyHold(SDLK_4))
          glDraw( plane );
 #elif WITH_ASSIMP
-      glRotateObjectf( obj, 90, 0, 0 );
+      glRotateObjectf( obj, 0, x, 0 );
       glDraw( obj2 );
       glDraw( obj3 );
       glDraw( obj );
