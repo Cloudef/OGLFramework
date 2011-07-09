@@ -27,7 +27,10 @@ int glCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
    FILE *logFile;
 
    if(SDLWindow)
-      return( RETURN_NOTHING );
+   {
+      SDL_FreeSurface(SDLWindow);
+      glCloseWindow();
+   }
 
    /* open log */
    logFile = logOpen( "window.log" );
@@ -147,7 +150,12 @@ int glCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
    return( RETURN_OK );
 }
 
-void glCloseWindow()
+struct SDL_Surface *glGetSDLSurface(void)
+{
+   return( SDLWindow );
+}
+
+void glCloseWindow(void)
 {
    #if defined(GLES1) || defined(GLES2)
 	if(g_eglDisplay)
@@ -170,7 +178,7 @@ void glCloseWindow()
    #endif
 }
 
-void glSwapBuffers()
+void glSwapBuffers(void)
 {
 #if defined(GLES1) || defined(GLES2)
    eglSwapBuffers(g_eglDisplay, g_eglSurface);

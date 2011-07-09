@@ -3,11 +3,12 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif   
+#endif
 
 int  glCreateWindow(int, int, int, unsigned int);
-void glCloseWindow();
-void glSwapBuffers();
+struct SDL_Surface *glGetSDLSurface(void);
+void glCloseWindow(void);
+void glSwapBuffers(void);
 
 #ifdef __cplusplus
 }
