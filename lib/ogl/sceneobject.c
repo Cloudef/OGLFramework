@@ -17,7 +17,7 @@
 glObject* glNewObject( void )
 {
 	/* Allocate scene object */
-	glObject* object = (glObject*)glCalloc( 1, sizeof(glObject) );
+	glObject *object = (glObject*)glCalloc( 1, sizeof(glObject) );
 	if(!object)
       return( NULL );
 
