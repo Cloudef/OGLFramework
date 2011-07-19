@@ -1,0 +1,219 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Overlap
+   fun:memcpy
+   obj:/usr/lib/libxcb*
+   obj:/usr/lib/libxcb*
+   obj:/usr/lib/libxcb*
+   fun:xcb_wait_for_reply
+   fun:_XReply
+   fun:XRenderQueryFormats
+   fun:XRenderQueryVersion
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorSupportsARGB
+   fun:XcursorNoticeCreateBitmap
+   fun:XCreatePixmap
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/libnvidia-glcore*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/libnvidia-glcore*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/libnvidia-glcore*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libGL*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Overlap
+   fun:memcpy
+   obj:/usr/lib/libxcb*
+   obj:/usr/lib/libxcb*
+   fun:xcb_poll_for_event
+   obj:/usr/lib/libX11*
+   obj:/usr/lib/libX11*
+   fun:_XReadEvents
+   fun:XMaskEvent
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_SetVideoMode
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/libnvidia-glcore*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   obj:/usr/lib/libnvidia-glcore*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_PumpEvents
+   fun:SDL_PollEvent
+   fun:keyHandle
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XlcDefaultMapModifiers
+   fun:XSetLocaleModifiers
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_VideoInit
+   fun:SDL_InitSubSystem
+   fun:SDL_Init
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libX11*
+   fun:_XimEncodeICATTRIBUTE
+   fun:_XimProtoCreateIC
+   fun:XCreateIC
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_VideoInit
+   fun:SDL_InitSubSystem
+   fun:SDL_Init
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libX11*
+   fun:_XimEncodeICATTRIBUTE
+   fun:_XimProtoCreateIC
+   fun:XCreateIC
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_SetVideoMode
+   fun:glCreateWindow
+   fun:main
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   obj:/usr/lib/libGL*
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib/libX11*
+   obj:/usr/lib/libX11*
+   obj:/usr/lib/libX11*
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XSetLocaleModifiers
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_VideoInit
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:XGetVisualInfo
+   obj:/usr/lib/libGL*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+}
+
+{
+   SDL
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib/libX11*
+   obj:/usr/lib/libX11*
+   obj:/usr/lib/libX11*
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XSetLocaleModifiers
+   obj:/usr/lib/libSDL*
+   obj:/usr/lib/libSDL*
+   fun:SDL_VideoInit
+}
