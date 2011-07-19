@@ -239,6 +239,9 @@ int glImportPMD( glObject* object, const char *file, int bAnimated )
    i = 0;
    for(; i != mmd->num_materials; ++i)
    {
+      /* default */
+      textureList[i] = NULL;
+
       texturePath = glImportTexturePath( mmd->texture[i].file, file );
       if(texturePath)
       {

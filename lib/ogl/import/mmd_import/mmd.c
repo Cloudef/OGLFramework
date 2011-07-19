@@ -42,14 +42,14 @@ typedef enum {
 void convertSjisToUtf8( char *sjis, char *utf8, size_t sjisSize )
 {
    iconv_t icd;
-   char *p_src = NULL, *p_dst = NULL;
+   char *p_src, *p_dst;
    size_t n_src, n_dst;
 
    icd = iconv_open("UTF-8", "Shift_JIS");
    p_src = sjis;
    p_dst = utf8;
    n_src = sjisSize;
-   n_dst = sjisSize;
+   n_dst = sjisSize * 2;
 
    iconv(icd, &p_src, &n_src, &p_dst, &n_dst);
    iconv_close(icd);
@@ -68,7 +68,7 @@ int mmd_readHeader( FILE *f, mmd_header *header )
     * and that we know if the import wrapper screwed up */
 
    char MAGIC_HEADER[ MAGIC_HEADER_SIZE ];
-   if(!fread( &MAGIC_HEADER, SIZE_BYTE, MAGIC_HEADER_SIZE, f ))
+   if(!fread( MAGIC_HEADER, SIZE_BYTE, MAGIC_HEADER_SIZE, f ))
       return( RETURN_FAIL );
    MAGIC_HEADER[ MAGIC_HEADER_SIZE ] = '\0';
 
@@ -80,11 +80,11 @@ int mmd_readHeader( FILE *f, mmd_header *header )
          return( RETURN_FAIL );
 
    /* SHIFT-JIS STRING: name */
-   if(!fread( &sjis_name, SIZE_BYTE, 20, f ))
+   if(!fread( sjis_name, SIZE_BYTE, 20, f ))
       return( RETURN_FAIL );
 
    /* SHIFT-JIS STRING: comment */
-   if(!fread( &sjis_comment, SIZE_BYTE, 256, f))
+   if(!fread( sjis_comment, SIZE_BYTE, 256, f))
       return( RETURN_FAIL );
 
 #if ICONV_SJIS_PMD
@@ -276,7 +276,7 @@ int mmd_readMaterialData( FILE *f, mmd_data *mmd )
       if(!fread( (void*)(&mmd->face[i]), SIZE_INTEGER, 1, f ))
          return( RETURN_FAIL );
 
-      /* STRING: texture */
+      /* STRING (SJIS?): texture */
       if(!fread( (void*)(&mmd->texture[i]), SIZE_BYTE, 20, f ))
          return( RETURN_FAIL );
    }
@@ -303,7 +303,7 @@ int mmd_readBoneData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_bones; ++i)
    {
       /* SJIS STRING: bone name */
-      if(!fread( name, 1, 20, f ))
+      if(!fread( name, SIZE_BYTE, 20, f ))
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: parent bone index */
@@ -328,7 +328,6 @@ int mmd_readBoneData( FILE *f, mmd_data *mmd )
 
 #if ICONV_SJIS_PMD
       convertSjisToUtf8( name, mmd->bones[i].name, 20 );
-      //glPuts( mmd->bones[i].name );
 #else
       sprintf( mmd->bones[i].name, name );
 #endif
@@ -415,7 +414,7 @@ int mmd_readSkinData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_skins; ++i)
    {
       /* SJIS STRING: skin name */
-      if(!fread( name, 1, 20, f ))
+      if(!fread( name, SIZE_BYTE, 20, f ))
          return( RETURN_FAIL );
 
       /* UNSIGNED INT: vertex count */
@@ -445,7 +444,6 @@ int mmd_readSkinData( FILE *f, mmd_data *mmd )
 
 #if ICONV_SJIS_PMD
       convertSjisToUtf8( name, mmd->skin[i].name, 20 );
-      //glPuts( mmd->bones[i].name );
 #else
       sprintf( mmd->skin[i].name, name );
 #endif
@@ -499,7 +497,6 @@ int mmd_readBoneNameData( FILE *f, mmd_data *mmd )
 
 #if ICONV_SJIS_PMD
       convertSjisToUtf8( name, mmd->bone_name[i].name, 50 );
-      //glPuts( mmd->bones[i].name );
 #else
       sprintf( mmd->bone_name[i].name, name );
 #endif

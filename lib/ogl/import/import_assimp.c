@@ -3,9 +3,10 @@
 
 #include <stdio.h>
 #include <malloc.h>
-#include <assimp/assimp.h>        // Plain-C interface
-#include <assimp/aiScene.h>       // Output data structure
-#include <assimp/aiPostProcess.h> // Post processing flags
+
+#include <assimp/assimp.h>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
 
 #include "sceneobject.h"
 #include "vbo.h"
@@ -203,6 +204,7 @@ static int process(const char *file, glObject *object, const struct aiScene *sc,
       else
       {
          /* Add childs */
+         /* Not hard, look at the PMD importer */
       }
    }
 
@@ -222,9 +224,7 @@ int glImportASSIMP( glObject *object, const char *file, int bAnimated )
 {
    logBlue(); glPrint("[ASSIMP] attempt to load: %s\n", file ); logNormal();
 
-   // Start the import on the given file with some example postprocessing
-   // Usually - if speed is not the most important aspect for you - you'll t
-   // probably to request more postprocessing than we do in this example.
+   /* Assimp magic */
    const struct aiScene* scene = aiImportFile( file,
                                  aiProcess_Triangulate               |
                                  aiProcess_JoinIdenticalVertices     |

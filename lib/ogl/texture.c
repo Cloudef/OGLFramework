@@ -255,6 +255,9 @@ int glTextureRemoveCache( glTexture *texture )
    if(!texture->file)
       return( RETURN_FAIL );
 
+   if(!GL_TEXTURE_CACHE.num_textures)
+      return( RETURN_FAIL );
+
    tmp = glCalloc( GL_TEXTURE_CACHE.num_textures, sizeof(glTexture*) );
    if(!tmp)
       return( RETURN_FAIL );
@@ -266,7 +269,7 @@ int glTextureRemoveCache( glTexture *texture )
    {
       if( GL_TEXTURE_CACHE.texture[i] == texture )
       {
-         tmp[++found] = GL_TEXTURE_CACHE.texture[i];
+         tmp[found++] = GL_TEXTURE_CACHE.texture[i];
       }
    }
 

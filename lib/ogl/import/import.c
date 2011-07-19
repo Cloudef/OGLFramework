@@ -283,7 +283,7 @@ char *gnu_basename(char *path)
 char* glImportTexturePath( const char* oddTexturePath,
                            const char* modelPath )
 {
-   char *textureFile, *modelFolder;
+   char *textureFile, *modelFolder, *temp;
    char textureInModelFolder[PATH_MAX];
 
    /* these are must to check */
@@ -307,12 +307,22 @@ char* glImportTexturePath( const char* oddTexturePath,
    if(!textureFile)
       return( NULL ); /* Sherlock, you are a genius */
 
+   /* these are must to check */
+   if(!modelPath)
+      return( NULL );
+
+   if(strcmp( modelPath, "" ) == 0)
+      return( NULL );
+
    /* grab the folder where model resides */
    modelFolder = dirname( strdup( modelPath ) );
 
    /* ok, maybe the texture is in same folder as the model? */
    snprintf( textureInModelFolder, PATH_MAX, "%s/%s",
              modelFolder, textureFile );
+
+   /* free this */
+   free( modelFolder ); modelFolder = NULL;
 
    /* gah, don't give me missing textures damnit!! */
    if(access( textureInModelFolder, F_OK ) != 0)

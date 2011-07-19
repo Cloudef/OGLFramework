@@ -9,6 +9,7 @@
 #include "framework.h"
 
 #include "SOIL.h"
+#include "SDL/SDL_rotozoom.h"
 
 /* allocate new atlas */
 glAtlas* glNewAtlas(void)
@@ -223,8 +224,6 @@ int glAtlasFreeTextures( glAtlas *atlas )
    return( RETURN_OK );
 }
 
-#include "SDL/SDL_rotozoom.h"
-
 /* pack textures into atlas */
 glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
 {
@@ -238,7 +237,7 @@ glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
    glTexture *texture = NULL;
 
    SDL_Surface *bitmap;
-   SDL_Surface *surface;
+   SDL_Surface *surface, *oldsurface;
    unsigned char *data;
 
    Uint32 rmask, gmask, bmask, amask;
@@ -304,7 +303,9 @@ glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
       /* we might need to rotate */
       if( atlas->rect[i].packed.rotated )
       {
-         surface = rotozoomSurface( surface, 90, 1, 0);
+         oldsurface = surface;
+         surface = rotozoomSurface( oldsurface, 90, 1, 0);
+         SDL_FreeSurface( oldsurface );
       }
 
       struct SDL_Rect src;
