@@ -134,20 +134,22 @@ int main( int argc, char **argv )
    obj = mokou;
    glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
 #elif WITH_ASSIMP
-   glPositionCameraf( camera, 0,0,2 );
+   glPositionCameraf( camera, 0,0,15 );
 
    obj = glNewStaticModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   texture = glNewTexture( "model/npc_1.tga" );
+   texture = glNewTexture( "model/npc_1.tga",
+                  SOIL_FLAG_DEFAULTS         |
+                  SOIL_FLAG_TEXTURE_REPEATS );
    if(!texture)
       cleanup(EXIT_FAILURE);
 
    glObjectAddTexture( obj, 0, texture );
 
    glScaleObjectf( obj, 0.005, 0.005, 0.005 );
-   glPositionObjectf( obj, 0, -0.02, 0 );
+   glPositionObjectf( obj, 0, -0.13, 0 );
 
    obj2 = glCopyObject( obj );
    if(!obj2)
@@ -157,8 +159,8 @@ int main( int argc, char **argv )
    if(!obj3)
       cleanup(EXIT_FAILURE);
 
-   glMoveObjectf( obj2, 0.03, 0, 0 );
-   glMoveObjectf( obj3, -0.03, 0, 0 );
+   glMoveObjectf( obj2, 0.22, 0, 0 );
+   glMoveObjectf( obj3, -0.22, 0, 0 );
    glRotateObjectf( obj3, 0, 180, 0 );
 #elif WITH_OPENCTM
    glPositionCameraf( camera, 0,0,8 );
