@@ -61,6 +61,8 @@ kmVec3* kmVec3InverseTransform(kmVec3* pOut, const kmVec3* pV, const struct kmMa
 kmVec3* kmVec3InverseTransformNormal(kmVec3* pOut, const kmVec3* pVect, const struct kmMat4* pM);
 kmVec3* kmVec3Assign(kmVec3* pOut, const kmVec3* pIn);
 kmVec3* kmVec3Zero(kmVec3* pOut);
+kmVec3* kmVec3RotationToDirection( kmVec3* pOut, const kmVec3* pIn, const kmVec3* forwards );
+kmVec3* kmVec3GetHorizontalAngle( kmVec3* pOut, const kmVec3* pIn );
 
 #ifdef __cplusplus
 }

@@ -30,6 +30,7 @@ ${TARGET}: ${OBJ}
 	cp texture.h			../../include/ogl/
 	cp material.h			../../include/ogl/
 	cp atlas.h				../../include/ogl/
+	cp camera.h				../../include/ogl/
 
 clean:
 	${RM}  ${OBJ}

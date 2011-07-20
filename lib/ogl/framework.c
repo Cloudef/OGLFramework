@@ -32,6 +32,18 @@ kmMat4 glGetProjection( void )
    return( _glCore.render.projection );
 }
 
+/* Set active camera */
+void glSetCamera( glCamera *camera )
+{
+   _glCore.render.camera = camera;
+}
+
+/* Get active camera */
+glCamera* glGetCamera( void )
+{
+   return( _glCore.render.camera );
+}
+
 /* Set render mode */
 void glSetRenderMode( gleRenderMode mode )
 {
@@ -130,6 +142,7 @@ int glCreateDisplay(int display_width, int display_height, gleRenderer renderer)
    /* NULL these */
    _glCore.render.draw     = NULL;
    _glCore.render.string   = NULL;
+   _glCore.render.camera   = NULL;
 
    /* Open log */
    glLogOpen();

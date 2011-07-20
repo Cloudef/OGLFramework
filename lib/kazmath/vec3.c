@@ -48,7 +48,7 @@ kmVec3* kmVec3Fill(kmVec3* pOut, kmScalar x, kmScalar y, kmScalar z)
 }
 
 
-/** 
+/**
  * Returns the length of the vector
  */
 kmScalar kmVec3Length(const kmVec3* pIn)
@@ -56,7 +56,7 @@ kmScalar kmVec3Length(const kmVec3* pIn)
 	return sqrtf(kmSQR(pIn->x) + kmSQR(pIn->y) + kmSQR(pIn->z));
 }
 
-/** 
+/**
  * Returns the square of the length of the vector
  */
 kmScalar kmVec3LengthSq(const kmVec3* pIn)
@@ -84,7 +84,7 @@ kmVec3* kmVec3Normalize(kmVec3* pOut, const kmVec3* pIn)
 	return pOut;
 }
 
-/** 
+/**
  * Returns a vector perpendicular to 2 other vectors.
  * The result is stored in pOut.
  */
@@ -104,8 +104,8 @@ kmVec3* kmVec3Cross(kmVec3* pOut, const kmVec3* pV1, const kmVec3* pV2)
 	return pOut;
 }
 
-/** 
- * Returns the cosine of the angle between 2 vectors 
+/**
+ * Returns the cosine of the angle between 2 vectors
  */
 kmScalar kmVec3Dot(const kmVec3* pV1, const kmVec3* pV2)
 {
@@ -114,7 +114,7 @@ kmScalar kmVec3Dot(const kmVec3* pV1, const kmVec3* pV2)
 			+ pV1->z * pV2->z );
 }
 
-/** 
+/**
  * Adds 2 vectors and returns the result. The resulting
  * vector is stored in pOut.
  */
@@ -249,8 +249,8 @@ kmVec3* kmVec3TransformNormal(kmVec3* pOut, const kmVec3* pV, const kmMat4* pM)
 
 }
 
-/** 
- * Scales a vector to length s. Does not normalize first, 
+/**
+ * Scales a vector to length s. Does not normalize first,
  * you should do that!
  */
 kmVec3* kmVec3Scale(kmVec3* pOut, const kmVec3* pIn, const kmScalar s)
@@ -302,3 +302,79 @@ kmVec3* kmVec3Zero(kmVec3* pOut) {
 
 	return pOut;
 }
+
+//! Builds a direction vector from (this) rotation vector.
+/** This vector is assumed to be a rotation vector composed of 3 Euler angle rotations, in degrees.
+The implementation performs the same calculations as using a matrix to do the rotation.
+
+\param[in] forwards  The direction representing "forwards" which will be rotated by this vector.
+\return A direction vector calculated by rotating the forwards direction by the 3 Euler angles
+(in degrees) represented by this vector. */
+kmVec3* kmVec3RotationToDirection( kmVec3* pOut, const kmVec3* pIn, const kmVec3* forwards )
+{
+   const kmScalar cr = cos( kmDegreesToRadians( pIn->x ) );
+   const kmScalar sr = sin( kmDegreesToRadians( pIn->x ) );
+   const kmScalar cp = cos( kmDegreesToRadians( pIn->y ) );
+   const kmScalar sp = cos( kmDegreesToRadians( pIn->y ) );
+   const kmScalar cy = cos( kmDegreesToRadians( pIn->z ) );
+   const kmScalar sy = cos( kmDegreesToRadians( pIn->z ) );
+
+   const kmScalar srsp = sr*sp;
+   const kmScalar crsp = cr*sp;
+
+   const kmScalar pseudoMatrix[] = {
+      ( cp*cy ), ( cp*sy ), (-sp ),
+      ( srsp*cy-cr*sy ), ( srsp*sy+cr*cy ), ( sr*cp ),
+      ( crsp*cy+sr*sy ), ( crsp*sy-sr*cy ), ( cr*cp ) };
+
+   pOut->x = forwards->x * pseudoMatrix[0] +
+             forwards->y * pseudoMatrix[3] +
+             forwards->z * pseudoMatrix[6];
+
+   pOut->y = forwards->x * pseudoMatrix[1] +
+             forwards->y * pseudoMatrix[4] +
+             forwards->z * pseudoMatrix[7];
+
+   pOut->z = forwards->x * pseudoMatrix[2] +
+             forwards->y * pseudoMatrix[5] +
+             forwards->z * pseudoMatrix[8];
+
+   return pOut;
+}
+
+
+//! Get the rotations that would make a (0,0,1) direction vector point in the same direction as this direction vector.
+/** Thanks to Arras on the Irrlicht forums for this method.  This utility method is very useful for
+orienting scene nodes towards specific targets.  For example, if this vector represents the difference
+between two scene nodes, then applying the result of getHorizontalAngle() to one scene node will point
+it at the other one.
+Example code:
+// Where target and seeker are of type ISceneNode*
+const vector3df toTarget(target->getAbsolutePosition() - seeker->getAbsolutePosition());
+const vector3df requiredRotation = toTarget.getHorizontalAngle();
+seeker->setRotation(requiredRotation);
+
+\return A rotation vector containing the X (pitch) and Y (raw) rotations (in degrees) that when applied to a
++Z (e.g. 0, 0, 1) direction vector would make it point in the same direction as this vector. The Z (roll) rotation
+is always 0, since two Euler rotations are sufficient to point in any given direction. */
+kmVec3* kmVec3GetHorizontalAngle( kmVec3* pOut, const kmVec3* pIn )
+{
+   const kmScalar tmp = kmRadiansToDegrees(atan2( pIn->x, pIn->z));
+   pOut->y = tmp;
+
+   if( pOut->y < 0 )
+      pOut->y += 360;
+   if( pOut->y >= 360)
+      pOut->y -= 360;
+
+   const kmScalar z1 = sqrt( pIn->x * pIn->x + pIn->z * pIn->z );
+   pOut->x = kmRadiansToDegrees(atan2( z1, pIn->y )) - 90.0;
+
+   if( pOut->x < 0 )
+      pOut->x += 360;
+   if( pOut->x >= 360)
+      pOut->x -= 360;
+
+   return pOut;
+}
+

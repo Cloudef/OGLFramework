@@ -51,6 +51,8 @@ static void cleanup( int ret )
 int main( int argc, char **argv )
 {
    float x = 0;
+
+   glCamera *camera;
    glObject *obj = NULL;
 #if WITH_PMD
    glObject  *mokou, *reisen, *kaguya;
@@ -93,12 +95,18 @@ int main( int argc, char **argv )
    if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
+   camera = glNewCamera();
+   if(!camera)
+      cleanup(EXIT_FAILURE);
+
 #if WITH_PMD
+   glPositionCameraf( camera, 0,0,2 );
+
    plane = glNewPlane( 0.02, 0.02, 1 );
    if(!plane)
       cleanup(EXIT_FAILURE);
 
-   glPositionObjectf( plane, 0.021, -0.01, -1.5f );
+   glPositionObjectf( plane, 0.021, -0.01, 0.5f );
    glScaleObjectf( plane, 1, 1, 1 );
 
    mokou = glNewStaticModel( "model/Mokou/Mokou A.pmd" );
@@ -114,18 +122,20 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    glScaleObjectf( reisen, 0.002, 0.002, 0.002 );
-   glPositionObjectf( reisen, 0, -0.02, -2 );
+   glPositionObjectf( reisen, 0, -0.02, 0 );
 
    glScaleObjectf( mokou, 0.002, 0.002, 0.002 );
-   glPositionObjectf( mokou, 0, -0.02, -2 );
+   glPositionObjectf( mokou, 0, -0.02, 0 );
 
    glScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
-   glPositionObjectf( kaguya, 0, -0.02, -2 );
+   glPositionObjectf( kaguya, 0, -0.02, 0 );
 
    /* mokou by default */
    obj = mokou;
    glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
 #elif WITH_ASSIMP
+   glPositionCameraf( camera, 0,0,2 );
+
    obj = glNewStaticModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
@@ -137,7 +147,7 @@ int main( int argc, char **argv )
    glObjectAddTexture( obj, 0, texture );
 
    glScaleObjectf( obj, 0.005, 0.005, 0.005 );
-   glPositionObjectf( obj, 0, -0.02, -2 );
+   glPositionObjectf( obj, 0, -0.02, 0 );
 
    obj2 = glCopyObject( obj );
    if(!obj2)
@@ -151,17 +161,21 @@ int main( int argc, char **argv )
    glMoveObjectf( obj3, -0.03, 0, 0 );
    glRotateObjectf( obj3, 0, 180, 0 );
 #elif WITH_OPENCTM
+   glPositionCameraf( camera, 0,0,8 );
+
    obj = glNewStaticModel( "model/raf22031.ctm" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
    glScaleObjectf( obj, 0.04, 0.04, 0.04 );
-   glPositionObjectf( obj, 0, 0, -8 );
 #endif
 
    /* here if no import was done */
    if(!obj)
       cleanup(EXIT_FAILURE);
+
+   /* Sets this as active camera */
+   glCameraRender( camera );
 
    puts("");
    printf("Alloc : %.2f MB\n", (float)_glCore.memory / 1048576);
@@ -197,16 +211,16 @@ int main( int argc, char **argv )
          glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
       }
 
-      glPositionObjectf( obj, 0, -0.02, -2 );
+      glPositionObjectf( obj, 0, -0.02, 0 );
       glRotateObjectf( obj, 0, x, 0 );
       glDraw( obj );
 
       glRotateObjectf( obj, 0, 0, 0 );
-      glPositionObjectf( obj, 0.03, -0.02, -2 );
+      glPositionObjectf( obj, 0.03, -0.02, 0 );
       glDraw( obj );
 
       glRotateObjectf( obj, 0, 180, 0 );
-      glPositionObjectf( obj, -0.03, -0.02, -2 );
+      glPositionObjectf( obj, -0.03, -0.02, 0 );
       glDraw( obj );
 
       if(keyHold(SDLK_4))
@@ -251,6 +265,7 @@ int main( int argc, char **argv )
 #elif WITH_OPENCTM
    glFreeObject(obj);
 #endif
+   glFreeCamera(camera);
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

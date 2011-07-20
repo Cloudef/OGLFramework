@@ -22,6 +22,10 @@ int glFreeDisplay( void );
 void glSetProjection( kmMat4 projection );
 kmMat4 glGetProjection( void );
 
+/* Active camera */
+void glSetCamera( glCamera *camera );
+glCamera* glGetCamera( void );
+
 #ifdef __cplusplus
 }
 #endif

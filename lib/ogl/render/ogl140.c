@@ -445,6 +445,10 @@ static void glOGL140_setup( glObject *object )
 
 static void glOGL140_draw( glObject *object )
 {
+   /* No camera, pointless to draw */
+   if(!glGetCamera())
+      return;
+
    glLoadMatrixf( (float*)&_glCore.render.projection );
    glMultMatrixf( (float*)&object->matrix );
 
@@ -459,12 +463,6 @@ int glOGL140( void )
 {
    _glCore.render.draw     = glOGL140_draw;
    _glCore.render.string   = OGL140_NAME;
-
-   /* temp camera */
-   kmMat4 camera;
-   kmMat4PerspectiveProjection( &camera, kmPI / 2.0,
-      (float)_glCore.display.width/(float)_glCore.display.height, 1.0f, 4000.0f );
-   glSetProjection( camera );
 
    draw.vertex  = 0;
    draw.coord   = 0;

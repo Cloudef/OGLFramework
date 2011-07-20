@@ -49,6 +49,7 @@ static void cleanup( int ret )
 int main( int argc, char **argv )
 {
    float x = 0;
+   glCamera *camera;
    glObject *obj, *obj2, *obj3;
    glTexture *texture;
 
@@ -83,6 +84,13 @@ int main( int argc, char **argv )
    if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
+   camera = glNewCamera();
+   if(!camera)
+      cleanup(EXIT_FAILURE);
+
+   /* Sets this as active camera */
+   glCameraRender( camera );
+
    texture = glNewTexture( "model/test.png", 0 );
    if(!texture)
       cleanup(EXIT_FAILURE);
@@ -90,8 +98,6 @@ int main( int argc, char **argv )
    obj = glNewPlane( 0.005, 0.005, 1 );
    if(!obj)
       cleanup(EXIT_FAILURE);
-
-   glPositionObjectf( obj, 0, 0, -40 );
 
    /* Add texture to plane
     * note: This steals the reference of texture object, so you don't have to free it.
@@ -150,6 +156,7 @@ int main( int argc, char **argv )
    glFreeObject(obj);
    glFreeObject(obj2);
    glFreeObject(obj3);
+   glFreeCamera(camera);
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

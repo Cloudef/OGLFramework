@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "sceneobject.h"
+#include "camera.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,7 @@ typedef struct
    const char    *string;
 
    kmMat4         projection;
+   glCamera      *camera;
 } glRenderInfo;
 
 /* version info */
