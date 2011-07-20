@@ -58,10 +58,8 @@ static void glCameraReset( glCamera *object )
    object->viewSize.x = _glCore.display.width;
    object->viewSize.y = _glCore.display.height;
 
-   /*
-   glViewport( object->viewCut.x,  object->viewCut.y,
-               object->viewSize.x, object->viewSize.y );
-   */
+   glViewport( (int)object->viewCut.x,  (int)object->viewCut.y,
+               (int)object->viewSize.x, (int)object->viewSize.y );
 
    object->transform_changed = 1;
    object->viewport_changed  = 1;
@@ -296,14 +294,12 @@ void glCameraRender( glCamera *object )
    if(!object)
       return;
 
-   /*
    if( object->viewport_changed || glGetCamera() != object )
    {
-      glViewport( object->viewCut.x,  object->viewCut.y,
-                  object->viewSize.x, object->viewSize.y );
+      glViewport( (int)object->viewCut.x,  (int)object->viewCut.y,
+                  (int)object->viewSize.x, (int)object->viewSize.y );
       object->viewport_changed = 0;
    }
-   */
 
    /* switch active */
    glSetCamera( object );
