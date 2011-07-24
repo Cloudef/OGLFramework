@@ -78,7 +78,6 @@ glObject* glCopyObject( glObject *src )
 
 	/* Copy hints */
 	object->primitive_type	      = src->primitive_type;
-   object->flags                 = src->flags;
 
    /* Update it */
    object->transform_changed = 1;
@@ -582,6 +581,62 @@ void glScaleObjectf( glObject *object,
    scale.x = x; scale.y = y; scale.z = z;
 
    glScaleObject( object, scale );
+}
+
+/* shift object's texture */
+void glShiftObject( glObject *object, unsigned int uvw, int width, int height, unsigned int index )
+{
+   glTexture *texture;
+   unsigned int windex, hindex, x;
+   float awidth, aheight;
+   kmVec2 pos;
+
+   if(!object)
+      return;
+   if(!object->vbo)
+      return;
+   if(!object->material)
+      return;
+   if(!object->material->texture)
+      return;
+
+   texture = object->material->texture[uvw];
+   if(!texture)
+      return;
+
+	windex = 0;
+	hindex = 1;
+
+   x = 0;
+	for(; x < index; x++)
+	{
+		if( width * windex >= texture->width - width )
+		{
+			windex = 0;
+			++hindex;
+		}
+		else
+		{
+			++windex;
+		}
+	}
+   pos.x = width * windex;
+   pos.y = texture->height - height * hindex;
+
+   awidth  = width /  (float)texture->width;
+	aheight = height / (float)texture->height;
+
+   x = 0;
+	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+	{
+		object->vbo->uvw[ uvw ].coords[ x ].x *= awidth;
+		object->vbo->uvw[ uvw ].coords[ x ].x += pos.x / (float)texture->width;
+		object->vbo->uvw[ uvw ].coords[ x ].y *= aheight;
+		object->vbo->uvw[ uvw ].coords[ x ].y += pos.y / (float)texture->height;
+	}
+
+   object->vbo->up_to_date = 0;
+	glVBOUpdate( object->vbo );
 }
 
 /* EoF */

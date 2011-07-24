@@ -48,7 +48,7 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
       obj->file   = strdup(file);
 
       /* default flags if not any specified */
-      if(!flags || (flags & SOIL_FLAG_DEFAULTS))
+      if((flags & SOIL_FLAG_DEFAULTS))
          flags += SOIL_FLAG_POWER_OF_TWO        |
                   SOIL_FLAG_MIPMAPS             |
                   SOIL_FLAG_NTSC_SAFE_RGB       |

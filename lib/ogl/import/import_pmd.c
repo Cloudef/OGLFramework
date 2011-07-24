@@ -245,7 +245,7 @@ int glImportPMD( glObject* object, const char *file, int bAnimated )
       texturePath = glImportTexturePath( mmd->texture[i].file, file );
       if(texturePath)
       {
-         texture = glNewTexture( texturePath, SOIL_FLAG_NONE );
+         texture = glNewTexture( texturePath, 0 );
          if(texture)
             glAtlasAddTexture( atlas, texture );
          textureList[i] = texture;

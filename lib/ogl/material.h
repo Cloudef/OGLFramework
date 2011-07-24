@@ -7,11 +7,25 @@
 extern "C" {
 #endif
 
+/* material flags */
+typedef enum
+{
+   GL_MATERIAL_ALPHA = 1,
+   GL_MATERIAL_WIREFRAME,
+} GL_MATERIAL_FLAGS;
+
 /* material struct */
 typedef struct
 {
    /* texture */
    glTexture      **texture;
+
+   /* draw flags */
+   unsigned int flags;
+
+   /* blend func */
+   unsigned int blend1;
+   unsigned int blend2;
 
    unsigned int   refCounter;
 } glMaterial;

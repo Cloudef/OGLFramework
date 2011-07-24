@@ -33,6 +33,10 @@ glMaterial* glNewMaterial( void )
       ++i;
    }
 
+   /* default blend modes */
+   object->blend1 = GL_SRC_ALPHA;
+   object->blend2 = GL_ONE_MINUS_SRC_ALPHA;
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -63,6 +67,10 @@ glMaterial* glCopyMaterial( glMaterial *src )
       object->texture[i] = glCopyTexture(src->texture[i]);
       ++i;
    }
+
+   object->blend1 = src->blend1;
+   object->blend2 = src->blend2;
+   object->flags  = src->flags;
 
 	/* Increase ref counter */
 	object->refCounter++;

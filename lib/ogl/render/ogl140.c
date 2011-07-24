@@ -1,6 +1,7 @@
 #ifndef GLES2
 
 #include <limits.h>
+#include <stdint.h>
 
 #include "config.h"
 #include "core.h"
@@ -22,18 +23,22 @@
 
 typedef struct
 {
-   int vertex;
-   int coord;
-   int normal;
+   uint8_t vertex;
+   uint8_t coord;
+   uint8_t normal;
 #if VERTEX_COLOR
-   int color;
+   uint8_t color;
 #endif
-   int depth;
-   int texture;
-   int cull;
+   uint8_t depth;
+   uint8_t texture;
+   uint8_t cull;
 
-   int active_texture;
-   int last_texture;
+   uint8_t alpha;
+   unsigned int blend1;
+   unsigned int blend2;
+
+   unsigned int active_texture;
+   unsigned int last_texture;
 } glState;
 
 /* global draw state */
@@ -321,6 +326,22 @@ static void glOGL140_setup( glObject *object )
    state.depth = 1;
    state.cull  = 1;
 
+   /* material flags */
+   if( object->material )
+   {
+      /* properities */
+      state.alpha  = (object->material->flags & GL_MATERIAL_ALPHA);
+      state.alpha = 1;
+      state.blend1 = object->material->blend1;
+      state.blend2 = object->material->blend2;
+   }
+   else
+   {
+      state.alpha = 0;
+      state.blend1 = draw.blend1;
+      state.blend2 = draw.blend2;
+   }
+
    /* we are going to use vertices */
    if(object->vbo->v_use)
       state.vertex = 1;
@@ -441,21 +462,36 @@ static void glOGL140_setup( glObject *object )
 
       draw.texture = state.texture;
    }
+
+   if(draw.alpha != state.alpha)
+   {
+      if(state.alpha)
+         glEnable(GL_BLEND);
+      else
+         glDisable(GL_BLEND);
+
+      draw.alpha = state.alpha;
+   }
+
+   if(draw.blend1 != state.blend1 || draw.blend2 != state.blend2)
+   {
+      glBlendFunc( state.blend1, state.blend2 );
+
+      draw.blend1 = state.blend1;
+      draw.blend2 = state.blend2;
+   }
+
 }
 
 static void glOGL140_draw( glObject *object )
 {
-   /* No camera, pointless to draw */
-   if(!glGetCamera())
-      return;
-
    glLoadMatrixf( (float*)&_glCore.render.projection );
    glMultMatrixf( (float*)&object->matrix );
 
    glOGL140_setup( object );
 
    drawObject( object );
-   drawAABB( object );
+   // drawAABB( object );
 }
 
 /* OpenGL 1.4+ renderer */
@@ -473,6 +509,10 @@ int glOGL140( void )
    draw.texture = 0;
    draw.depth   = 0;
    draw.cull    = 0;
+
+   draw.alpha   = 0;
+   draw.blend1  = 0;
+   draw.blend2  = 0;
 
    draw.active_texture = 0;
    draw.last_texture   = 0;

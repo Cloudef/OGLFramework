@@ -65,7 +65,7 @@ int main( int argc, char **argv )
 #endif
 
    /* FPS Counter */
-   unsigned int   now          = SDL_GetTicks();
+   unsigned int   now          = 0;
    unsigned int   last         = 0;
    unsigned int   frameCounter = 0;
    unsigned int   FPS          = 0;
@@ -141,7 +141,7 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    texture = glNewTexture( "model/npc_1.tga",
-                  SOIL_FLAG_DEFAULTS         |
+                  SOIL_FLAG_DEFAULTS        |
                   SOIL_FLAG_TEXTURE_REPEATS );
    if(!texture)
       cleanup(EXIT_FAILURE);

@@ -32,8 +32,6 @@ typedef struct glObject_t
     * GL_TRIANGLES, GL_TRIANGLE_STRIP etc */
  	unsigned int primitive_type;
 
-   /* Draw flags */
-	unsigned int flags;
 	uint8_t      transform_changed;
 
    /* childs */
@@ -84,12 +82,15 @@ void glMoveObjectf( glObject*,
 /* Rotation */
 void glRotateObject(  glObject*, const kmVec3 );
 void glRotateObjectf( glObject*,
-                        const kmScalar x, const kmScalar y, const kmScalar z );
+                      const kmScalar x, const kmScalar y, const kmScalar z );
 
 /* Scaling */
 void glScaleObject(  glObject*, const kmVec3 );
 void glScaleObjectf( glObject*,
                      const kmScalar x, const kmScalar y, const kmScalar z );
+
+/* Shift object's texture to part from atlas texture */
+void glShiftObject( glObject*, unsigned int uvw, int width, int height, unsigned int index );
 
 /* Some basic geometry */
 glObject*   glNewPlane( const kmScalar, const kmScalar, int center );

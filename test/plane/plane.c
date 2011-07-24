@@ -54,7 +54,7 @@ int main( int argc, char **argv )
    glTexture *texture;
 
    /* FPS Counter */
-   unsigned int   now          = SDL_GetTicks();
+   unsigned int   now          = 0;
    unsigned int   last         = 0;
    unsigned int   frameCounter = 0;
    unsigned int   FPS          = 0;
