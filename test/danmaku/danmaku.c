@@ -59,6 +59,8 @@ typedef struct
 
    kmVec2 *coords;
 
+   int width, height;
+
    unsigned int start;
    unsigned int frame;
    unsigned int end;
@@ -79,10 +81,7 @@ static void play_boss( boss_t *boss )
       memcpy( boss->obj->vbo->uvw[0].coords, boss->coords,
               boss->obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
 
-      puts("FRAME");
-      printf("%d\n", boss->frame);
-
-      glShiftObject( boss->obj, 0, 96, 128, boss->frame );
+      glShiftObject( boss->obj, 0, boss->width, boss->height, boss->frame );
 
       boss->time = 0;
    }
@@ -101,8 +100,47 @@ int main( int argc, char **argv )
    hijiri.delay = 4;
    hijiri.time  = 0;
 
+   hijiri.width  = 96;
+   hijiri.height = 128;
+
+   boss_t nue;
+   nue.start = 0;
+   nue.frame = 0;
+   nue.end   = 4;
+   nue.speed = 1;
+   nue.delay = 5;
+   nue.time  = 0;
+
+   nue.width  = 96;
+   nue.height = 104;
+
+   boss_t reimu;
+   reimu.start = 0;
+   reimu.frame = 0;
+   reimu.end   = 8;
+   reimu.speed = 1;
+   reimu.delay = 4;
+   reimu.time  = 0;
+
+   reimu.width  = 32;
+   reimu.height = 48;
+
+   boss_t marisa;
+   marisa.start = 0;
+   marisa.frame = 0;
+   marisa.end   = 8;
+   marisa.speed = 1;
+   marisa.delay = 4;
+   marisa.time  = 0;
+
+   marisa.width  = 32;
+   marisa.height = 48;
+
    glTexture *bg_hijiri_tex, *bg2_hijiri_tex;
    glObject *bg_hijiri, *bg2_hijiri;
+
+   glTexture *bg_nue_tex;
+   glObject *bg_nue;
 
    float SIZE;
    float scale;
@@ -127,7 +165,7 @@ int main( int argc, char **argv )
 
    char           WIN_TITLE[LINE_MAX];
 
-   unsigned int   flags = SDL_OPENGL; //| SDL_FULLSCREEN;
+   unsigned int   flags = SDL_OPENGL; // | SDL_FULLSCREEN;
    int            width = 2720;
    int            height= 1024;
    int            bits  = 32;
@@ -171,7 +209,7 @@ int main( int argc, char **argv )
    memcpy( hijiri.coords, hijiri.obj->vbo->uvw[0].coords,
            hijiri.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
 
-   glShiftObject( hijiri.obj, 0, 96, 128, 6 );
+   glShiftObject( hijiri.obj, 0, hijiri.width, hijiri.height, 6 );
 
    bg_hijiri = glNewPlane( SIZE * 34, SIZE * 24, 1 );
    if(!bg_hijiri)
@@ -194,6 +232,69 @@ int main( int argc, char **argv )
 
    glObjectAddTexture( bg2_hijiri, 0, bg2_hijiri_tex );
 
+   nue.obj = glNewPlane( SIZE * 8, SIZE * 10, 1 );
+   if(!nue.obj)
+      cleanup(EXIT_FAILURE);
+
+   nue.texture = glNewTexture( "texture/stg7enm.png", SOIL_FLAG_DEFAULTS );
+   if(!nue.texture)
+      cleanup(EXIT_FAILURE);
+
+   glObjectAddTexture( nue.obj, 0, nue.texture );
+   nue.coords = malloc( nue.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+   memcpy( nue.coords, nue.obj->vbo->uvw[0].coords,
+           nue.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+
+   glShiftObject( nue.obj, 0, nue.width, nue.height, 0 );
+
+   bg_nue = glNewPlane( SIZE * 24, SIZE * 24, 1 );
+   if(!bg_nue)
+      cleanup(EXIT_FAILURE);
+
+   bg_nue_tex = glNewTexture( "texture/etama2.png", SOIL_FLAG_DEFAULTS );
+   if(!bg_nue_tex)
+      cleanup(EXIT_FAILURE);
+
+   glObjectAddTexture( bg_nue, 0, bg_nue_tex );
+   glOffsetObjectTexture( bg_nue, 0, 128, 49, 128, 127 );
+
+   reimu.obj = glNewPlane( SIZE * 2, SIZE * 3, 1 );
+   if(!reimu.obj)
+      cleanup(EXIT_FAILURE);
+
+   reimu.texture = glNewTexture( "texture/pl00.png", SOIL_FLAG_DEFAULTS );
+   if(!reimu.texture)
+      cleanup(EXIT_FAILURE);
+
+   glObjectAddTexture( reimu.obj, 0, reimu.texture );
+   reimu.obj->material->flags = GL_MATERIAL_ALPHA;
+
+   reimu.coords = malloc( reimu.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+   memcpy( reimu.coords, reimu.obj->vbo->uvw[0].coords,
+           reimu.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+
+   glShiftObject( reimu.obj, 0, reimu.width, reimu.height, 6 );
+
+   marisa.obj = glNewPlane( SIZE * 2, SIZE * 3, 1 );
+   if(!marisa.obj)
+      cleanup(EXIT_FAILURE);
+
+   marisa.texture = glNewTexture( "texture/pl01.png", SOIL_FLAG_DEFAULTS );
+   if(!marisa.texture)
+      cleanup(EXIT_FAILURE);
+
+   glObjectAddTexture( marisa.obj, 0, marisa.texture );
+   marisa.obj->material->flags = GL_MATERIAL_ALPHA;
+
+   marisa.coords = malloc( marisa.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+   memcpy( marisa.coords, marisa.obj->vbo->uvw[0].coords,
+           marisa.obj->vbo->uvw[0].c_num * sizeof(kmVec2) );
+
+   glShiftObject( marisa.obj, 0, marisa.width, marisa.height, 6 );
+
+   glPositionObjectf( reimu.obj, width / 4, 120, 0 );
+   glPositionObjectf( marisa.obj, width - width / 4, 160, 0 );
+
    puts("");
    printf("Alloc : %.4f MB\n", (float)_glCore.memory / 1048576);
    puts("");
@@ -214,14 +315,23 @@ int main( int argc, char **argv )
          keyHandle();
 
          play_boss( &hijiri );
+         play_boss( &nue );
+         play_boss( &reimu );
+         play_boss( &marisa );
 
          scale += 0.12f;
          glScaleObjectf( bg_hijiri, 100 + sin(scale) * 2, 100 + cos(scale) * 2, 100 );
          glScaleObjectf( bg2_hijiri, 100 + sin(scale) * 5, 100 + sin(scale) * 5, 100 );
 
-         glPositionObjectf( hijiri.obj, width / 4, height - 300 + sin(scale) * 6, 0 );
-         glPositionObjectf( bg_hijiri,  width / 4, height - 300 + sin(scale) * 6, 0 );
-         glPositionObjectf( bg2_hijiri, width / 4, height - 300 + sin(scale) * 6, 0 );
+         glPositionObjectf( hijiri.obj, width / 4, height - 320 + sin(scale) * 6, 0 );
+         glPositionObjectf( bg_hijiri,  width / 4, height - 320 + sin(scale) * 6, 0 );
+         glPositionObjectf( bg2_hijiri, width / 4, height - 320 + sin(scale) * 6, 0 );
+
+         glPositionObjectf( bg_nue, width - width / 4, height - 220, 0 );
+         glPositionObjectf( nue.obj, width - width / 4, height - 220 + cos(scale) * 6, 0 );
+
+         glScaleObjectf( bg_nue, 100 + sin(scale), 100 + sin(scale), 100 );
+         glRotateObjectf( bg_nue, 0, 0, scale );
 
          next_tick += SKIP_TICKS;
          ++game_loop;
@@ -233,6 +343,12 @@ int main( int argc, char **argv )
       glDraw( bg_hijiri );
       glDraw( bg2_hijiri );
       glDraw( hijiri.obj );
+
+      glDraw( bg_nue );
+      glDraw( nue.obj );
+
+      glDraw( reimu.obj );
+      glDraw( marisa.obj );
 
       glSwapBuffers();
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -255,6 +371,17 @@ int main( int argc, char **argv )
    glFreeObject(hijiri.obj);
    glFreeObject(bg_hijiri);
    glFreeObject(bg2_hijiri);
+
+   glFreeObject(nue.obj);
+   glFreeObject(bg_nue);
+
+   glFreeObject(reimu.obj);
+   glFreeObject(marisa.obj);
+
+   free(hijiri.coords);
+   free(nue.coords);
+   free(reimu.coords);
+   free(marisa.coords);
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

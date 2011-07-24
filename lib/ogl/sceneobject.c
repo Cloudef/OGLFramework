@@ -600,6 +600,9 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
    if(!object->material->texture)
       return;
 
+   if(uvw > _glCore.info.maxTextureUnits)
+      return;
+
    texture = object->material->texture[uvw];
    if(!texture)
       return;
@@ -623,7 +626,7 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
    pos.x = width * windex;
    pos.y = texture->height - height * hindex;
 
-   awidth  = width /  (float)texture->width;
+   awidth  = width  / (float)texture->width;
 	aheight = height / (float)texture->height;
 
    x = 0;
@@ -633,6 +636,45 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
 		object->vbo->uvw[ uvw ].coords[ x ].x += pos.x / (float)texture->width;
 		object->vbo->uvw[ uvw ].coords[ x ].y *= aheight;
 		object->vbo->uvw[ uvw ].coords[ x ].y += pos.y / (float)texture->height;
+	}
+
+   object->vbo->up_to_date = 0;
+	glVBOUpdate( object->vbo );
+}
+
+/* offset object's texture */
+void glOffsetObjectTexture( glObject *object, unsigned int uvw, int px, int py, int width, int height )
+{
+   glTexture *texture;
+   float awidth, aheight;
+   unsigned int x;
+
+   if(!object)
+      return;
+   if(!object->vbo)
+      return;
+   if(!object->material)
+      return;
+   if(!object->material->texture)
+      return;
+
+   if(uvw > _glCore.info.maxTextureUnits)
+      return;
+
+   texture = object->material->texture[uvw];
+   if(!texture)
+      return;
+
+   awidth  = width  / (float)texture->width;
+   aheight = height / (float)texture->height;
+
+   x = 0;
+	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+	{
+		object->vbo->uvw[ uvw ].coords[ x ].x *= awidth;
+		object->vbo->uvw[ uvw ].coords[ x ].x += px / (float)texture->width;
+		object->vbo->uvw[ uvw ].coords[ x ].y *= aheight;
+		object->vbo->uvw[ uvw ].coords[ x ].y += py / (float)texture->height;
 	}
 
    object->vbo->up_to_date = 0;
