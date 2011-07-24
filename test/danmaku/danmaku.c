@@ -166,8 +166,8 @@ int main( int argc, char **argv )
    char           WIN_TITLE[LINE_MAX];
 
    unsigned int   flags = SDL_OPENGL; // | SDL_FULLSCREEN;
-   int            width = 2720;
-   int            height= 1024;
+   int            width = 1024;
+   int            height= 768;
    int            bits  = 32;
 #if defined(GLES1) || defined(GLES2)
    flags = SDL_RESIZABLE;

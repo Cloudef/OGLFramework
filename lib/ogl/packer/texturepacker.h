@@ -1,6 +1,10 @@
 #ifndef TEXTURE_PACKER_H
 #define TEXTURE_PACKER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct
 {
    int                debugCount;
@@ -27,5 +31,8 @@ int glTexturePackerGetLocation( glTexturePacker *tp, int index, int *x, int *y, 
 glTexturePacker*   glNewTexturePacker(void);
 void               glFreeTexturePacker(glTexturePacker *tp);
 
-
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* TEXTURE_PACKER_H */
