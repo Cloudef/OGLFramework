@@ -1,6 +1,6 @@
 /*
  *
- * Uses ripped images from Touhou 12, so not for public
+ * Uses ripped images from Touhou 12, so media files are not in git
  *
  */
 

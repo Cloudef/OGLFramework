@@ -24,6 +24,7 @@ glCoreConfig _glCore;
 void glSetProjection( kmMat4 projection )
 {
    _glCore.render.projection = projection;
+   _glCore.render.camera     = NULL; /* we use own projection */
 }
 
 /* Get projection */
@@ -35,7 +36,8 @@ kmMat4 glGetProjection( void )
 /* Set active camera */
 void glSetCamera( glCamera *camera )
 {
-   _glCore.render.camera = camera;
+   _glCore.render.camera     = camera;
+   _glCore.render.projection = camera->matrix; /* we use camera's projection */
 }
 
 /* Get active camera */

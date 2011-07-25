@@ -301,16 +301,14 @@ void glCameraRender( glCamera *object )
       object->viewport_changed = 0;
    }
 
-   /* switch active */
-   glSetCamera( object );
-
    if(object->transform_changed)
    {
       glCameraCalculateViewMatrix( object );
       object->transform_changed = 0;
    }
 
-   glSetProjection( object->matrix );
+   /* switch active */
+   glSetCamera( object );
 }
 
 /* EoF */
