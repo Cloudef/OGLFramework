@@ -1,11 +1,8 @@
-all:
-	${MAKE} -C display 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C plane			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C staticmodel	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C danmaku		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+DIRS = $(wildcard test_*)
 
-clean:
-	${MAKE} -C display		clean
-	${MAKE} -C plane			clean
-	${MAKE} -C staticmodel 	clean
-	${MAKE} -C danmaku 		clean
+all: ${DIRS}
+
+${DIRS}:
+	${MAKE} -C $@ clean && ${MAKE} -C $@ CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+.PHONY: ${DIRS}

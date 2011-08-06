@@ -584,7 +584,7 @@ void glScaleObjectf( glObject *object,
 }
 
 /* shift object's texture */
-void glShiftObject( glObject *object, unsigned int uvw, int width, int height, unsigned int index )
+void glShiftObject( glObject *object, unsigned int uvw, int width, int height, unsigned int index, kmVec2 *baseCoords )
 {
    glTexture *texture;
    unsigned int windex, hindex, x;
@@ -606,6 +606,9 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
    texture = object->material->texture[uvw];
    if(!texture)
       return;
+
+   if(!baseCoords)
+      baseCoords = object->vbo->uvw[ uvw ].coords;
 
 	windex = 0;
 	hindex = 1;
@@ -632,10 +635,8 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
    x = 0;
 	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
 	{
-		object->vbo->uvw[ uvw ].coords[ x ].x *= awidth;
-		object->vbo->uvw[ uvw ].coords[ x ].x += pos.x / (float)texture->width;
-		object->vbo->uvw[ uvw ].coords[ x ].y *= aheight;
-		object->vbo->uvw[ uvw ].coords[ x ].y += pos.y / (float)texture->height;
+		object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + pos.x / (float)texture->width;
+		object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + pos.y / (float)texture->height;
 	}
 
    object->vbo->up_to_date = 0;
@@ -643,7 +644,7 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
 }
 
 /* offset object's texture */
-void glOffsetObjectTexture( glObject *object, unsigned int uvw, int px, int py, int width, int height )
+void glOffsetObjectTexture( glObject *object, unsigned int uvw, int px, int py, int width, int height, kmVec2 *baseCoords)
 {
    glTexture *texture;
    float awidth, aheight;
@@ -665,16 +666,17 @@ void glOffsetObjectTexture( glObject *object, unsigned int uvw, int px, int py, 
    if(!texture)
       return;
 
+   if(!baseCoords)
+      baseCoords = object->vbo->uvw[ uvw ].coords;
+
    awidth  = width  / (float)texture->width;
    aheight = height / (float)texture->height;
 
    x = 0;
 	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
 	{
-		object->vbo->uvw[ uvw ].coords[ x ].x *= awidth;
-		object->vbo->uvw[ uvw ].coords[ x ].x += px / (float)texture->width;
-		object->vbo->uvw[ uvw ].coords[ x ].y *= aheight;
-		object->vbo->uvw[ uvw ].coords[ x ].y += py / (float)texture->height;
+		object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + px / (float)texture->width;
+		object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + py / (float)texture->height;
 	}
 
    object->vbo->up_to_date = 0;

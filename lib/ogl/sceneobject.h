@@ -90,8 +90,8 @@ void glScaleObjectf( glObject*,
                      const kmScalar x, const kmScalar y, const kmScalar z );
 
 /* Shift object's texture to part from atlas texture */
-void glShiftObject( glObject*, unsigned int uvw, int width, int height, unsigned int index );
-void glOffsetObjectTexture( glObject *object, unsigned int uvw, int x, int y, int width, int height );
+void glShiftObject( glObject*, unsigned int uvw, int width, int height, unsigned int index, kmVec2 *baseCoords );
+void glOffsetObjectTexture( glObject *object, unsigned int uvw, int x, int y, int width, int height, kmVec2 *baseCoords );
 
 /* Some basic geometry */
 glObject*   glNewPlane( const kmScalar, const kmScalar, int center );

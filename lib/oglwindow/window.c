@@ -4,6 +4,12 @@
 #include "types.h"
 #include "logfile.h"
 
+#ifdef PANDORA
+#  if !defined(GLES1) && !defined(GLES2)
+#     error "Pandora detected, but no GLES selected"
+#  endif
+#endif
+
 #if defined(GLES1) || defined(GLES2)
     #include <EGL/egl.h>
     #include <X11/Xlib.h>
@@ -21,6 +27,8 @@ static struct SDL_Surface* SDLWindow = NULL;
 
    #define g_totalConfigsIn 10
 #endif
+
+void glCloseWindow(void);
 
 int glCreateWindow(int window_width, int window_height, int bitsperpixel, unsigned int flags )
 {
