@@ -4,14 +4,14 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif   
+#endif
 
 #include <string.h>
 
 /* internal allocation functions */
 void* glMalloc( size_t );
-void* glCalloc( int, size_t );
-void* glRealloc( void*, int, int, size_t );
+void* glCalloc( unsigned int, size_t );
+void* glRealloc( void*, unsigned int, unsigned int, size_t );
 void* glCopy( void*, size_t );
 int glFree( void*, size_t );
 

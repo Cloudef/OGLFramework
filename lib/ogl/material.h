@@ -12,6 +12,7 @@ typedef enum
 {
    GL_MATERIAL_ALPHA = 1,
    GL_MATERIAL_WIREFRAME,
+   GL_MATERIAL_DOUBLE_SIDED,
 } GL_MATERIAL_FLAGS;
 
 /* material struct */

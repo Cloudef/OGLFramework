@@ -136,7 +136,7 @@ int main( int argc, char **argv )
 #elif WITH_ASSIMP
    glPositionCameraf( camera, 0,0,15 );
 
-   obj = glNewStaticModel( "model/lovely.b3d" );
+   obj = glNewDynamicModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 

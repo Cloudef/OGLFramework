@@ -152,26 +152,26 @@ all: openctm ogl ogltest
 
 openctm:
 ifeq (${OPENCTM}, 1)
-	${MAKE} -C lib/openctm 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/openctm 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 endif
 
 ogl:
-	${MAKE} -C lib/kazmath     CFLAGS="${CFLAGS} -std=c99"
-	${MAKE} -C lib/SOIL			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C lib/logfile 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C lib/ogl 			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C lib/oglwindow  	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	${MAKE} -C lib/input 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/kazmath     CFLAGS="${CFLAGS} -std=c99"
+	@${MAKE} -C lib/SOIL			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/logfile 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/ogl 			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/oglwindow  	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/input 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 
 ogltest:
-	${MAKE} -C test 				CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C test 				CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 
 clean:
-	${MAKE} -C lib/kazmath		clean
-	${MAKE} -C lib/SOIL			clean
-	${MAKE} -C lib/logfile		clean
-	${MAKE} -C lib/ogl 			clean
-	${MAKE} -C lib/oglwindow 	clean
-	${MAKE} -C lib/input 		clean
-	${MAKE} -C lib/openctm		clean
-	${MAKE} -C test				clean
+	@${MAKE} -C lib/kazmath		clean
+	@${MAKE} -C lib/SOIL			clean
+	@${MAKE} -C lib/logfile		clean
+	@${MAKE} -C lib/ogl 			clean
+	@${MAKE} -C lib/oglwindow 	clean
+	@${MAKE} -C lib/input 		clean
+	@${MAKE} -C lib/openctm		clean
+	@${MAKE} -C test				clean

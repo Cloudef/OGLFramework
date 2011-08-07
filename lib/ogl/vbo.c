@@ -36,6 +36,11 @@ glVBO* glNewVBO( void )
 
    /* Allocate uvws */
    vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
+   if(!vbo->uvw)
+   {
+      glFree(vbo, sizeof(glVBO));
+      return( NULL );
+   }
 
 	/* Nullify pointers */
    i = 0;

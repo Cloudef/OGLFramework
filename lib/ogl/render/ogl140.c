@@ -324,20 +324,20 @@ static void glOGL140_setup( glObject *object )
 
    /* depth for now always */
    state.depth = 1;
-   state.cull  = 1;
 
    /* material flags */
    if( object->material )
    {
       /* properities */
       state.alpha  = (object->material->flags & GL_MATERIAL_ALPHA);
-      state.alpha = 1;
+      state.cull   = !(object->material->flags & GL_MATERIAL_DOUBLE_SIDED);
       state.blend1 = object->material->blend1;
       state.blend2 = object->material->blend2;
    }
    else
    {
       state.alpha = 0;
+      state.cull  = 1;
       state.blend1 = draw.blend1;
       state.blend2 = draw.blend2;
    }
@@ -491,7 +491,7 @@ static void glOGL140_draw( glObject *object )
    glOGL140_setup( object );
 
    drawObject( object );
-   // drawAABB( object );
+   drawAABB( object );
 }
 
 /* OpenGL 1.4+ renderer */

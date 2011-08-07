@@ -25,9 +25,14 @@ glObject* glNewObject( void )
 	object->material	      = NULL;
 	object->vbo		         = NULL;
    object->ibo             = NULL;
+
    object->child           = NULL;
+   object->anim            = NULL;
+   object->bone            = NULL;
 
    object->num_childs      = 0;
+   object->num_anims       = 0;
+   object->num_bones       = 0;
 
 	/* Default primitive type */
 	object->primitive_type = GL_TRIANGLE_STRIP;
@@ -72,7 +77,15 @@ glObject* glCopyObject( glObject *src )
 	object->vbo		               = glRefVBO( src->vbo );
    object->ibo                   = glRefIBO( src->ibo );
 
-   /* Reference childs */
+   /* Copy anims */
+   object->anim                  = glObjectCopyAnims( src );
+   object->num_anims             = src->num_anims;
+
+   /* Copy bones */
+   object->bone                  = glObjectCopyBones( src );
+   object->num_bones             = src->num_bones;
+
+   /* Copy childs */
    object->child                 = glObjectCopyChilds( src );
    object->num_childs            = src->num_childs;
 
@@ -132,6 +145,22 @@ int glFreeObject( glObject *object )
    if(glFreeIBO( object->ibo )           == RETURN_OK)
       object->ibo = NULL;
 
+   /* Free as in, decrease reference on bones */
+   i = 0;
+   for(; i != object->num_bones; ++i)
+   {
+      if(glFreeBone( object->bone[i] )    == RETURN_OK)
+         object->bone[i] = NULL;
+   }
+
+   /* Free as in, decrease reference on anims */
+   i = 0;
+   for(; i != object->num_anims; ++i)
+   {
+      if(glFreeAnim( object->anim[i] )    == RETURN_OK)
+         object->anim[i] = NULL;
+   }
+
    /* Free as in, decrease reference on childs */
    i = 0;
    for(; i != object->num_childs; ++i)
@@ -148,9 +177,169 @@ int glFreeObject( glObject *object )
    object->child = NULL;
    object->num_childs = 0;
 
+   glFree( object->bone, object->num_bones * sizeof(glBone*) );
+   object->bone = NULL;
+   object->num_bones = 0;
+
+   glFree( object->anim, object->num_anims * sizeof(glAnim*) );
+   object->anim = NULL;
+   object->num_anims = 0;
+
 	/* Free scene object */
    glFree( object, sizeof(glObject) );
    return( RETURN_OK );
+}
+
+/* Resize bones */
+glBone** glObjectResizeBones( glObject *object, unsigned int num_bones )
+{
+   GL_NODE_TYPE i, i2;
+
+   if(!object)
+      return( NULL );
+   if(!num_bones)
+      return( NULL );
+
+   if(object->bone)
+      object->bone = glRealloc( object->bone, object->num_bones, num_bones, sizeof(glBone*) );
+   else
+      object->bone = glCalloc( num_bones, sizeof(glBone*) );
+
+   i = 0;
+   for(; i != num_bones; ++i)
+   {
+      object->bone[i] = glNewBone();
+      if(!object->bone[i])
+      {
+         i2 = 0;
+         for(; i2 != i; ++i2)
+         {
+            glFreeBone(object->bone[i2]);
+            glFree( object->bone, num_bones * sizeof(glBone*) );
+            return( NULL );
+         }
+      }
+   }
+
+   object->num_bones = num_bones;
+   return( object->bone );
+}
+
+/* Copy all bones */
+glBone** glObjectCopyBones( glObject *object )
+{
+   GL_NODE_TYPE i;
+   glBone **bone;
+
+   if(!object)
+      return( NULL );
+   if(!object->bone)
+      return( NULL );
+
+   bone = glCalloc( object->num_bones, sizeof(glBone*) );
+   if(!bone)
+      return( NULL );
+
+   i = 0;
+   for(; i != object->num_bones; ++i)
+   {
+      bone[i] = glRefBone( object->bone[i] );
+   }
+
+   return( bone );
+}
+
+/* Reference all bones */
+glBone** glObjectRefBones( glObject *object )
+{
+   GL_NODE_TYPE i;
+
+   if(!object)
+      return( NULL );
+   if(!object->bone)
+      return( NULL );
+
+   i = 0;
+   for(; i != object->num_bones; ++i)
+      glRefBone( object->bone[i] );
+
+   return( object->bone );
+}
+
+/* Resize animations */
+glAnim** glObjectResizeAnims( glObject *object, unsigned int num_anims )
+{
+   GL_NODE_TYPE i, i2;
+
+   if(!object)
+      return( NULL );
+   if(!num_anims)
+      return( NULL );
+
+   if(object->anim)
+      object->anim = glRealloc( object->anim, object->num_anims, num_anims, sizeof(glAnim*) );
+   else
+      object->anim = glCalloc( num_anims, sizeof(glAnim*) );
+
+   i = 0;
+   for(; i != num_anims; ++i)
+   {
+      object->anim[i] = glNewAnim();
+      if(!object->anim[i])
+      {
+         i2 = 0;
+         for(; i2 != i; ++i2)
+         {
+            glFreeAnim(object->anim[i2]);
+            glFree( object->anim, num_anims * sizeof(glAnim*) );
+            return( NULL );
+         }
+      }
+   }
+
+   object->num_anims = num_anims;
+   return( object->anim );
+}
+
+/* Copy all animations */
+glAnim** glObjectCopyAnims( glObject *object )
+{
+   GL_NODE_TYPE i;
+   glAnim **anim;
+
+   if(!object)
+      return( NULL );
+   if(!object->anim)
+      return( NULL );
+
+   anim = glCalloc( object->num_anims, sizeof(glAnim*) );
+   if(!anim)
+      return( NULL );
+
+   i = 0;
+   for(; i != object->num_anims; ++i)
+   {
+      anim[i] = glRefAnim( object->anim[i] );
+   }
+
+   return( anim );
+}
+
+/* Reference all animations */
+glAnim** glObjectRefAnims( glObject *object )
+{
+   GL_NODE_TYPE i;
+
+   if(!object)
+      return( NULL );
+   if(!object->anim)
+      return( NULL );
+
+   i = 0;
+   for(; i != object->num_anims; ++i)
+      glRefAnim( object->anim[i] );
+
+   return( object->anim );
 }
 
 /* Add child, steals reference */

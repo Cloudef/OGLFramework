@@ -9,6 +9,18 @@
                               (GLES 1.0) you might want to control this
                               variable for maximum index buffers */
 
+/* Specify type for animation nodes,
+ * change this if you have more than 255 frames per animation,
+ * or more than 255 animations */
+#ifndef GL_NODE_TYPE
+   #define GL_NODE_TYPE uint8_t
+#endif
+
+/* Keyframe animation */
+#ifndef USE_KEYFRAME_ANIMATION
+   #define USE_KEYFRAME_ANIMATION 0
+#endif
+
 /* Vertex color support */
 #ifndef VERTEX_COLOR
    #define VERTEX_COLOR 0

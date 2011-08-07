@@ -1,8 +1,11 @@
 DIRS = $(wildcard test_*)
 
-all: ${DIRS}
+all : ${DIRS}
+	for c in ${DIRS}; do \
+	${MAKE} -C $${c} CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"; \
+	done
 
-${DIRS}:
-	${MAKE} -C $@ clean && ${MAKE} -C $@ CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-
-.PHONY: ${DIRS}
+clean : ${DIRS}
+	for c in ${DIRS}; do \
+	${MAKE} -C $${c} clean; \
+	done

@@ -25,7 +25,7 @@ void* glMalloc( size_t size )
 
 /* internal calloc function.
  * keep track of allocations and prints output on failure */
-void* glCalloc( int items, size_t size )
+void* glCalloc( unsigned int items, size_t size )
 {
    void *ptr = calloc( items, size );
    if(!ptr)
@@ -43,7 +43,7 @@ void* glCalloc( int items, size_t size )
 
 /* internal realloc function.
  * keep track of allocations and prints output on failure */
-void* glRealloc( void *ptr, int old_items, int items, size_t size )
+void* glRealloc( void *ptr, unsigned int old_items, unsigned int items, size_t size )
 {
    void *ptr2 = realloc( ptr, (size_t)items * size );
    if(!ptr2)

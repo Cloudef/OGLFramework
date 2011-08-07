@@ -25,6 +25,11 @@ glMaterial* glNewMaterial( void )
 
 	/* Nullify pointers */
    object->texture = glCalloc( _glCore.info.maxTextureUnits, sizeof(glTexture*) );
+   if(!object->texture)
+   {
+      glFree( object, sizeof(glMaterial) );
+      return( NULL );
+   }
 
    i = 0;
    while( i != _glCore.info.maxTextureUnits )
@@ -61,6 +66,12 @@ glMaterial* glCopyMaterial( glMaterial *src )
 	/* Copy data */
    object->texture = glCopy( src->texture,
                      _glCore.info.maxTextureUnits * sizeof(glTexture*) );
+   if(!object->texture)
+   {
+      glFree( object, sizeof(glMaterial) );
+      return( NULL );
+   }
+
    i = 0;
    while( i != _glCore.info.maxTextureUnits )
    {
