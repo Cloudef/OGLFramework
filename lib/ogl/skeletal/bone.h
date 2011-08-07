@@ -18,7 +18,7 @@ typedef struct
    char *name;
 
    glVertexWeight *weight;
-   GL_NODE_TYPE num_weights;
+   unsigned int num_weights;
    kmMat4 offsetMatrix;
 
    unsigned int refCounter;

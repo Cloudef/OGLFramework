@@ -32,7 +32,9 @@ int glFreeBone( glBone *bone )
    if(--bone->refCounter!=0)
       return( RETURN_NOTHING );
 
-   if(bone->name) free(bone->name); bone->name = NULL;
+   if(bone->name) free(bone->name);
+   bone->name = NULL;
+
    glFree( bone->weight, bone->num_weights * sizeof(glVertexWeight) );
    bone->weight = NULL;
 
