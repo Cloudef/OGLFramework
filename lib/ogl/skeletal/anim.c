@@ -3,6 +3,7 @@
 #include "alloc.h"
 #include "types.h"
 
+/* new anim */
 glAnim* glNewAnim(void)
 {
    glAnim *anim = glCalloc( 1, sizeof(glAnim) );
@@ -22,6 +23,7 @@ glAnim* glNewAnim(void)
    return( anim );
 }
 
+/* ref anim */
 glAnim* glRefAnim( glAnim *anim )
 {
    if(!anim)
@@ -33,6 +35,7 @@ glAnim* glRefAnim( glAnim *anim )
    return( anim );
 }
 
+/* free anim */
 int glFreeAnim( glAnim *anim )
 {
    unsigned int i;

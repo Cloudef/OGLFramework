@@ -225,6 +225,49 @@ glBone** glObjectResizeBones( glObject *object, unsigned int num_bones )
    return( object->bone );
 }
 
+/* Update animation */
+void glObjectUpdate( glObject *object )
+{
+   GL_NODE_TYPE i;
+   unsigned int x;
+
+   if(!object)
+      return;
+   if(!object->anim)
+      return;
+   if(!object->bone)
+      return;
+
+   /* need T stance vertices */
+   /* TO-DO: Shader implentation */
+   /* Reset all vertices to 0 here */
+   i = 0;
+   for(; i != object->num_bones; ++i)
+   {
+      /* boneMat = object->animator->boneMat[i]; */
+      x = 0;
+      for(; x != object->bone[i]->num_weights; ++x)
+      {
+         /* Get bone matrices */
+         /* and shift t-stance vertices */
+
+         /*
+          * index  = object->bone[i]->weight[x].vertex;
+          * weight = object->bone[i]->weight[x].weight;
+          * kmVec3 tStance = TSTANCE[ index ];
+          * tStance *= boneMat;
+          *
+          * vbo->vertices[index].x += tStance.x*weight;
+          * vbo->vertices[index].y += tStance.y*weight;
+          * vbo->vertices[index].z += tStance.z*weight;
+          */
+      }
+   }
+
+   /* update vertex data */
+   glVBOUpdate( object->vbo );
+}
+
 /* Copy all bones */
 glBone** glObjectCopyBones( glObject *object )
 {

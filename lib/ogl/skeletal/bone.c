@@ -2,6 +2,7 @@
 #include "alloc.h"
 #include "types.h"
 
+/* new bone */
 glBone* glNewBone(void)
 {
    glBone *bone = glCalloc( 1, sizeof(glBone) );
@@ -14,6 +15,7 @@ glBone* glNewBone(void)
    return( bone );
 }
 
+/* refence bone */
 glBone* glRefBone( glBone *bone )
 {
    if(!bone)
@@ -24,6 +26,7 @@ glBone* glRefBone( glBone *bone )
    return( bone );
 }
 
+/* free bone */
 int glFreeBone( glBone *bone )
 {
    if(!bone)

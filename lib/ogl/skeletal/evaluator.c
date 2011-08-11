@@ -4,6 +4,9 @@
 
 glAnimTick* glNewAnimTick( glAnim *mAnim )
 {
+   if(!mAnim)
+      return( NULL );
+
 	/* Allocate animation handler object */
 	glAnimTick *mAnimTick = (glAnimTick*)glCalloc( 1, sizeof(glAnimTick) );
    if(!mAnimTick)
