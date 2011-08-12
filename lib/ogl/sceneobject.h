@@ -4,8 +4,7 @@
 #include "vbo.h"
 #include "ibo.h"
 #include "material.h"
-#include "skeletal/anim.h"
-#include "skeletal/bone.h"
+#include "skeletal/animator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,9 +17,8 @@ typedef struct glObject_t
 	glVBO       *vbo;
    glIBO       *ibo;
 
-   /* bones && anim */
-   glAnim      **anim;
-   glBone      **bone;
+   /* Animator */
+   glAnimator *animator;
 
    /* Matrix */
  	kmMat4 matrix;
@@ -43,8 +41,6 @@ typedef struct glObject_t
    /* childs */
    struct glObject_t **child;
    unsigned int num_childs;
-   GL_NODE_TYPE num_anims;
-   GL_NODE_TYPE num_bones;
 
  	unsigned int refCounter;
 } glObject;
@@ -54,14 +50,8 @@ glObject*   glCopyObject( glObject *src );	         /* Copy sceneobject  */
 glObject*   glRefObject( glObject *src );	            /* Reference sceneobject  */
 int         glFreeObject( glObject *object );	      /* Free sceneobject */
 void        glDraw( glObject *object );               /* Draw sceneobject */
-
-glBone** glObjectResizeBones( glObject*, unsigned int );
-glBone** glObjectCopyBones( glObject* );
-glBone** glObjectRefBones( glObject* );
-
-glAnim** glObjectResizeAnims( glObject*, unsigned int );
-glAnim** glObjectCopyAnims( glObject* );
-glAnim** glObjectRefAnims( glObject* );
+void        glObjectTick( glObject *object, float tick );
+void        glObjectSetAnimation( glObject *object, GL_NODE_TYPE );
 
 int         glObjectAddChild( glObject*, glObject* );      /* Add child */
 glObject**  glObjectRefChilds( glObject* );                /* Reference childs */

@@ -1,12 +1,11 @@
 #ifndef GL_MALLOC_H
 #define GL_MALLOC_H
 
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <string.h>
 
 /* internal allocation functions */
 void* glMalloc( size_t );

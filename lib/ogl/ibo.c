@@ -128,7 +128,7 @@ int glIBOUpdate( glIBO* ibo )
       return( RETURN_FAIL );
 
    if(!ibo->object)
-      return( RETURN_FAIL );
+      return( glIBOConstruct( ibo ) );
 
    /* already up to date */
    if(ibo->up_to_date)

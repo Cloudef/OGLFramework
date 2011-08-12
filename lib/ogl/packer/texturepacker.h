@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-typedef struct
+typedef struct glTexturePacker_t
 {
    int                debugCount;
    struct node_tt    *freeList;

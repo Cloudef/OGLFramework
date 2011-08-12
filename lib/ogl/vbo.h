@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-typedef struct
+typedef struct glUVW_t
 {
    /* coordinates */
    kmVec2         *coords;
@@ -24,7 +24,7 @@ typedef struct
 } glUVW;
 
 /* VBO struct */
-typedef struct
+typedef struct glVBO_t
 {
    /* vertice, coord, normal arrays */
 	kmVec3   *vertices;

@@ -3,8 +3,12 @@
 
 #include "anim.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* struct to store current animation and last state */
-typedef struct
+typedef struct glAnimTick_t
 {
    glAnim *mAnim;
    float   lastTime;
@@ -20,5 +24,9 @@ int glFreeAnimTick( glAnimTick *mAnimTick );
 
 /* advance animation */
 void glAdvanceAnimTick( glAnimTick *mAnimTick, float pTime );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GL_ANIM_EVALUATOR_H */

@@ -31,7 +31,6 @@ glAnim* glRefAnim( glAnim *anim )
 
    /* increase ref */
    anim->refCounter++;
-
    return( anim );
 }
 

@@ -26,13 +26,8 @@ glObject* glNewObject( void )
 	object->vbo		         = NULL;
    object->ibo             = NULL;
 
+   object->animator        = NULL;
    object->child           = NULL;
-   object->anim            = NULL;
-   object->bone            = NULL;
-
-   object->num_childs      = 0;
-   object->num_anims       = 0;
-   object->num_bones       = 0;
 
 	/* Default primitive type */
 	object->primitive_type = GL_TRIANGLE_STRIP;
@@ -76,14 +71,7 @@ glObject* glCopyObject( glObject *src )
 	object->material	            = glRefMaterial( src->material );
 	object->vbo		               = glRefVBO( src->vbo );
    object->ibo                   = glRefIBO( src->ibo );
-
-   /* Copy anims */
-   object->anim                  = glObjectCopyAnims( src );
-   object->num_anims             = src->num_anims;
-
-   /* Copy bones */
-   object->bone                  = glObjectCopyBones( src );
-   object->num_bones             = src->num_bones;
+   object->animator              = glCopyAnimator( src->animator );
 
    /* Copy childs */
    object->child                 = glObjectCopyChilds( src );
@@ -117,6 +105,7 @@ glObject* glRefObject( glObject *src )
 	object->material	         = glRefMaterial( src->material );
 	object->vbo		            = glRefVBO( src->vbo );
    object->ibo                = glRefIBO( src->ibo );
+   object->animator           = glRefAnimator( src->animator );
 
 	/* Increase ref counter */
 	object->refCounter++;
@@ -145,21 +134,9 @@ int glFreeObject( glObject *object )
    if(glFreeIBO( object->ibo )           == RETURN_OK)
       object->ibo = NULL;
 
-   /* Free as in, decrease reference on bones */
-   i = 0;
-   for(; i != object->num_bones; ++i)
-   {
-      if(glFreeBone( object->bone[i] )    == RETURN_OK)
-         object->bone[i] = NULL;
-   }
-
-   /* Free as in, decrease reference on anims */
-   i = 0;
-   for(; i != object->num_anims; ++i)
-   {
-      if(glFreeAnim( object->anim[i] )    == RETURN_OK)
-         object->anim[i] = NULL;
-   }
+   /* free animator if there is one */
+   if(object->animator)
+   { if( glFreeAnimator( object->animator ) == RETURN_OK ); object->animator = NULL; }
 
    /* Free as in, decrease reference on childs */
    i = 0;
@@ -177,79 +154,52 @@ int glFreeObject( glObject *object )
    object->child = NULL;
    object->num_childs = 0;
 
-   glFree( object->bone, object->num_bones * sizeof(glBone*) );
-   object->bone = NULL;
-   object->num_bones = 0;
-
-   glFree( object->anim, object->num_anims * sizeof(glAnim*) );
-   object->anim = NULL;
-   object->num_anims = 0;
-
 	/* Free scene object */
    glFree( object, sizeof(glObject) );
    return( RETURN_OK );
 }
 
-/* Resize bones */
-glBone** glObjectResizeBones( glObject *object, unsigned int num_bones )
-{
-   GL_NODE_TYPE i, i2;
-
-   if(!object)
-      return( NULL );
-   if(!num_bones)
-      return( NULL );
-
-   if(object->bone)
-      object->bone = glRealloc( object->bone, object->num_bones, num_bones, sizeof(glBone*) );
-   else
-      object->bone = glCalloc( num_bones, sizeof(glBone*) );
-
-   i = 0;
-   for(; i != num_bones; ++i)
-   {
-      object->bone[i] = glNewBone();
-      if(!object->bone[i])
-      {
-         i2 = 0;
-         for(; i2 != i; ++i2)
-         {
-            glFreeBone(object->bone[i2]);
-            glFree( object->bone, num_bones * sizeof(glBone*) );
-            return( NULL );
-         }
-      }
-   }
-
-   object->num_bones = num_bones;
-   return( object->bone );
-}
-
-/* Update animation */
-void glObjectUpdate( glObject *object )
+/* update skeletal animation */
+static void glObjectUpdateSkeletal( glObject *object )
 {
    GL_NODE_TYPE i;
-   unsigned int x;
-
-   if(!object)
-      return;
-   if(!object->anim)
-      return;
-   if(!object->bone)
-      return;
+   unsigned int x, index;
+   float weight;
+   kmVec3 tStance;
+   kmMat4 boneMat;
+   kmMat4 globalTransform;
+   kmMat4 globalInverse;
+   glAnimator *animator = object->animator;
 
    /* need T stance vertices */
    /* TO-DO: Shader implentation */
    /* Reset all vertices to 0 here */
-   i = 0;
-   for(; i != object->num_bones; ++i)
+   x = 0;
+   for(; x != object->vbo->v_num; ++x)
    {
-      /* boneMat = object->animator->boneMat[i]; */
+      object->vbo->vertices[x].x = 0;
+      object->vbo->vertices[x].y = 0;
+      object->vbo->vertices[x].z = 0;
+   }
+
+   i = 0;
+   for(; i != animator->num_bones; ++i)
+   {
+      boneMat = animator->bone[i]->offsetMatrix;
       x = 0;
-      for(; x != object->bone[i]->num_weights; ++x)
+      for(; x != animator->bone[i]->num_weights; ++x)
       {
          /* Get bone matrices */
          /* and shift t-stance vertices */
+         index    = animator->bone[i]->weight[x].vertex;
+         weight   = animator->bone[i]->weight[x].weight;
+
+         tStance  = animator->vertices[index];
+         kmVec3Transform( &tStance, &tStance, &boneMat );
+
+         object->vbo->vertices[index].x += tStance.x * weight;
+         object->vbo->vertices[index].y += tStance.y * weight;
+         object->vbo->vertices[index].z += tStance.z * weight;
 
          /*
           * index  = object->bone[i]->weight[x].vertex;
@@ -264,125 +214,40 @@ void glObjectUpdate( glObject *object )
       }
    }
 
-   /* update vertex data */
-   glVBOUpdate( object->vbo );
+   /* VBO needs update */
+   object->vbo->up_to_date = 0;
 }
 
-/* Copy all bones */
-glBone** glObjectCopyBones( glObject *object )
+/* Update animation */
+void glObjectTick( glObject *object, float tick )
 {
-   GL_NODE_TYPE i;
-   glBone **bone;
+   unsigned int i;
 
    if(!object)
-      return( NULL );
-   if(!object->bone)
-      return( NULL );
+      return;
+   if(!object->animator)
+      return;
 
-   bone = glCalloc( object->num_bones, sizeof(glBone*) );
-   if(!bone)
-      return( NULL );
+   glAnimatorTick( object->animator, tick );
 
-   i = 0;
-   for(; i != object->num_bones; ++i)
-   {
-      bone[i] = glRefBone( object->bone[i] );
-   }
+   if(!object->vbo)
+      return;
 
-   return( bone );
+   /* update vertices */
+   i = 0; glObjectUpdateSkeletal( object );
+   for(; i != object->num_childs; ++i)
+      glObjectUpdateSkeletal( object->child[i] );
 }
 
-/* Reference all bones */
-glBone** glObjectRefBones( glObject *object )
+/* Set animation */
+void glObjectSetAnimation( glObject *object, GL_NODE_TYPE index )
 {
-   GL_NODE_TYPE i;
-
    if(!object)
-      return( NULL );
-   if(!object->bone)
-      return( NULL );
+      return;
+   if(!object->animator)
+      return;
 
-   i = 0;
-   for(; i != object->num_bones; ++i)
-      glRefBone( object->bone[i] );
-
-   return( object->bone );
-}
-
-/* Resize animations */
-glAnim** glObjectResizeAnims( glObject *object, unsigned int num_anims )
-{
-   GL_NODE_TYPE i, i2;
-
-   if(!object)
-      return( NULL );
-   if(!num_anims)
-      return( NULL );
-
-   if(object->anim)
-      object->anim = glRealloc( object->anim, object->num_anims, num_anims, sizeof(glAnim*) );
-   else
-      object->anim = glCalloc( num_anims, sizeof(glAnim*) );
-
-   i = 0;
-   for(; i != num_anims; ++i)
-   {
-      object->anim[i] = glNewAnim();
-      if(!object->anim[i])
-      {
-         i2 = 0;
-         for(; i2 != i; ++i2)
-         {
-            glFreeAnim(object->anim[i2]);
-            glFree( object->anim, num_anims * sizeof(glAnim*) );
-            return( NULL );
-         }
-      }
-   }
-
-   object->num_anims = num_anims;
-   return( object->anim );
-}
-
-/* Copy all animations */
-glAnim** glObjectCopyAnims( glObject *object )
-{
-   GL_NODE_TYPE i;
-   glAnim **anim;
-
-   if(!object)
-      return( NULL );
-   if(!object->anim)
-      return( NULL );
-
-   anim = glCalloc( object->num_anims, sizeof(glAnim*) );
-   if(!anim)
-      return( NULL );
-
-   i = 0;
-   for(; i != object->num_anims; ++i)
-   {
-      anim[i] = glRefAnim( object->anim[i] );
-   }
-
-   return( anim );
-}
-
-/* Reference all animations */
-glAnim** glObjectRefAnims( glObject *object )
-{
-   GL_NODE_TYPE i;
-
-   if(!object)
-      return( NULL );
-   if(!object->anim)
-      return( NULL );
-
-   i = 0;
-   for(; i != object->num_anims; ++i)
-      glRefAnim( object->anim[i] );
-
-   return( object->anim );
+   glAnimatorSetAnim( object->animator, index );
 }
 
 /* Add child, steals reference */
@@ -580,23 +445,8 @@ void glDraw( glObject *object )
     * draw loop is supposed to be fast. */
    if(_glCore.render.mode == GL_MODE_VBO)
    {
-      /* check ibo */
-      if(object->ibo)
-      {
-         if(!object->ibo->object)
-            glIBOConstruct( object->ibo );
-         else
-            glIBOUpdate( object->ibo );
-      }
-
-      /* check vbo */
-      if(object->vbo)
-      {
-         if(!object->vbo->object)
-            glVBOConstruct( object->vbo );
-         else
-            glVBOUpdate( object->vbo );
-      }
+      glIBOUpdate( object->ibo );
+      glVBOUpdate( object->vbo );
    }
 
    if(object->transform_changed)

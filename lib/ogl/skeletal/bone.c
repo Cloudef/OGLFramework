@@ -21,8 +21,8 @@ glBone* glRefBone( glBone *bone )
    if(!bone)
       return( NULL );
 
+   /* increase ref */
    bone->refCounter++;
-
    return( bone );
 }
 

@@ -5,15 +5,19 @@
 #include "kazmath/kazmath.h"
 #include "../config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* weight */
-typedef struct
+typedef struct glVertexWeight_t
 {
    unsigned int vertex;
    float weight;
 } glVertexWeight;
 
 /* bone */
-typedef struct
+typedef struct glBone_t
 {
    char *name;
 
@@ -27,5 +31,9 @@ typedef struct
 glBone* glNewBone(void);
 glBone* glRefBone( glBone* );
 int glFreeBone( glBone* );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GL_BONE_H */

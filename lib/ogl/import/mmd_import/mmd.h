@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 /* header */
-typedef struct
+typedef struct mmd_header_t
 {
    float version;
    char  name[20];
@@ -16,13 +16,13 @@ typedef struct
 } mmd_header;
 
 /* texture */
-typedef struct
+typedef struct mmd_texture_t
 {
    char file[20];
 } mmd_texture;
 
 /* bone */
-typedef struct
+typedef struct mmd_bone_t
 {
    /* bone name */
    char name[20];
@@ -40,7 +40,7 @@ typedef struct
 } mmd_bone;
 
 /* IK */
-typedef struct
+typedef struct mmd_ik_t
 {
    /* chain length */
    uint8_t  chain_length;
@@ -58,14 +58,14 @@ typedef struct
 } mmd_ik;
 
 /* bone name */
-typedef struct
+typedef struct mmd_bone_name_t
 {
    /* bone name */
    char name[50];
 } mmd_bone_name;
 
 /* Skin vertices */
-typedef struct
+typedef struct mmd_skin_vertices_t
 {
    /* index */
    unsigned int index;
@@ -75,7 +75,7 @@ typedef struct
 } mmd_skin_vertices;
 
 /* Skin */
-typedef struct
+typedef struct mmd_skin_t
 {
    /* skin name */
    char name[20];
@@ -91,7 +91,7 @@ typedef struct
 } mmd_skin;
 
 /* all data */
-typedef struct
+typedef struct mmd_data_t
 {
    /* count */
    unsigned int   num_vertices;

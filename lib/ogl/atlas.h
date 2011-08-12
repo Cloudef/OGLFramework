@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-typedef struct
+typedef struct glAtlasArea_t
 {
    int x1;
    int x2;
@@ -16,14 +16,14 @@ typedef struct
    int rotated;
 } glAtlasArea;
 
-typedef struct
+typedef struct glAtlasRect_t
 {
    glTexture      *texture;
    unsigned int   index;
    glAtlasArea    packed;
 } glAtlasRect;
 
-typedef struct
+typedef struct glAtlas_t
 {
    /* textures and how they are
     * placed in atlas */

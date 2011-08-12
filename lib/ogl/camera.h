@@ -2,7 +2,6 @@
 #define GL_CAMERA_H
 
 #include <stdint.h>
-
 #include "kazmath/kazmath.h"
 
 #ifdef __cplusplus

@@ -2,7 +2,6 @@
 #define GL_IBO_H
 
 #include <stdint.h>
-
 #include "config.h"
 
 #ifdef __cplusplus
@@ -10,7 +9,7 @@ extern "C" {
 #endif
 
 /* IBO struct */
-typedef struct
+typedef struct glIBO_t
 {
 #if USE_BUFFERS
 	unsigned short *indices[GL_MAX_BUFFERS + 1];

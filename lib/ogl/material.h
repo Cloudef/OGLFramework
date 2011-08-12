@@ -16,7 +16,7 @@ typedef enum
 } GL_MATERIAL_FLAGS;
 
 /* material struct */
-typedef struct
+typedef struct glMaterial_t
 {
    /* texture */
    glTexture      **texture;

@@ -2,7 +2,6 @@
 #define GL_TEXTURE_H
 
 #include <stdint.h>
-
 #include "kazmath/kazmath.h"
 
 #ifdef __cplusplus
@@ -29,7 +28,7 @@ typedef enum
 #endif
 
 /* texture struct */
-typedef struct
+typedef struct glTexture_t
 {
    /* GL Texture object */
 	unsigned int object;
@@ -51,7 +50,7 @@ typedef struct
  	unsigned int refCounter;
 } glTexture;
 
-typedef struct
+typedef struct glTextureCache_t
 {
    glTexture    **texture;
    unsigned int num_textures;

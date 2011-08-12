@@ -88,16 +88,17 @@ static int setMaterial(const char *file, glObject *object, struct aiMaterial *mt
 }
 
 /* Construct bones */
-static int construct_bones(glObject *object, const struct aiScene *sc, const struct aiMesh *mesh)
+static int construct_bones(glAnimator *object, const struct aiScene *sc, const struct aiMesh *mesh)
 {
    unsigned int i, f;
+   glBone **bone;
 
    /* no bones, no milk */
-   if(!mesh->mNumBones && !object->bone)
+   if(!mesh->mNumBones)
       return( RETURN_NOTHING );
 
-    object->bone = glObjectResizeBones( object, mesh->mNumBones );
-    if(!object->bone)
+    bone = glAnimatorResizeBones( object, mesh->mNumBones );
+    if(!bone)
     {
        /* no anims nor bones for us, sucks to be low on memory */
        return( RETURN_NOTHING );
@@ -110,48 +111,52 @@ static int construct_bones(glObject *object, const struct aiScene *sc, const str
     {
       if(mesh->mBones[i]->mName.data)
       {
-         object->bone[i]->name = strdup(mesh->mBones[i]->mName.data);
-         logBlue(); glPrint( "[ASSIMP] %s\n",  object->bone[i]->name ); logNormal();
+         bone[i]->name = strdup(mesh->mBones[i]->mName.data);
+         logBlue(); glPrint( "[ASSIMP] %s\n",  bone[i]->name ); logNormal();
       }
 
-      object->bone[i]->offsetMatrix.mat[0] = mesh->mBones[i]->mOffsetMatrix.a1;
-      object->bone[i]->offsetMatrix.mat[1] = mesh->mBones[i]->mOffsetMatrix.a2;
-      object->bone[i]->offsetMatrix.mat[2] = mesh->mBones[i]->mOffsetMatrix.a3;
-      object->bone[i]->offsetMatrix.mat[3] = mesh->mBones[i]->mOffsetMatrix.a4;
+      bone[i]->offsetMatrix.mat[0] = mesh->mBones[i]->mOffsetMatrix.a1;
+      bone[i]->offsetMatrix.mat[1] = mesh->mBones[i]->mOffsetMatrix.b1;
+      bone[i]->offsetMatrix.mat[2] = mesh->mBones[i]->mOffsetMatrix.c1;
+      bone[i]->offsetMatrix.mat[3] = mesh->mBones[i]->mOffsetMatrix.d1;
 
-      object->bone[i]->offsetMatrix.mat[4] = mesh->mBones[i]->mOffsetMatrix.b1;
-      object->bone[i]->offsetMatrix.mat[5] = mesh->mBones[i]->mOffsetMatrix.b2;
-      object->bone[i]->offsetMatrix.mat[6] = mesh->mBones[i]->mOffsetMatrix.b3;
-      object->bone[i]->offsetMatrix.mat[7] = mesh->mBones[i]->mOffsetMatrix.b4;
+      bone[i]->offsetMatrix.mat[4] = mesh->mBones[i]->mOffsetMatrix.a2;
+      bone[i]->offsetMatrix.mat[5] = mesh->mBones[i]->mOffsetMatrix.b2;
+      bone[i]->offsetMatrix.mat[6] = mesh->mBones[i]->mOffsetMatrix.c2;
+      bone[i]->offsetMatrix.mat[7] = mesh->mBones[i]->mOffsetMatrix.d2;
 
-      object->bone[i]->offsetMatrix.mat[8] = mesh->mBones[i]->mOffsetMatrix.c1;
-      object->bone[i]->offsetMatrix.mat[9] = mesh->mBones[i]->mOffsetMatrix.c2;
-      object->bone[i]->offsetMatrix.mat[10] = mesh->mBones[i]->mOffsetMatrix.c3;
-      object->bone[i]->offsetMatrix.mat[11] = mesh->mBones[i]->mOffsetMatrix.c4;
+      bone[i]->offsetMatrix.mat[8] = mesh->mBones[i]->mOffsetMatrix.a3;
+      bone[i]->offsetMatrix.mat[9] = mesh->mBones[i]->mOffsetMatrix.b3;
+      bone[i]->offsetMatrix.mat[10] = mesh->mBones[i]->mOffsetMatrix.c3;
+      bone[i]->offsetMatrix.mat[11] = mesh->mBones[i]->mOffsetMatrix.d3;
 
-      object->bone[i]->offsetMatrix.mat[12] = mesh->mBones[i]->mOffsetMatrix.d1;
-      object->bone[i]->offsetMatrix.mat[13] = mesh->mBones[i]->mOffsetMatrix.d2;
-      object->bone[i]->offsetMatrix.mat[14] = mesh->mBones[i]->mOffsetMatrix.d3;
-      object->bone[i]->offsetMatrix.mat[15] = mesh->mBones[i]->mOffsetMatrix.d4;
+      bone[i]->offsetMatrix.mat[12] = mesh->mBones[i]->mOffsetMatrix.a4;
+      bone[i]->offsetMatrix.mat[13] = mesh->mBones[i]->mOffsetMatrix.b4;
+      bone[i]->offsetMatrix.mat[14] = mesh->mBones[i]->mOffsetMatrix.c4;
+      bone[i]->offsetMatrix.mat[15] = mesh->mBones[i]->mOffsetMatrix.d4;
 
-      object->bone[i]->num_weights  = mesh->mBones[i]->mNumWeights;
+      bone[i]->num_weights  = mesh->mBones[i]->mNumWeights;
 
-      object->bone[i]->weight
+      bone[i]->weight
          = glCalloc( mesh->mBones[i]->mNumWeights, sizeof(glVertexWeight) );
 
       f = 0;
       for(; f != mesh->mBones[i]->mNumWeights; ++f)
       {
-         object->bone[i]->weight[f].vertex = mesh->mBones[i]->mWeights[f].mVertexId;
-         object->bone[i]->weight[f].weight = mesh->mBones[i]->mWeights[f].mWeight;
+         bone[i]->weight[f].vertex = mesh->mBones[i]->mWeights[f].mVertexId;
+         bone[i]->weight[f].weight = mesh->mBones[i]->mWeights[f].mWeight;
       }
     }
+
+    object->bone = bone;
+    return( RETURN_OK );
 }
 
 /* construct animation */
-static int construct_animation(glObject *object, const struct aiScene *sc, const struct aiMesh *mesh)
+static int construct_animation(glAnimator *object, const struct aiScene *sc, const struct aiMesh *mesh)
 {
    unsigned int i, f, t;
+   glAnim **anim;
 
 #if USE_KEY_ANIMATION
    /* mesh->mAnimMeshes
@@ -159,11 +164,11 @@ static int construct_animation(glObject *object, const struct aiScene *sc, const
 #endif
 
    /* no need to do this */
-   if(object->anim || !sc->mNumAnimations)
+   if(!sc->mNumAnimations)
       return( RETURN_NOTHING );
 
-   object->anim = glObjectResizeAnims( object, sc->mNumAnimations );
-   if(!object->anim)
+   anim = glAnimatorResizeAnims( object, sc->mNumAnimations );
+   if(!anim)
    {
       /* It's ok, we just don't have animations */
       return( RETURN_NOTHING );
@@ -174,55 +179,56 @@ static int construct_animation(glObject *object, const struct aiScene *sc, const
    i = 0;
    for(; i != sc->mNumAnimations; ++i)
    {
-      object->anim[i]->skeletal     = glCalloc( sc->mAnimations[i]->mNumChannels,
+      anim[i]->skeletal     = glCalloc( sc->mAnimations[i]->mNumChannels,
                                                 sizeof(glNodeAnim) );
-      object->anim[i]->num_skeletal = sc->mAnimations[i]->mNumChannels;
+      anim[i]->num_skeletal = sc->mAnimations[i]->mNumChannels;
 
-      object->anim[i]->ticksPerSecond = sc->mAnimations[i]->mTicksPerSecond;
-      object->anim[i]->duration       = sc->mAnimations[i]->mDuration;
+      anim[i]->ticksPerSecond = sc->mAnimations[i]->mTicksPerSecond;
+      anim[i]->duration       = sc->mAnimations[i]->mDuration;
 
       if(sc->mAnimations[i]->mName.data)
       {
-         object->anim[i]->name           = strdup(sc->mAnimations[i]->mName.data);
-         logBlue(); glPrint( "[ASSIMP] %s\n", object->anim[i]->name ); logNormal();
+         anim[i]->name           = strdup(sc->mAnimations[i]->mName.data);
+         logBlue(); glPrint( "[ASSIMP] %s\n", anim[i]->name ); logNormal();
       }
 
       f = 0;
       for(; f != sc->mAnimations[i]->mNumChannels; ++f)
       {
-         object->anim[i]->skeletal[f].num_position
+         anim[i]->skeletal[f].num_position
             = sc->mAnimations[i]->mChannels[f]->mNumPositionKeys;
 
-         object->anim[i]->skeletal[f].num_rotation
+         anim[i]->skeletal[f].num_rotation
             = sc->mAnimations[i]->mChannels[f]->mNumRotationKeys;
 
-         object->anim[i]->skeletal[f].num_scale
+         anim[i]->skeletal[f].num_scale
             = sc->mAnimations[i]->mChannels[f]->mNumScalingKeys;
 
-         object->anim[i]->skeletal[f].positionKey
+         anim[i]->skeletal[f].positionKey
             = glCalloc( sc->mAnimations[i]->mChannels[f]->mNumPositionKeys, sizeof(glVectorKey) );
 
-         object->anim[i]->skeletal[f].rotationKey
+         anim[i]->skeletal[f].rotationKey
             = glCalloc( sc->mAnimations[i]->mChannels[f]->mNumRotationKeys, sizeof(glQuatKey) );
 
-         object->anim[i]->skeletal[f].scaleKey
+         anim[i]->skeletal[f].scaleKey
             = glCalloc( sc->mAnimations[i]->mChannels[f]->mNumScalingKeys, sizeof(glVectorKey) );
 
          t = 0;
          for(; t != sc->mAnimations[i]->mChannels[f]->mNumPositionKeys; ++t)
          {
-            object->anim[i]->skeletal[f].positionKey[t].time
+            anim[i]->skeletal[f].positionKey[t].time
                = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mTime;
-            object->anim[i]->skeletal[f].positionKey[t].value.x
+            anim[i]->skeletal[f].positionKey[t].value.x
                = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mValue.x;
-            object->anim[i]->skeletal[f].positionKey[t].value.y
+            anim[i]->skeletal[f].positionKey[t].value.y
                = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mValue.y;
-            object->anim[i]->skeletal[f].positionKey[t].value.z
+            anim[i]->skeletal[f].positionKey[t].value.z
                = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mValue.z;
          }
       }
    }
 
+   object->anim = anim;
    return( RETURN_OK );
 }
 
@@ -317,11 +323,18 @@ static int construct(const char *file, glObject *object, const struct aiScene *s
    }
 
    /* be done, if we only want static stuff */
-   if(!bAnimated)
+   if(!bAnimated || object->animator)
       return( RETURN_OK );
 
-   construct_bones( object, sc, mesh );
-   construct_animation( object, sc, mesh );
+   /* create new animator */
+   object->animator = glNewAnimator();
+
+   /* assign bones and animations */
+   construct_bones( object->animator, sc, mesh );
+   construct_animation( object->animator, sc, mesh );
+
+   /* set animation to 0 */
+   glObjectSetAnimation( object, 0 );
 
    /* return our beautiful object */
    return( RETURN_OK );
@@ -370,7 +383,7 @@ static int process(const char *file, glObject *object, const struct aiScene *sc,
          }
 
          /* refence animation */
-         mObject->anim = glObjectRefAnims( object );
+         mObject->animator = glRefAnimator( object->animator );
 
          if(construct( file, mObject, sc, mesh, bAnimated ) != RETURN_OK)
          {
@@ -439,6 +452,12 @@ int glImportASSIMP( glObject *object, const char *file, int bAnimated )
    /* Set to triangles
     * Add tristripper code? */
    object->primitive_type = GL_TRIANGLES;
+
+   /* if was animated */
+   if(object->animator)
+   {
+      glAnimatorCopyIdleVertices( object->animator, object->vbo );
+   }
 
    return( RETURN_OK );
 }

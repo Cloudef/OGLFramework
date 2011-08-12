@@ -192,6 +192,8 @@ int main( int argc, char **argv )
 
       keyHandle();
 
+      glObjectTick( obj, now );
+
       x += 0.01f;
 #if WITH_PMD
       x += 0.08f;

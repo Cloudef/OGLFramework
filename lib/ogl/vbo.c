@@ -164,7 +164,7 @@ int glVBOUpdate( glVBO* vbo )
       return( RETURN_FAIL );
 
    if(!vbo->object)
-      return( RETURN_FAIL );
+      return( glVBOConstruct( vbo ) );
 
    /* already up to date */
    if(vbo->up_to_date)

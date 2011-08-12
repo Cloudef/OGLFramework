@@ -6,22 +6,26 @@
 #include "../config.h"
 #include "kazmath/kazmath.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* translation key */
-typedef struct
+typedef struct glVectorKey_t
 {
    float time;
    kmVec3 value;
 } glVectorKey;
 
 /* rotation key */
-typedef struct
+typedef struct glQuactKey_t
 {
    float time;
    kmQuaternion value;
 } glQuatKey;
 
 /* animation node */
-typedef struct
+typedef struct glNodeAnim_t
 {
    /* translation keys */
    glVectorKey *positionKey;
@@ -38,7 +42,7 @@ typedef struct
 } glNodeAnim;
 
 /* animation */
-typedef struct
+typedef struct glAnim_t
 {
    /* strdupped */
    char *name;
@@ -61,5 +65,9 @@ typedef struct
 glAnim* glNewAnim(void);
 glAnim* glRefAnim(glAnim*);
 int     glFreeAnim(glAnim*);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GL_ANIM_H */

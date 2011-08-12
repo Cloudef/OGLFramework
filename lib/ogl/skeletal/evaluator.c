@@ -170,12 +170,12 @@ void glAdvanceAnimTick( glAnimTick *mAnimTick, float pTime )
 		}
 
 		// build a transformation matrix from it
-		kmMat4 mat = mAnimTick->transform[a];
-	   kmMat4RotationQuaternion( &mat, &presentRotation );
-		mat.mat[0] *= presentScaling.x; mat.mat[5] *= presentScaling.x; mat.mat[9] *= presentScaling.x;
-		mat.mat[1] *= presentScaling.y; mat.mat[6] *= presentScaling.y; mat.mat[10] *= presentScaling.y;
-		mat.mat[3] *= presentScaling.z; mat.mat[7] *= presentScaling.z; mat.mat[11] *= presentScaling.z;
-		mat.mat[4] = presentPosition.x; mat.mat[8] = presentPosition.y; mat.mat[12] = presentPosition.z;
+		kmMat4 *mat = &mAnimTick->transform[a];
+	   kmMat4RotationQuaternion( mat, &presentRotation );
+		mat->mat[0] *= presentScaling.x; mat->mat[5] *= presentScaling.x; mat->mat[9] *= presentScaling.x;
+		mat->mat[1] *= presentScaling.y; mat->mat[6] *= presentScaling.y; mat->mat[10] *= presentScaling.y;
+		mat->mat[3] *= presentScaling.z; mat->mat[7] *= presentScaling.z; mat->mat[11] *= presentScaling.z;
+		mat->mat[4] = presentPosition.x; mat->mat[8] = presentPosition.y; mat->mat[12] = presentPosition.z;
 	}
 
 	mAnimTick->lastTime = time;
