@@ -10,10 +10,10 @@
                               variable for maximum index buffers */
 
 /* Specify type for animation nodes,
- * change this if you have more than 255 frames per animation,
- * or more than 255 animations */
+ * change this if you have more than USHRT_MAX frames per animation,
+ * or more than USHRT_MAX animations */
 #ifndef GL_NODE_TYPE
-   #define GL_NODE_TYPE uint8_t
+   #define GL_NODE_TYPE unsigned short
 #endif
 
 /* Keyframe animation */

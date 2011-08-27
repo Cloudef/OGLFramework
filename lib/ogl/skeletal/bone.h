@@ -13,17 +13,26 @@ extern "C" {
 typedef struct glVertexWeight_t
 {
    unsigned int vertex;
-   float weight;
+   float value;
+   struct glVertexWeight_t *next;
 } glVertexWeight;
 
 /* bone */
 typedef struct glBone_t
 {
+   /* strdupped name */
    char *name;
 
+   /* next && parent */
+   struct glBone_t *parent;
+   struct glBone_t *next;
+
+   /* weights */
    glVertexWeight *weight;
-   unsigned int num_weights;
-   kmMat4 offsetMatrix;
+   kmMat4         transformMatrix;
+   kmMat4         offsetMatrix;
+   kmMat4         globalMatrix;
+   kmMat4         relativeMatrix;
 
    unsigned int refCounter;
 } glBone;
@@ -31,6 +40,9 @@ typedef struct glBone_t
 glBone* glNewBone(void);
 glBone* glRefBone( glBone* );
 int glFreeBone( glBone* );
+
+int glBoneAddChild( glBone*, glBone* );
+glVertexWeight *glBoneAddWeight( glBone*, unsigned int, float );
 
 #ifdef __cplusplus
 }

@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "quaternion.h"
 
 /**
- * Fills a kmMat4 structure with the values from a 16 
+ * Fills a kmMat4 structure with the values from a 16
  * element array of floats
  * @Params pOut - A pointer to the destination matrix
  * 		   pMat - A 16 element array of floats
@@ -48,7 +48,7 @@ kmMat4* kmMat4Fill(kmMat4* pOut, const kmScalar* pMat)
     return pOut;
 }
 
-/** 
+/**
  * Sets pOut to an identity matrix returns pOut
  * @Params pOut - A pointer to the matrix to set to identity
  * @Return Returns pOut so that the call can be nested
@@ -61,8 +61,8 @@ kmMat4* kmMat4Identity(kmMat4* pOut)
 }
 
 /**
- * Calculates the inverse of pM and stores the result in 
- * pOut. 
+ * Calculates the inverse of pM and stores the result in
+ * pOut.
  * @Return Returns pOut
  */
 kmMat4* kmMat4Inverse(kmMat4* pOut, const kmMat4* pM)
@@ -141,9 +141,9 @@ kmMat4* kmMat4Inverse(kmMat4* pOut, const kmMat4* pM)
 
 	return pOut;
 }
-/** 
- * Returns KM_TRUE if pIn is an identity matrix 
- * KM_FALSE otherwise 
+/**
+ * Returns KM_TRUE if pIn is an identity matrix
+ * KM_FALSE otherwise
  */
 int  kmMat4IsIdentity(const kmMat4* pIn)
 {
@@ -156,8 +156,8 @@ int  kmMat4IsIdentity(const kmMat4* pIn)
 	return (memcmp(identity, pIn->mat, sizeof(float) * 16) == 0);
 }
 
-/** 
- * Sets pOut to the transpose of pIn, returns pOut 
+/**
+ * Sets pOut to the transpose of pIn, returns pOut
  */
 kmMat4* kmMat4Transpose(kmMat4* pOut, const kmMat4* pIn)
 {
@@ -172,8 +172,8 @@ kmMat4* kmMat4Transpose(kmMat4* pOut, const kmMat4* pIn)
 	return pOut;
 }
 
-/** 
- * Multiplies pM1 with pM2, stores the result in pOut, returns pOut 
+/**
+ * Multiplies pM1 with pM2, stores the result in pOut, returns pOut
  */
 kmMat4* kmMat4Multiply(kmMat4* pOut, const kmMat4* pM1, const kmMat4* pM2)
 {
@@ -207,8 +207,8 @@ kmMat4* kmMat4Multiply(kmMat4* pOut, const kmMat4* pM1, const kmMat4* pM2)
 	return pOut;
 }
 
-/** 
- * Assigns the value of pIn to pOut 
+/**
+ * Assigns the value of pIn to pOut
  */
 kmMat4* kmMat4Assign(kmMat4* pOut, const kmMat4* pIn)
 {
@@ -219,8 +219,8 @@ kmMat4* kmMat4Assign(kmMat4* pOut, const kmMat4* pIn)
 	return pOut;
 }
 
-/** 
- * Returns KM_TRUE if the 2 matrices are equal (approximately) 
+/**
+ * Returns KM_TRUE if the 2 matrices are equal (approximately)
  */
 int kmMat4AreEqual(const kmMat4* pMat1, const kmMat4* pMat2)
 {
@@ -239,8 +239,8 @@ int kmMat4AreEqual(const kmMat4* pMat1, const kmMat4* pMat2)
 	return KM_TRUE;
 }
 
-/** 
- * Build a rotation matrix from an axis and an angle. Result is stored in pOut. 
+/**
+ * Build a rotation matrix from an axis and an angle. Result is stored in pOut.
  * pOut is returned.
  */
 kmMat4* kmMat4RotationAxis(kmMat4* pOut, const kmVec3* axis, kmScalar radians)
@@ -271,7 +271,7 @@ kmMat4* kmMat4RotationAxis(kmMat4* pOut, const kmVec3* axis, kmScalar radians)
 	return pOut;
 }
 
-/** 
+/**
  * Builds an X-axis rotation matrix and stores it in pOut, returns pOut
  */
 kmMat4* kmMat4RotationX(kmMat4* pOut, const float radians)
@@ -379,8 +379,8 @@ kmMat4* kmMat4RotationZ(kmMat4* pOut, const float radians)
 	return pOut;
 }
 
-/** 
- * Builds a rotation matrix from pitch, yaw and roll. The resulting 
+/**
+ * Builds a rotation matrix from pitch, yaw and roll. The resulting
  * matrix is stored in pOut and pOut is returned
  */
 kmMat4* kmMat4RotationPitchYawRoll(kmMat4* pOut, const kmScalar pitch, const kmScalar yaw, const kmScalar roll)
@@ -412,8 +412,9 @@ kmMat4* kmMat4RotationPitchYawRoll(kmMat4* pOut, const kmScalar pitch, const kmS
 	return pOut;
 }
 
-/** Converts a quaternion to a rotation matrix, 
- * the result is stored in pOut, returns pOut 
+
+/** Converts a quaternion to a rotation matrix,
+ * the result is stored in pOut, returns pOut
  */
 kmMat4* kmMat4RotationQuaternion(kmMat4* pOut, const kmQuaternion* pQ)
 {
@@ -444,7 +445,7 @@ kmMat4* kmMat4RotationQuaternion(kmMat4* pOut, const kmQuaternion* pQ)
 }
 
 /** Builds a scaling matrix */
-kmMat4* kmMat4Scaling(kmMat4* pOut, const kmScalar x, const kmScalar y, 
+kmMat4* kmMat4Scaling(kmMat4* pOut, const kmScalar x, const kmScalar y,
                       const kmScalar z)
 {
 	memset(pOut->mat, 0, sizeof(float) * 16);
@@ -460,7 +461,7 @@ kmMat4* kmMat4Scaling(kmMat4* pOut, const kmScalar x, const kmScalar y,
  * Builds a translation matrix. All other elements in the matrix
  * will be set to zero except for the diagonal which is set to 1.0
  */
-kmMat4* kmMat4Translation(kmMat4* pOut, const kmScalar x, 
+kmMat4* kmMat4Translation(kmMat4* pOut, const kmScalar x,
                           const kmScalar y, const kmScalar z)
 {
 	//FIXME: Write a test for this
@@ -494,7 +495,7 @@ kmVec3* kmMat4GetUpVec3(kmVec3* pOut, const kmMat4* pIn)
 	return pOut;
 }
 
-/** Extract the right vector from a 4x4 matrix. The result is 
+/** Extract the right vector from a 4x4 matrix. The result is
  * stored in pOut. Returns pOut.
  */
 kmVec3* kmMat4GetRightVec3(kmVec3* pOut, const kmMat4* pIn)
@@ -524,11 +525,11 @@ kmVec3* kmMat4GetForwardVec3(kmVec3* pOut, const kmMat4* pIn)
 }
 
 /**
- * Creates a perspective projection matrix in the 
- * same way as gluPerspective 
+ * Creates a perspective projection matrix in the
+ * same way as gluPerspective
  */
-kmMat4* kmMat4PerspectiveProjection(kmMat4* pOut, kmScalar fovY, 
-                                    kmScalar aspect, kmScalar zNear, 
+kmMat4* kmMat4PerspectiveProjection(kmMat4* pOut, kmScalar fovY,
+                                    kmScalar aspect, kmScalar zNear,
                                     kmScalar zFar)
 {
 	kmScalar r = kmDegreesToRadians(fovY / 2);
@@ -555,9 +556,9 @@ kmMat4* kmMat4PerspectiveProjection(kmMat4* pOut, kmScalar fovY,
 }
 
 /** Creates an orthographic projection matrix like glOrtho */
-kmMat4* kmMat4OrthographicProjection(kmMat4* pOut, kmScalar left, 
-                                     kmScalar right, kmScalar bottom, 
-                                     kmScalar top, kmScalar nearVal, 
+kmMat4* kmMat4OrthographicProjection(kmMat4* pOut, kmScalar left,
+                                     kmScalar right, kmScalar bottom,
+                                     kmScalar top, kmScalar nearVal,
                                      kmScalar farVal)
 {
 	kmScalar tx = -((right + left) / (right - left));
@@ -579,7 +580,7 @@ kmMat4* kmMat4OrthographicProjection(kmMat4* pOut, kmScalar left,
  * Builds a translation matrix in the same way as gluLookAt()
  * the resulting matrix is stored in pOut. pOut is returned.
  */
-kmMat4* kmMat4LookAt(kmMat4* pOut, const kmVec3* pEye, 
+kmMat4* kmMat4LookAt(kmMat4* pOut, const kmVec3* pEye,
                      const kmVec3* pCenter, const kmVec3* pUp)
 {
     kmVec3 f, up, s, u;

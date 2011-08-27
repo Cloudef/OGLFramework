@@ -18,7 +18,7 @@ typedef struct glObject_t
    glIBO       *ibo;
 
    /* Animator */
-   glAnimator *animator;
+   glAnimator  *animator;
 
    /* Matrix */
  	kmMat4 matrix;
@@ -50,6 +50,8 @@ glObject*   glCopyObject( glObject *src );	         /* Copy sceneobject  */
 glObject*   glRefObject( glObject *src );	            /* Reference sceneobject  */
 int         glFreeObject( glObject *object );	      /* Free sceneobject */
 void        glDraw( glObject *object );               /* Draw sceneobject */
+
+void        glObjectDrawSkeleton( glObject *object );
 void        glObjectTick( glObject *object, float tick );
 void        glObjectSetAnimation( glObject *object, GL_NODE_TYPE );
 

@@ -159,19 +159,43 @@ int glFreeObject( glObject *object )
    return( RETURN_OK );
 }
 
+/* draw skeleton */
+void glObjectDrawSkeleton( glObject *object )
+{
+   glBone *bone;
+   kmVec3 pos;
+
+   if(!object)
+      return;
+   if(!object->animator)
+      return;
+
+#if 0
+   glDisable( GL_DEPTH_TEST );
+   glBegin( GL_LINES );
+   bone = object->animator->bone;
+   for(; bone; bone = bone->next)
+   {
+      pos.x = 5; pos.y = 5; pos.z = 5;
+      kmVec3Transform( &pos, &pos,  &bone->globalMatrix );
+      glVertex3f( pos.x, pos.y, pos.z );
+   }
+   glEnd();
+   glEnable( GL_DEPTH_TEST );
+#endif
+}
+
 /* update skeletal animation */
 static void glObjectUpdateSkeletal( glObject *object )
 {
-   GL_NODE_TYPE i;
-   unsigned int x, index;
-   float weight;
+   unsigned int x;
+   glBone         *bone;
+   glVertexWeight *weight;
+
    kmVec3 tStance;
    kmMat4 boneMat;
-   kmMat4 globalTransform;
-   kmMat4 globalInverse;
    glAnimator *animator = object->animator;
 
-   /* need T stance vertices */
    /* TO-DO: Shader implentation */
    /* Reset all vertices to 0 here */
    x = 0;
@@ -182,24 +206,22 @@ static void glObjectUpdateSkeletal( glObject *object )
       object->vbo->vertices[x].z = 0;
    }
 
-   i = 0;
-   for(; i != animator->num_bones; ++i)
+   bone = animator->bone;
+   for(; bone; bone = bone->next)
    {
-      boneMat = animator->bone[i]->offsetMatrix;
-      x = 0;
-      for(; x != animator->bone[i]->num_weights; ++x)
+      boneMat = bone->globalMatrix;
+      weight = bone->weight;
+      for(; weight; weight = weight->next)
       {
          /* Get bone matrices */
          /* and shift t-stance vertices */
-         index    = animator->bone[i]->weight[x].vertex;
-         weight   = animator->bone[i]->weight[x].weight;
 
-         tStance  = animator->vertices[index];
+         tStance  = animator->vertices[weight->vertex];
          kmVec3Transform( &tStance, &tStance, &boneMat );
 
-         object->vbo->vertices[index].x += tStance.x * weight;
-         object->vbo->vertices[index].y += tStance.y * weight;
-         object->vbo->vertices[index].z += tStance.z * weight;
+         object->vbo->vertices[weight->vertex].x += tStance.x * weight->value;
+         object->vbo->vertices[weight->vertex].y += tStance.y * weight->value;
+         object->vbo->vertices[weight->vertex].z += tStance.z * weight->value;
 
          /*
           * index  = object->bone[i]->weight[x].vertex;
@@ -213,6 +235,8 @@ static void glObjectUpdateSkeletal( glObject *object )
           */
       }
    }
+
+   glCalculateAABB( object );
 
    /* VBO needs update */
    object->vbo->up_to_date = 0;

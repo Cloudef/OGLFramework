@@ -5,6 +5,7 @@
 
 #include "../config.h"
 #include "kazmath/kazmath.h"
+#include "bone.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,6 +16,7 @@ typedef struct glVectorKey_t
 {
    float time;
    kmVec3 value;
+   struct glVectorKey_t *next;
 } glVectorKey;
 
 /* rotation key */
@@ -22,23 +24,26 @@ typedef struct glQuactKey_t
 {
    float time;
    kmQuaternion value;
+   struct glQuactKey_t *next;
 } glQuatKey;
 
 /* animation node */
 typedef struct glNodeAnim_t
 {
-   /* translation keys */
-   glVectorKey *positionKey;
-   GL_NODE_TYPE num_position;
+   /* animation node keys */
+   glVectorKey *translation;
+   glQuatKey   *rotation;
+   glVectorKey *scaling;
 
-   /* rotation keys */
-   glQuatKey *rotationKey;
+   /* counts */
+   GL_NODE_TYPE num_translation;
    GL_NODE_TYPE num_rotation;
+   GL_NODE_TYPE num_scaling;
 
-   /* scaling keys */
-   glVectorKey *scaleKey;
-   GL_NODE_TYPE num_scale;
+   /* affected bone */
+   glBone *bone;
 
+   struct glNodeAnim_t *next;
 } glNodeAnim;
 
 /* animation */
@@ -47,24 +52,29 @@ typedef struct glAnim_t
    /* strdupped */
    char *name;
 
-   glNodeAnim *skeletal;
-   GL_NODE_TYPE num_skeletal;
-
-#if USE_KEYFRAME_ANIMATION
-   glMeshAnim *keyFrame
-   GL_NODE_TYPE num_keyframe;
-#endif
+   /* animation node */
+   glNodeAnim *node;
 
    /* ticks && duration */
    float ticksPerSecond;
    float duration;
 
+   /* next animation */
+   struct glAnim_t *next;
+
+   /* reference counted */
    unsigned int refCounter;
 } glAnim;
 
 glAnim* glNewAnim(void);
 glAnim* glRefAnim(glAnim*);
 int     glFreeAnim(glAnim*);
+
+glNodeAnim* glAnimAddNode( glAnim *node );
+
+glVectorKey* glNodeAddTranslationKey(glNodeAnim*, kmVec3, float);
+glQuatKey*   glNodeAddRotationKey(glNodeAnim*, kmQuaternion, float);
+glVectorKey* glNodeAddScalingKey(glNodeAnim*, kmVec3, float);
 
 #ifdef __cplusplus
 }

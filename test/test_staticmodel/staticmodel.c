@@ -161,6 +161,7 @@ int main( int argc, char **argv )
 
    glMoveObjectf( obj2, 0.22, 0, 0 );
    glMoveObjectf( obj3, -0.22, 0, 0 );
+   glRotateObjectf( obj2, 0, 0, 0 );
    glRotateObjectf( obj3, 0, 180, 0 );
 #elif WITH_OPENCTM
    glPositionCameraf( camera, 0,0,8 );
@@ -192,7 +193,7 @@ int main( int argc, char **argv )
 
       keyHandle();
 
-      glObjectTick( obj, now );
+      glObjectTick( obj, x / 10.0f );
 
       x += 0.01f;
 #if WITH_PMD
@@ -234,6 +235,7 @@ int main( int argc, char **argv )
       glDraw( obj2 );
       glDraw( obj3 );
       glDraw( obj );
+      glObjectDrawSkeleton( obj );
 #elif WITH_OPENCTM
       glRotateObjectf( obj, -90, 0, x );
       glDraw( obj );

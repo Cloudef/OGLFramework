@@ -29,6 +29,7 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
 {
    glTexture *obj;
 
+   /* check if texture is in cache */
    obj = glTextureCheckCache( file );
    if(obj)  return( obj );
 

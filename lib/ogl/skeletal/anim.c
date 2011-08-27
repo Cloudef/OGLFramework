@@ -12,10 +12,11 @@ glAnim* glNewAnim(void)
 
    /* NULL */
    anim->name     = NULL;
-   anim->skeletal = NULL;
-#if USE_KEYFRAME_ANIMATION
-   anim->keyFrame = NULL;
-#endif
+   anim->node     = NULL;
+
+   /* defaults */
+   anim->ticksPerSecond = 25.f;
+   anim->duration       = 0.0f;
 
    /* increase ref */
    anim->refCounter++;
@@ -37,35 +38,192 @@ glAnim* glRefAnim( glAnim *anim )
 /* free anim */
 int glFreeAnim( glAnim *anim )
 {
-   unsigned int i;
+   glNodeAnim  *node, *next;
+   glVectorKey *vkey, *nextvkey;
+   glQuatKey   *qkey, *nextqkey;
+
    if(!anim)
       return( RETURN_NOTHING );
 
    if(--anim->refCounter!=0)
       return( RETURN_NOTHING );
 
+   /* free strdupped name */
    if(anim->name) free( anim->name );
    anim->name = NULL;
 
-   i = 0;
-   for(; i != anim->num_skeletal; ++i)
+   /* free all nodes */
+   node = anim->node;
+   while(node)
    {
-      glFree( anim->skeletal[i].positionKey,
-              anim->skeletal[i].num_position * sizeof(glVectorKey) );
-      glFree( anim->skeletal[i].rotationKey,
-              anim->skeletal[i].num_rotation * sizeof(glQuatKey) );
-      glFree( anim->skeletal[i].scaleKey,
-              anim->skeletal[i].num_scale * sizeof(glVectorKey) );
-   }
+      /* free translation */
+      vkey = node->translation;
+      while(vkey)
+      { nextvkey = vkey->next; glFree(vkey, sizeof(glVectorKey)); vkey = nextvkey; }
+      node->translation = NULL;
 
-   glFree( anim->skeletal, anim->num_skeletal * sizeof(glNodeAnim) );
-   anim->skeletal = NULL;
-#if USE_KEYFRAME_ANIMATION
-   glFree( anim->keyFrame, anim->num_keyframe * sizeof(glMeshAnim) );
-   anim->keyFrame = NULL;
-#endif
+      /* free rotation */
+      qkey = node->rotation;
+      while(qkey)
+      { nextqkey = qkey->next; glFree(qkey, sizeof(glQuatKey)); qkey = nextqkey; }
+      node->translation = NULL;
+
+      /* free scaling */
+      vkey = node->scaling;
+      while(vkey)
+      { nextvkey = vkey->next; glFree(vkey, sizeof(glVectorKey)); vkey = nextvkey; }
+      node->scaling = NULL;
+
+      /* free node */
+      next = node->next;
+      glFree(node, sizeof(glNodeAnim));
+      node = next;
+   }
+   anim->node = NULL;
+
+   /* free object */
    glFree( anim, sizeof(glAnim) );
    anim = NULL;
-
    return( RETURN_OK );
+}
+
+/* add new node to animation */
+glNodeAnim* glAnimAddNode( glAnim *anim )
+{
+   glNodeAnim *node, **ptr;
+
+   /* not valid animation */
+   if(!anim)
+      return( NULL );
+
+   /* find next empty node */
+   ptr = &anim->node;
+   node = anim->node;
+   for(; node; node = node->next)
+      ptr = &node->next;
+
+   /* allocate new node */
+   *ptr = glCalloc( 1, sizeof(glNodeAnim) );
+   if(!*ptr)
+      return( NULL );
+
+   /* null next */
+   (*ptr)->next = NULL;
+
+   /* null */
+   (*ptr)->translation = NULL;
+   (*ptr)->rotation    = NULL;
+   (*ptr)->scaling     = NULL;
+
+   (*ptr)->bone        = NULL;
+
+   (*ptr)->num_translation = 0;
+   (*ptr)->num_rotation    = 0;
+   (*ptr)->num_scaling     = 0;
+
+   /* success */
+   return( *ptr );
+}
+
+/* add new translation key to node */
+glVectorKey* glNodeAddTranslationKey(glNodeAnim *node, kmVec3 value, float time )
+{
+   glVectorKey *key, **ptr;
+
+   /* not valid animation */
+   if(!node)
+      return( NULL );
+
+   /* find next empty node */
+   ptr = &node->translation;
+   key = node->translation;
+   for(; key; key = key->next)
+      ptr = &key->next;
+
+   /* allocate new node */
+   *ptr = glCalloc( 1, sizeof(glVectorKey) );
+   if(!*ptr)
+      return( NULL );
+
+   /* assing values */
+   (*ptr)->value = value;
+   (*ptr)->time  = time;
+
+   /* null next */
+   (*ptr)->next = NULL;
+
+   /* increase count */
+   node->num_translation++;
+
+   /* success */
+   return( *ptr );
+}
+
+/* add new rotation key to node */
+glQuatKey* glNodeAddRotationKey(glNodeAnim *node, kmQuaternion value, float time)
+{
+   glQuatKey *key, **ptr;
+
+   /* not valid animation */
+   if(!node)
+      return( NULL );
+
+   /* find next empty node */
+   ptr = &node->rotation;
+   key = node->rotation;
+   for(; key; key = key->next)
+      ptr = &key->next;
+
+
+   /* allocate new node */
+   *ptr = glCalloc( 1, sizeof(glQuatKey) );
+   if(!*ptr)
+      return( NULL );
+
+   /* assing values */
+   (*ptr)->value = value;
+   (*ptr)->time  = time;
+
+   /* null next */
+   (*ptr)->next = NULL;
+
+   /* increase count */
+   node->num_rotation++;
+
+   /* success */
+   return( *ptr );
+}
+
+/* add new scale key to node */
+glVectorKey* glNodeAddScalingKey(glNodeAnim *node, kmVec3 value, float time)
+{
+   glVectorKey *key, **ptr;
+
+   /* not valid animation */
+   if(!node)
+      return( NULL );
+
+   /* find next empty node */
+   ptr = &node->scaling;
+   key = node->scaling;
+   for(; key; key = key->next)
+      ptr = &key->next;
+
+   /* allocate new node */
+   *ptr = glCalloc( 1, sizeof(glVectorKey) );
+   if(!*ptr)
+      return( NULL );
+
+   /* assing values */
+   (*ptr)->value = value;
+   (*ptr)->time  = time;
+
+   /* null next */
+   (*ptr)->next = NULL;
+
+   /* increase count */
+   node->num_scaling++;
+
+   /* success */
+   return( *ptr );
 }

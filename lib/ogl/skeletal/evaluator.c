@@ -2,151 +2,231 @@
 #include "alloc.h"
 #include "types.h"
 
-glAnimTick* glNewAnimTick( glAnim *mAnim )
+#include <assert.h>
+
+glAnimTick* glNewAnimTick( glAnim *anim )
 {
-   if(!mAnim)
+   glNodeAnim           *node;
+   glAnimTickOldNode    **oldNode;
+
+   glVectorKey          *vkey;
+   glQuatKey            *qkey;
+   GL_NODE_TYPE         count;
+
+   if(!anim)
       return( NULL );
 
 	/* Allocate animation handler object */
-	glAnimTick *mAnimTick = (glAnimTick*)glCalloc( 1, sizeof(glAnimTick) );
-   if(!mAnimTick)
+	glAnimTick *animTick = (glAnimTick*)glCalloc( 1, sizeof(glAnimTick) );
+   if(!animTick)
       return( NULL );
 
    /* assign animation */
-   mAnimTick->mAnim           = mAnim;
+   animTick->anim          = anim;
+   animTick->oldTime       = 0.0f;
 
-   mAnimTick->lastPosition  = glCalloc( mAnim->num_skeletal, sizeof(kmVec3) );
-   if(!mAnimTick->lastPosition)
+   /* null */
+   animTick->oldNode    = NULL;
+
+   node      = anim->node;
+   oldNode   = &animTick->oldNode;
+   for(; node; node = node->next)
    {
-      glFree( mAnimTick, sizeof(glAnimTick) );
-      return( NULL );
+      *oldNode = glCalloc( 1, sizeof(glAnimTickOldNode) );
+      if(!*oldNode)
+      { glFreeAnimTick( animTick ); return( NULL ); }
+
+      /* store translations to pointer array */
+      if(node->translation)
+      {
+         (*oldNode)->translation = glCalloc( node->num_translation, sizeof(glVectorKey*) );
+         if(!(*oldNode)->translation)
+         { glFreeAnimTick( animTick ); return( NULL ); }
+
+         vkey = node->translation; count = 0;
+         for(; vkey; vkey = vkey->next)
+            (*oldNode)->translation[count++] = vkey;
+      }
+
+      /* store rortations to pointer array */
+      if(node->rotation)
+      {
+         (*oldNode)->rotation = glCalloc( node->num_rotation, sizeof(glQuatKey*) );
+         if(!(*oldNode)->rotation)
+         { glFreeAnimTick( animTick ); return( NULL ); }
+
+         qkey = node->rotation; count = 0;
+         for(; qkey; qkey = qkey->next)
+            (*oldNode)->rotation[count++] = qkey;
+      }
+
+      /* store scalings to pointer array */
+      if(node->scaling)
+      {
+         (*oldNode)->scaling = glCalloc( node->num_scaling, sizeof(glVectorKey*) );
+         if(!(*oldNode)->scaling)
+         { glFreeAnimTick( animTick ); return( NULL ); }
+
+         vkey = node->scaling; count = 0;
+         for(; vkey; vkey = vkey->next)
+            (*oldNode)->scaling[count++] = vkey;
+      }
+
+      oldNode = &(*oldNode)->next;
    }
-   mAnimTick->transform     = glCalloc( mAnim->num_skeletal, sizeof(kmMat4) );
-   if(!mAnimTick->transform)
-   {
-      glFree( mAnimTick->lastPosition, sizeof(kmVec3) * mAnim->num_skeletal );
-      glFree( mAnimTick, sizeof(glAnimTick) );
-      return( NULL );
-   }
+
+   /* no animations, pointless */
+   if(!anim->node)
+   { glFreeAnimTick( animTick ); return( NULL ); }
 
    /* return */
-   return( mAnimTick );
+   return( animTick );
 }
 
-int glFreeAnimTick( glAnimTick *mAnimTick )
+int glFreeAnimTick( glAnimTick *animTick )
 {
-   if(!mAnimTick)
+   glAnimTickOldNode    *oldNode, *nextOldNode;
+   glNodeAnim           *node;
+
+   /* invalid object */
+   if(!animTick)
       return( RETURN_NOTHING );
 
-   glFree( mAnimTick->lastPosition, sizeof(kmVec3) * mAnimTick->mAnim->num_skeletal );
-   mAnimTick->lastPosition = NULL;
+   /* we should have animation */
+   if(animTick->anim)
+   {
 
-   glFree( mAnimTick->transform, sizeof(kmMat4) * mAnimTick->mAnim->num_skeletal );
-   mAnimTick->transform = NULL;
+      /* free nodes */
+      oldNode = animTick->oldNode;
+      node    = animTick->anim->node;
+      while(oldNode)
+      {
+         /* free stored pointers */
+         glFree( oldNode->translation,
+                 node->num_translation * sizeof(glVectorKey*) );
+         glFree( oldNode->rotation,
+                 node->num_rotation    * sizeof(glQuatKey*)   );
+         glFree( oldNode->scaling,
+                 node->num_scaling     * sizeof(glVectorKey*) );
 
-   glFree( mAnimTick, sizeof(glAnimTick) );
-   mAnimTick = NULL;
+         node = node->next;
 
+         /* free node */
+         nextOldNode = oldNode->next;
+         glFree( oldNode, sizeof(glAnimTickOldNode) );
+         oldNode = nextOldNode;
+      }
+      animTick->oldNode = NULL;
+   }
+
+   /* free ticker */
+   glFree( animTick, sizeof(glAnimTick) );
+   animTick = NULL;
    return( RETURN_OK );
 }
 
-void glAdvanceAnimTick( glAnimTick *mAnimTick, float pTime )
+void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
 {
-   glAnim         *mAnim;
-   unsigned int   a, frame, nextFrame;
+   glAnim               *anim;
+   glNodeAnim           *node;
+   glAnimTickOldNode    *oldNode;
+   unsigned int   frame, nextFrame;
    glVectorKey    *vkey, *nextvKey;
    glQuatKey      *qkey, *nextqKey;
-   kmVec3         presentPosition, presentScaling;
+   kmVec3         presentTranslation, presentScaling;
    kmQuaternion   presentRotation;
    float          diffTime, factor;
-   glNodeAnim     *channel;
+   float          ticksPerSecond;
 
    /* get glAnim */
-   mAnim = mAnimTick->mAnim;
+   anim = animTick->anim;
 
-	float ticksPerSecond = mAnim->ticksPerSecond != 0.0 ? mAnim->ticksPerSecond : 25.0;
+	ticksPerSecond = anim->ticksPerSecond != 0.0 ? anim->ticksPerSecond : 25.0f;
 	pTime *= ticksPerSecond;
 
 	/* map into anim's duration */
 	float time = 0.0f;
-	if( mAnim->duration > 0.0)
-		time = fmod( pTime, mAnim->duration);
+	if( anim->duration > 0.0)
+		time = fmod( pTime, anim->duration);
 
 	/* calculate the transformations for each animation channel */
-	a = 0;
-   for(; a < mAnim->num_skeletal; ++a)
+	node     = anim->node;
+   oldNode  = animTick->oldNode;
+   while(node && oldNode)
 	{
-		channel = &mAnim->skeletal[a];
-
 		/* ******** Position **** */
-      presentPosition.x = 0;
-      presentPosition.y = 0;
-      presentPosition.z = 0;
+      presentTranslation.x = 0;
+      presentTranslation.y = 0;
+      presentTranslation.z = 0;
 
-		if( channel->num_position > 0)
+		if(node->translation)
 		{
-			frame = (time >= mAnimTick->lastTime) ? mAnimTick->lastPosition[a].x : 0;
-			while( frame < channel->num_position - 1)
+			frame = (time >= animTick->oldTime) ? oldNode->translationTime : 0;
+			while( frame < node->num_translation - 1)
 			{
-				if( time < channel->positionKey[frame+1].time)
+				if( time < oldNode->translation[frame+1]->time)
 					break;
 				++frame;
 			}
 
 			/* interpolate between this frame's value and next frame's value */
-			nextFrame   = (frame + 1) % channel->num_position;
-			vkey        = &channel->positionKey[frame];
-		   nextvKey    = &channel->positionKey[nextFrame];
+			nextFrame   = (frame + 1) % node->num_translation;
+			vkey        = oldNode->translation[frame];
+		   nextvKey    = oldNode->translation[nextFrame];
 			diffTime    = nextvKey->time - vkey->time;
 			if( diffTime < 0.0)
-				diffTime += mAnim->duration;
+				diffTime += anim->duration;
 			if( diffTime > 0)
 			{
 			   factor            = (time - vkey->time) / diffTime;
-				presentPosition.x = vkey->value.x + (nextvKey->value.x - vkey->value.x) * factor;
-				presentPosition.y = vkey->value.y + (nextvKey->value.y - vkey->value.z) * factor;
-            presentPosition.z = vkey->value.z + (nextvKey->value.z - vkey->value.z) * factor;
+				presentTranslation.x = vkey->value.x + (nextvKey->value.x - vkey->value.x) * factor;
+				presentTranslation.y = vkey->value.y + (nextvKey->value.y - vkey->value.z) * factor;
+            presentTranslation.z = vkey->value.z + (nextvKey->value.z - vkey->value.z) * factor;
 			} else
 			{
-				presentPosition = vkey->value;
+				presentTranslation = vkey->value;
 			}
 
-			mAnimTick->lastPosition[a].x = frame;
+			oldNode->translationTime = frame;
 		}
 
 		/* ******** Rotation ******** */
-      presentRotation.w = 1;
+      presentRotation.w = 0;
       presentRotation.x = 0;
       presentRotation.y = 0;
       presentRotation.z = 0;
 
-		if( channel->num_rotation > 0)
+		if(node->rotation)
 		{
-			frame = (time >= mAnimTick->lastTime) ? mAnimTick->lastPosition[a].y : 0;
-			while( frame < channel->num_rotation - 1)
+			frame = (time >= animTick->oldTime) ? oldNode->rotationTime : 0;
+			while( frame < node->num_rotation - 1)
 			{
-				if( time < channel->rotationKey[frame+1].time)
+				if( time < oldNode->rotation[frame+1]->time)
 					break;
 				++frame;
 			}
 
 			/* interpolate between this frame's value and next frame's value */
-			nextFrame   = (frame + 1) % channel->num_rotation;
-			qkey        = &channel->rotationKey[frame];
-			nextqKey    = &channel->rotationKey[nextFrame];
+			nextFrame   = (frame + 1) % node->num_rotation;
+			qkey        = oldNode->rotation[frame];
+         nextqKey    = oldNode->rotation[nextFrame];
 			diffTime    = nextqKey->time - qkey->time;
-			if( diffTime < 0.0)
-				diffTime += mAnim->duration;
-			if( diffTime > 0)
+			if( diffTime < 0.0f)
+				diffTime += anim->duration;
+			if( diffTime > 0.0f)
 			{
 				factor   = (time - qkey->time) / diffTime;
-				/* aiQuaternion::Interpolate( presentRotation, key.value, nextKey.value, factor); */
+            kmQuaternionSlerp( &presentRotation,
+								&qkey->value,
+								&nextqKey->value,
+								factor);
+            				presentRotation = qkey->value;
 			} else
 			{
 				presentRotation = qkey->value;
 			}
 
-			mAnimTick->lastPosition[a].y = frame;
+			oldNode->rotationTime = frame;
 		}
 
 		/* ******** Scaling ********** */
@@ -154,29 +234,56 @@ void glAdvanceAnimTick( glAnimTick *mAnimTick, float pTime )
       presentScaling.y = 1;
       presentScaling.z = 1;
 
-		if( channel->num_scale > 0)
+		if(node->scaling)
 		{
-			frame = (time >= mAnimTick->lastTime) ? mAnimTick->lastPosition[a].z : 0;
-			while( frame < channel->num_scale - 1)
+			frame = (time >= animTick->oldTime) ? oldNode->scalingTime : 0;
+			while( frame < node->num_scaling - 1)
 			{
-				if( time < channel->scaleKey[frame+1].time)
+				if( time < oldNode->scaling[frame+1]->time)
 					break;
 				++frame;
 			}
 
 			/* TODO: (thom) interpolation maybe? This time maybe even logarithmic, not linear */
-			presentScaling                = channel->scaleKey[frame].value;
-			mAnimTick->lastPosition[a].z  = frame;
+			presentScaling        = oldNode->scaling[frame]->value;
+			oldNode->scalingTime  = frame;
 		}
 
 		// build a transformation matrix from it
-		kmMat4 *mat = &mAnimTick->transform[a];
-	   kmMat4RotationQuaternion( mat, &presentRotation );
-		mat->mat[0] *= presentScaling.x; mat->mat[5] *= presentScaling.x; mat->mat[9] *= presentScaling.x;
-		mat->mat[1] *= presentScaling.y; mat->mat[6] *= presentScaling.y; mat->mat[10] *= presentScaling.y;
-		mat->mat[3] *= presentScaling.z; mat->mat[7] *= presentScaling.z; mat->mat[11] *= presentScaling.z;
-		mat->mat[4] = presentPosition.x; mat->mat[8] = presentPosition.y; mat->mat[12] = presentPosition.z;
-	}
+		kmMat4 *mat = &node->bone->transformMatrix;
+      *mat = node->bone->relativeMatrix;
 
-	mAnimTick->lastTime = time;
+      mat->mat[0] = 1.0f - 2.0f * (presentRotation.y * presentRotation.y +
+                                   presentRotation.z * presentRotation.z);
+      mat->mat[1] = 2.0f        * (presentRotation.x * presentRotation.y -
+                                   presentRotation.z * presentRotation.w);
+      mat->mat[2] = 2.0f        * (presentRotation.x * presentRotation.z +
+                                   presentRotation.y * presentRotation.w);
+
+      mat->mat[4] = 2.0f        * (presentRotation.x * presentRotation.y +
+                                   presentRotation.z * presentRotation.w);
+      mat->mat[5] = 1.0f - 2.0f * (presentRotation.x * presentRotation.x +
+                                   presentRotation.z * presentRotation.z);
+      mat->mat[6] = 2.0f        * (presentRotation.y * presentRotation.z -
+                                   presentRotation.x * presentRotation.w);
+
+      mat->mat[8] = 2.0f        * (presentRotation.x * presentRotation.z -
+                                   presentRotation.y * presentRotation.w);
+      mat->mat[9] = 2.0f        * (presentRotation.y * presentRotation.z +
+                                   presentRotation.x * presentRotation.w);
+      mat->mat[10]= 1.0f - 2.0f * (presentRotation.x * presentRotation.x +
+                                   presentRotation.y * presentRotation.y);
+
+
+		mat->mat[0] *= presentScaling.x; mat->mat[4] *= presentScaling.x; mat->mat[8] *= presentScaling.x;
+		mat->mat[1] *= presentScaling.y; mat->mat[5] *= presentScaling.y; mat->mat[9] *= presentScaling.y;
+		mat->mat[2] *= presentScaling.z; mat->mat[6] *= presentScaling.z; mat->mat[10] *= presentScaling.z;
+      mat->mat[3] = presentTranslation.x; mat->mat[7] = presentTranslation.y; mat->mat[11] = presentTranslation.z;
+
+      node      = node->next;
+      oldNode   = oldNode->next;
+   }
+
+   /* old time */
+	animTick->oldTime = time;
 }

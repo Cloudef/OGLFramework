@@ -3,6 +3,16 @@
 #include "types.h"
 #include "alloc.h"
 
+#ifdef GLES2
+#	include <GLES2/gl2.h>
+#elif  GLES1
+#  include <GLES/gl.h>
+#  include <GLES/glext.h>
+#else
+#	include <GL/glew.h>
+#  include <GL/gl.h>
+#endif
+
 /* Calculate projection matrix */
 static void glCameraCalculateProjectionMatrix( glCamera *object )
 {
