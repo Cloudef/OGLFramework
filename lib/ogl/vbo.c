@@ -34,13 +34,13 @@ glVBO* glNewVBO( void )
    /* Default hint */
    vbo->hint = GL_STATIC_DRAW;
 
-   /* Allocate uvws */
-   vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
-   if(!vbo->uvw)
-   {
-      glFree(vbo, sizeof(glVBO));
-      return( NULL );
-   }
+/* Allocate uvws */
+vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
+if(!vbo->uvw)
+{
+   glFree(vbo, sizeof(glVBO));
+   return( NULL );
+}
 
 	/* Nullify pointers */
    i = 0;
@@ -50,6 +50,7 @@ glVBO* glNewVBO( void )
       ++i;
    }
 
+   vbo->tstance   = NULL;
 	vbo->vertices	= NULL;
 	vbo->normals	= NULL;
 #if VERTEX_COLOR
@@ -77,6 +78,14 @@ glVBO* glCopyVBO( glVBO *src )
    if(!vbo)
        return( NULL );
 
+   /* Allocate uvws */
+   vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
+   if(!vbo->uvw)
+   {
+      glFree(vbo, sizeof(glVBO));
+      return( NULL );
+   }
+
 	/* Copy data */
    while(i != _glCore.info.maxTextureUnits)
    {
@@ -89,6 +98,7 @@ glVBO* glCopyVBO( glVBO *src )
 #if VERTEX_COLOR
    glCopyColorBuffer( vbo, src );
 #endif
+   if(src->tstance) glVBOPrepareTstance( vbo );
 
    vbo->vbo_size	= src->vbo_size;
    vbo->hint      = src->hint;
@@ -138,6 +148,7 @@ int glFreeVBO( glVBO *vbo )
    }
    glFree( vbo->uvw, _glCore.info.maxTextureUnits * sizeof(glUVW) );
 
+   if(vbo->tstance) free(vbo->tstance);
    glFreeVertexBuffer( vbo );
    glFreeNormalBuffer( vbo );
 #if VERTEX_COLOR
@@ -274,6 +285,29 @@ int glVBOConstruct( glVBO* vbo )
       vbo->object = 0;
       return( RETURN_FAIL );
    }
+
+   return( RETURN_OK );
+}
+
+/* copy idle vertices from current VBO */
+int glVBOPrepareTstance( glVBO *vbo )
+{
+   if(!vbo)
+      return( RETURN_FAIL );
+   if(!vbo->vertices)
+      return( RETURN_FAIL );
+
+   /* free old */
+   if(vbo->tstance)
+      free( vbo->tstance );
+
+   /* copy new tstance vertices */
+   vbo->tstance = malloc( vbo->v_num * sizeof(kmVec3) );
+   if(!vbo->tstance)
+      return( RETURN_FAIL );
+
+   memcpy( vbo->tstance, vbo->vertices,
+           vbo->v_num * sizeof(kmVec3) );
 
    return( RETURN_OK );
 }

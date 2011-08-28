@@ -64,7 +64,7 @@ int         glObjectFreeChilds( glObject* );               /* Free all childs */
 /* Operations */
 
 /* Calculate AABB */
-int glCalculateAABB( glObject* );
+int glObjectCalculateAABB( glObject* );
 
 /* Add texture to the object */
 int glObjectAddTexture( glObject *object,

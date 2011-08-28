@@ -174,18 +174,22 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
 			vkey        = oldNode->translation[frame];
 		   nextvKey    = oldNode->translation[nextFrame];
 			diffTime    = nextvKey->time - vkey->time;
+#if 1
 			if( diffTime < 0.0)
 				diffTime += anim->duration;
 			if( diffTime > 0)
 			{
 			   factor            = (time - vkey->time) / diffTime;
 				presentTranslation.x = vkey->value.x + (nextvKey->value.x - vkey->value.x) * factor;
-				presentTranslation.y = vkey->value.y + (nextvKey->value.y - vkey->value.z) * factor;
+				presentTranslation.y = vkey->value.y + (nextvKey->value.y - vkey->value.y) * factor;
             presentTranslation.z = vkey->value.z + (nextvKey->value.z - vkey->value.z) * factor;
 			} else
 			{
 				presentTranslation = vkey->value;
 			}
+#else
+         presentTranslation = vkey->value;
+#endif
 
 			oldNode->translationTime = frame;
 		}
@@ -211,7 +215,9 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
 			qkey        = oldNode->rotation[frame];
          nextqKey    = oldNode->rotation[nextFrame];
 			diffTime    = nextqKey->time - qkey->time;
-			if( diffTime < 0.0f)
+
+#if 1
+         if( diffTime < 0.0f)
 				diffTime += anim->duration;
 			if( diffTime > 0.0f)
 			{
@@ -220,11 +226,13 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
 								&qkey->value,
 								&nextqKey->value,
 								factor);
-            				presentRotation = qkey->value;
 			} else
 			{
 				presentRotation = qkey->value;
 			}
+#else
+         presentRotation = qkey->value;
+#endif
 
 			oldNode->rotationTime = frame;
 		}
@@ -250,30 +258,8 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
 		}
 
 		// build a transformation matrix from it
-		kmMat4 *mat = &node->bone->transformMatrix;
-      *mat = node->bone->relativeMatrix;
-
-      mat->mat[0] = 1.0f - 2.0f * (presentRotation.y * presentRotation.y +
-                                   presentRotation.z * presentRotation.z);
-      mat->mat[1] = 2.0f        * (presentRotation.x * presentRotation.y -
-                                   presentRotation.z * presentRotation.w);
-      mat->mat[2] = 2.0f        * (presentRotation.x * presentRotation.z +
-                                   presentRotation.y * presentRotation.w);
-
-      mat->mat[4] = 2.0f        * (presentRotation.x * presentRotation.y +
-                                   presentRotation.z * presentRotation.w);
-      mat->mat[5] = 1.0f - 2.0f * (presentRotation.x * presentRotation.x +
-                                   presentRotation.z * presentRotation.z);
-      mat->mat[6] = 2.0f        * (presentRotation.y * presentRotation.z -
-                                   presentRotation.x * presentRotation.w);
-
-      mat->mat[8] = 2.0f        * (presentRotation.x * presentRotation.z -
-                                   presentRotation.y * presentRotation.w);
-      mat->mat[9] = 2.0f        * (presentRotation.y * presentRotation.z +
-                                   presentRotation.x * presentRotation.w);
-      mat->mat[10]= 1.0f - 2.0f * (presentRotation.x * presentRotation.x +
-                                   presentRotation.y * presentRotation.y);
-
+		kmMat4 *mat = &node->bone->relativeMatrix;
+      kmMat4RotationQuaternion( mat, &presentRotation );
 
 		mat->mat[0] *= presentScaling.x; mat->mat[4] *= presentScaling.x; mat->mat[8] *= presentScaling.x;
 		mat->mat[1] *= presentScaling.y; mat->mat[5] *= presentScaling.y; mat->mat[9] *= presentScaling.y;

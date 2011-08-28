@@ -70,7 +70,7 @@ glObject* glNewStaticModel( const char *file )
 #endif
 
    /* assign aabb */
-   if(glCalculateAABB(object) != RETURN_OK)
+   if(glObjectCalculateAABB(object) != RETURN_OK)
    {
       puts("[STATIC MODEL] failed to calculate AABB\n");
       glFreeObject( object );

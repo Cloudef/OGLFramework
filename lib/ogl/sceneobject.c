@@ -69,7 +69,12 @@ glObject* glCopyObject( glObject *src )
 
 	/* Reference data */
 	object->material	            = glRefMaterial( src->material );
-	object->vbo		               = glRefVBO( src->vbo );
+
+   if(!src->animator) /* reference when no anim */
+      object->vbo		            = glRefVBO( src->vbo );
+   else
+      object->vbo                = glCopyVBO( src->vbo );
+
    object->ibo                   = glRefIBO( src->ibo );
    object->animator              = glCopyAnimator( src->animator );
 
@@ -216,7 +221,7 @@ static void glObjectUpdateSkeletal( glObject *object )
          /* Get bone matrices */
          /* and shift t-stance vertices */
 
-         tStance  = animator->vertices[weight->vertex];
+         tStance  = object->vbo->tstance[weight->vertex];
          kmVec3Transform( &tStance, &tStance, &boneMat );
 
          object->vbo->vertices[weight->vertex].x += tStance.x * weight->value;
@@ -235,8 +240,6 @@ static void glObjectUpdateSkeletal( glObject *object )
           */
       }
    }
-
-   glCalculateAABB( object );
 
    /* VBO needs update */
    object->vbo->up_to_date = 0;
@@ -545,7 +548,7 @@ int glObjectFreeTexturesAll( glObject *object )
 }
 
 /* Calculate bounding box */
-int glCalculateAABB( glObject *object )
+int glObjectCalculateAABB( glObject *object )
 {
    unsigned int v = 0;
    kmVec3 min, max;

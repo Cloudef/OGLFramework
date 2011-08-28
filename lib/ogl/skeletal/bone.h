@@ -29,7 +29,6 @@ typedef struct glBone_t
 
    /* weights */
    glVertexWeight *weight;
-   kmMat4         transformMatrix;
    kmMat4         offsetMatrix;
    kmMat4         globalMatrix;
    kmMat4         relativeMatrix;

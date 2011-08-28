@@ -166,9 +166,14 @@ kmVec3* kmVec3Transform(kmVec3* pOut, const kmVec3* pV, const kmMat4* pM)
 
 	kmVec3 v;
 
+   /*
 	v.x = pV->x * pM->mat[0] + pV->y * pM->mat[4] + pV->z * pM->mat[8] + pM->mat[12];
 	v.y = pV->x * pM->mat[1] + pV->y * pM->mat[5] + pV->z * pM->mat[9] + pM->mat[13];
 	v.z = pV->x * pM->mat[2] + pV->y * pM->mat[6] + pV->z * pM->mat[10] + pM->mat[14];
+   */
+	v.x = pV->x * pM->mat[0] + pV->y * pM->mat[1] + pV->z * pM->mat[2] + pM->mat[3];
+	v.y = pV->x * pM->mat[4] + pV->y * pM->mat[5] + pV->z * pM->mat[6] + pM->mat[7];
+	v.z = pV->x * pM->mat[8] + pV->y * pM->mat[9] + pV->z * pM->mat[10] + pM->mat[11];
 
 	pOut->x = v.x;
 	pOut->y = v.y;

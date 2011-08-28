@@ -306,6 +306,7 @@ kmQuaternion* kmQuaternionSlerp(kmQuaternion* pOut,
 
   return Result;*/
 
+   /*
 	kmScalar ct = kmQuaternionDot(q1, q2);
 	kmScalar theta = acosf(ct);
 	kmScalar st = sqrtf(1.0 - kmSQR(ct));
@@ -317,6 +318,44 @@ kmQuaternion* kmQuaternionSlerp(kmQuaternion* pOut,
 	kmQuaternionScale(&temp, q1, somt);
 	kmQuaternionScale(&temp2, q2, stt);
 	kmQuaternionAdd(pOut, &temp, &temp2);
+   */
+
+   kmScalar cosom, sclp, sclq, omega, sinom;
+   kmQuaternion end;
+
+   // calc cosine theta
+   cosom = q1->x * q2->x + q1->y * q2->y + q1->z * q2->z + q1->w * q2->w;
+
+   // adjust signs (if necessary)
+   end = *q2;
+   if( cosom < 0.0f)
+   {
+      cosom = -cosom;
+      end.x = -end.x;   // Reverse all signs
+      end.y = -end.y;
+      end.z = -end.z;
+      end.w = -end.w;
+   }
+
+   // Calculate coefficients
+   if( (1.0f - cosom) > 0.0001f) // 0.0001 -> some epsillon
+   {
+      // Standard case (slerp)
+      omega = acos( cosom); // extract theta from dot product's cos theta
+      sinom = sin( omega);
+      sclp  = sin( (1.0f - t) * omega) / sinom;
+      sclq  = sin( t * omega) / sinom;
+   } else
+   {
+      // Very close, do linear interp (because it's faster)
+      sclp = 1.0f - t;
+      sclq = t;
+   }
+
+   pOut->x = sclp * q1->x + sclq * end.x;
+   pOut->y = sclp * q1->y + sclq * end.y;
+   pOut->z = sclp * q1->z + sclq * end.z;
+   pOut->w = sclp * q1->w + sclq * end.w;
 
 	return pOut;
 }

@@ -31,6 +31,9 @@ typedef struct glVBO_t
 	glUVW    *uvw;
 	kmVec3   *normals;
 
+   /* only used for animation */
+   kmVec3   *tstance;
+
 #if VERTEX_COLOR
    sColor   *colors;
    unsigned int c_num, c_use;
@@ -64,6 +67,9 @@ int         glFreeVBO( glVBO *vbo );		            /* Free vbo object */
 /* VBO actions */
 int         glVBOConstruct( glVBO *vbo );
 int         glVBOUpdate( glVBO *vbo );
+
+/* copy tstance vertices if animation is used */
+int glVBOPrepareTstance( glVBO *vbo );
 
 /* Vertex buffer operations */
 int         glFreeVertexBuffer( glVBO *vbo );

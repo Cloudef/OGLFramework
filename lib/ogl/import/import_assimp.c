@@ -133,6 +133,10 @@ add_bone(glAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
    if(!bND)
       return( NULL );
 
+   assert( bND->mName.data );
+   if(!strlen(bND->mName.data))
+         return( NULL );
+
    /* could not find bone */
    aBone = findBone( mesh, bND->mName.data );
 
@@ -142,7 +146,6 @@ add_bone(glAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
       return( NULL );
 
    /* assign name */
-   assert( bND->mName.data );
    bone->name = strdup(bND->mName.data);
    if(!bone->name) { glFreeBone( bone ); return( NULL ); }
    logBlue(); glPrint( "[ASSIMP] %s\n",  bone->name ); logNormal();
@@ -204,9 +207,6 @@ add_bone(glAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
    bone->relativeMatrix.mat[13] = bND->mTransformation.d2;
    bone->relativeMatrix.mat[14] = bND->mTransformation.d3;
    bone->relativeMatrix.mat[15] = bND->mTransformation.d4;
-
-   /* default transform */
-   bone->transformMatrix = bone->relativeMatrix;
 
    /* assing childs */
    f = 0;
@@ -559,7 +559,7 @@ int glImportASSIMP( glObject *object, const char *file, int bAnimated )
 
    /* if was animated */
    if(object->animator)
-      glAnimatorCopyIdleVertices( object->animator, object->vbo );
+      glVBOPrepareTstance( object->vbo );
 
    return( RETURN_OK );
 }

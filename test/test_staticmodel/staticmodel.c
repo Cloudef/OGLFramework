@@ -193,8 +193,6 @@ int main( int argc, char **argv )
 
       keyHandle();
 
-      glObjectTick( obj, x / 10.0f );
-
       x += 0.01f;
 #if WITH_PMD
       x += 0.08f;
@@ -236,6 +234,14 @@ int main( int argc, char **argv )
       glDraw( obj3 );
       glDraw( obj );
       glObjectDrawSkeleton( obj );
+
+      glObjectTick( obj,  x / 10.0f );
+      glObjectCalculateAABB( obj );
+      glObjectTick( obj2, x / 5.0f );
+      glObjectCalculateAABB( obj2 );
+      glObjectTick( obj3, x );
+      glObjectCalculateAABB( obj3 );
+
 #elif WITH_OPENCTM
       glRotateObjectf( obj, -90, 0, x );
       glDraw( obj );
