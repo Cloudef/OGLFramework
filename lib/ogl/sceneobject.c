@@ -17,7 +17,8 @@
 glObject* glNewObject( void )
 {
 	/* Allocate scene object */
-	glObject *object = (glObject*)glCalloc( 1, sizeof(glObject) );
+	glSetAlloc( ALLOC_SCENEOBJECT );
+   glObject *object = (glObject*)glCalloc( 1, sizeof(glObject) );
 	if(!object)
       return( NULL );
 
@@ -38,6 +39,10 @@ glObject* glNewObject( void )
    /* Update matrix on start */
    object->transform_changed = 1;
 
+   logGreen();
+   glPuts("[A:SCENEOBJECT]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -54,6 +59,7 @@ glObject* glCopyObject( glObject *src )
 	if(!src) return( NULL );
 
 	/* Allocate scene object */
+   glSetAlloc( ALLOC_SCENEOBJECT );
 	object = (glObject*)glCalloc( 1, sizeof(glObject) );
 	if(!object)
       return( NULL );
@@ -88,6 +94,10 @@ glObject* glCopyObject( glObject *src )
    /* Update it */
    object->transform_changed = 1;
 
+   logYellow();
+   glPuts("[C:SCENEOBJECT]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -111,6 +121,10 @@ glObject* glRefObject( glObject *src )
 	object->vbo		            = glRefVBO( src->vbo );
    object->ibo                = glRefIBO( src->ibo );
    object->animator           = glRefAnimator( src->animator );
+
+   logYellow();
+   glPuts("[R:SCENEOBJECT]");
+   logNormal();
 
 	/* Increase ref counter */
 	object->refCounter++;
@@ -154,10 +168,16 @@ int glFreeObject( glObject *object )
 	/* There is still references to this object alive */
 	if(--object->refCounter != 0) return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_SCENEOBJECT );
+
    /* Free child list */
    glFree( object->child, object->num_childs * sizeof(glObject*) );
    object->child = NULL;
    object->num_childs = 0;
+
+   logRed();
+   glPuts("[F:SCENEOBJECT]");
+   logNormal();
 
 	/* Free scene object */
    glFree( object, sizeof(glObject) );
@@ -286,6 +306,7 @@ int glObjectAddChild( glObject *object, glObject *child )
       return( RETURN_FAIL );
 
    /* alloc */
+   glSetAlloc( ALLOC_SCENEOBJECT );
    object->num_childs++;
    if(!object->child)
       object->child = glCalloc( object->num_childs, sizeof(glObject*) );
@@ -334,6 +355,7 @@ glObject** glObjectCopyChilds( glObject *object )
    if(!object->child)
       return( NULL );
 
+   glSetAlloc( ALLOC_SCENEOBJECT );
    newList = glCalloc( object->num_childs, sizeof(glObject*) );
    if(!newList)
       return( NULL );
@@ -363,6 +385,7 @@ int glObjectFreeChild( glObject *object, glObject *child )
       return( RETURN_FAIL );
 
    /* allocate tmp list */
+   glSetAlloc( ALLOC_SCENEOBJECT );
    tmp = glCalloc( object->num_childs, sizeof(glObject*) );
    if(!tmp)
       return( RETURN_FAIL );
@@ -420,6 +443,7 @@ int glObjectFreeChilds( glObject *object )
          object->child[i] = NULL;
    }
 
+   glSetAlloc( ALLOC_SCENEOBJECT );
    glFree( object->child, object->num_childs * sizeof(glObject*) );
    object->child = NULL;
 

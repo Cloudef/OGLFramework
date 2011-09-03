@@ -6,6 +6,7 @@
 /* new bone */
 glBone* glNewBone(void)
 {
+   glSetAlloc( ALLOC_BONE );
    glBone *bone = glCalloc( 1, sizeof(glBone) );
    if(!bone)
       return( NULL );
@@ -49,6 +50,8 @@ int glFreeBone( glBone *bone )
    if(--bone->refCounter!=0)
       return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_BONE );
+
    /* free strdupped name */
    if(bone->name) free(bone->name);
    bone->name = NULL;
@@ -85,6 +88,7 @@ glVertexWeight* glBoneAddWeight( glBone *bone, unsigned int vertex, float value 
       ptr = &weight->next;
 
    /* add weight */
+   glSetAlloc( ALLOC_BONE );
    *ptr = glCalloc( 1, sizeof(glVertexWeight) );
    if(!*ptr)
       return( NULL );

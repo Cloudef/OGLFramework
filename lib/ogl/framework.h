@@ -26,6 +26,9 @@ kmMat4 glGetProjection( void );
 void glSetCamera( glCamera *camera );
 glCamera* glGetCamera( void );
 
+/* Output memory graph */
+void glMemoryGraph( void );
+
 #ifdef __cplusplus
 }
 #endif

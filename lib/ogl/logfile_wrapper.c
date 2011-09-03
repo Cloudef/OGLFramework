@@ -44,6 +44,8 @@ void glLogClose(void)
 {
    if(_glCore.log)
       logClose( _glCore.log );
+
+   _glCore.log = NULL;
 }
 
 /* enable disable log */

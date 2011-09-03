@@ -19,6 +19,7 @@ glMaterial* glNewMaterial( void )
    unsigned int i;
 
 	/* Allocate material object */
+   glSetAlloc( ALLOC_MATERIAL );
 	glMaterial* object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
 	if(!object)
       return( NULL );
@@ -42,6 +43,10 @@ glMaterial* glNewMaterial( void )
    object->blend1 = GL_SRC_ALPHA;
    object->blend2 = GL_ONE_MINUS_SRC_ALPHA;
 
+   logGreen();
+   glPuts("[A:MATERIAL]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -59,6 +64,7 @@ glMaterial* glCopyMaterial( glMaterial *src )
 	if(!src) return( NULL );
 
 	/* Allocate scene object */
+   glSetAlloc( ALLOC_MATERIAL );
 	object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
 	if(!object)
       return( NULL );
@@ -83,6 +89,10 @@ glMaterial* glCopyMaterial( glMaterial *src )
    object->blend2 = src->blend2;
    object->flags  = src->flags;
 
+   logYellow();
+   glPuts("[C:MATERIAL]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -104,6 +114,10 @@ glMaterial* glRefMaterial( glMaterial *src )
    /* Ref textures */
    object->texture = glMaterialRefTextures( object );
 
+   logYellow();
+   glPuts("[R:MATERIAL]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -123,10 +137,16 @@ int glFreeMaterial( glMaterial *object )
 	/* There is still references to this object alive */
 	if(--object->refCounter != 0) return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_MATERIAL );
+
    /* Free texture array */
    glFree( object->texture,
            _glCore.info.maxTextureUnits * sizeof(glTexture*) );
    object->texture = NULL;
+
+   logRed();
+   glPuts("[F:MATERIAL]");
+   logNormal();
 
 	/* Free scene object */
    glFree( object, sizeof(glMaterial) );

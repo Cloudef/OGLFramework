@@ -11,39 +11,42 @@ GL_LIBS += -logl -loglwindow -linput -llogfile -lSOIL -lkazmath
 # 0 = OpenGL
 # 1 = GLES 1.0
 # 2 = GLES 2.0
-GL 				= 0
+GL 				:= 0
 
 # Use vertex color arrays
-VERTEX_COLOR	= 0
+VERTEX_COLOR	:= 0
 
 # Use index buffers.
 # Needed if you are using unsigned short indices
 # and need models with many vertices.
 # Enabled for GLES 1.0
-INDEX_BUFFERS 	= 0
+INDEX_BUFFERS 	:= 0
 
 # Release ?
-release			= 0
+release			:= 0
 
 # 32bit binary ?
 # Enabled automatically when using either
 # GLES1 or GLES2, also enabled for mingw
-x86 				= 0
+x86 				:= 0
 
 # Compiling using mingw?
-mingw 			= 0
+mingw 		   := 0
+
+# Build tests?
+BUILD_TESTS    := 1
 
 # OpenCTM loader ( lib: openctm )
-OPENCTM			= 1
+OPENCTM		   := 1
 
 # MikuMikuDance PMD loader ( lib: none )
-PMD				= 1
+PMD			   := 1
 
 # Convert SJIS strigns from PMD file to utf-8 ( lib: iconv )
-ICONV_SJIS_PMD = 1
+ICONV_SJIS_PMD := 1
 
 # Assimp loader ( lib: assimp )
-ASSIMP 			= 1
+ASSIMP 			:= 1
 
 # Release settings
 ifeq (${release}, 1)
@@ -57,7 +60,7 @@ ifeq (${release}, 1)
 	endif
 	GL_LIBS += -s
 else
-	CFLAGS += -Wall -O0 -g
+	CFLAGS += -Wall -O0 -g -DDEBUG
 endif
 
 # mingw:
@@ -148,23 +151,21 @@ else
 	CFLAGS	+= -DVERTEX_COLOR=0
 endif
 
-all: openctm ogl ogltest
+all: ogl
 
-openctm:
+ogl:
 ifeq (${OPENCTM}, 1)
 	@${MAKE} -C lib/openctm 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 endif
-
-ogl:
-	@${MAKE} -C lib/kazmath     CFLAGS="${CFLAGS} -std=c99"
+	@${MAKE} -C lib/kazmath    CFLAGS="${CFLAGS} -std=c99"
 	@${MAKE} -C lib/SOIL			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	@${MAKE} -C lib/logfile 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 	@${MAKE} -C lib/ogl 			CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	@${MAKE} -C lib/oglwindow  	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/oglwindow  CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 	@${MAKE} -C lib/input 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-
-ogltest:
+ifeq (${BUILD_TESTS}, 1)
 	@${MAKE} -C test 				CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+endif
 
 clean:
 	@${MAKE} -C lib/kazmath		clean

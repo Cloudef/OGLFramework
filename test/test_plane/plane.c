@@ -40,8 +40,8 @@ static void cleanup( int ret )
    glCloseWindow();
    SDL_Quit();
 
-   puts("");
-   printf("Exit : %lu\n", _glCore.memory);
+   /* exit graph */
+   glMemoryGraph();
 
    exit( ret );
 }
@@ -91,7 +91,7 @@ int main( int argc, char **argv )
    /* Sets this as active camera */
    glCameraRender( camera );
 
-   texture = glNewTexture( "model/test.png", 0 );
+   texture = glNewTexture( "model/test.png", SOIL_FLAG_DEFAULTS );
    if(!texture)
       cleanup(EXIT_FAILURE);
 
@@ -116,9 +116,11 @@ int main( int argc, char **argv )
    glMoveObjectf( obj, -0.5, 0, 0 );
    glMoveObjectf( obj2, 0.5, 0, 0 );
 
-   puts("");
-   printf("Alloc : %.4f MB\n", (float)_glCore.memory / 1048576);
-   puts("");
+   /* make center object transparent */
+   obj3->material->flags = GL_MATERIAL_ALPHA;
+
+   /* startup graph */
+   glMemoryGraph();
 
    /* wait for escape key */
    while(!keyPress(SDLK_ESCAPE))

@@ -80,7 +80,6 @@ typedef struct
   uint8_t         disableOut;
 
   const char      *extensions;
-  unsigned long int memory;
 } glCoreConfig;
 
 /* extern this */

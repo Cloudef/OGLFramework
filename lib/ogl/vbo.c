@@ -27,6 +27,7 @@ glVBO* glNewVBO( void )
    unsigned int i;
 
 	/* Allocate VBO object */
+   glSetAlloc( ALLOC_VBO );
 	glVBO *vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
    if(!vbo)
       return( NULL );
@@ -34,13 +35,13 @@ glVBO* glNewVBO( void )
    /* Default hint */
    vbo->hint = GL_STATIC_DRAW;
 
-/* Allocate uvws */
-vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
-if(!vbo->uvw)
-{
-   glFree(vbo, sizeof(glVBO));
-   return( NULL );
-}
+   /* Allocate uvws */
+   vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
+   if(!vbo->uvw)
+   {
+      glFree(vbo, sizeof(glVBO));
+      return( NULL );
+   }
 
 	/* Nullify pointers */
    i = 0;
@@ -56,6 +57,10 @@ if(!vbo->uvw)
 #if VERTEX_COLOR
    vbo->colors    = NULL;
 #endif
+
+   logGreen();
+   glPuts("[A:VBO]");
+   logNormal();
 
 	/* Increase ref counter */
 	vbo->refCounter++;
@@ -74,7 +79,8 @@ glVBO* glCopyVBO( glVBO *src )
 	if(!src) return( NULL );
 
 	/* Allocate VBO object */
-	vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
+	glSetAlloc( ALLOC_VBO );
+   vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
    if(!vbo)
        return( NULL );
 
@@ -103,6 +109,10 @@ glVBO* glCopyVBO( glVBO *src )
    vbo->vbo_size	= src->vbo_size;
    vbo->hint      = src->hint;
 
+   logYellow();
+   glPuts("[C:VBO]");
+   logNormal();
+
 	/* Increase ref counter */
 	vbo->refCounter++;
 
@@ -121,6 +131,10 @@ glVBO* glRefVBO( glVBO *src )
 	/* Simple return pointer to same place */
 	vbo = src;
 
+   logYellow();
+   glPuts("[R:VBO]");
+   logNormal();
+
 	/* Increase ref counter */
 	vbo->refCounter++;
 
@@ -138,6 +152,8 @@ int glFreeVBO( glVBO *vbo )
 
 	/* There is still references to this object alive */
 	if(--vbo->refCounter != 0) return( RETURN_NOTHING );
+
+   glSetAlloc( ALLOC_VBO );
 
 	/* Free all data */
    i = 0;
@@ -158,6 +174,10 @@ int glFreeVBO( glVBO *vbo )
    /* delete vbo */
    if( vbo->object ) glDeleteBuffers(1, &vbo->object);
    vbo->object = 0;
+
+   logRed();
+   glPuts("[F:VBO]");
+   logNormal();
 
 	/* Free VBO object */
 	glFree( vbo, sizeof(glVBO) );
@@ -290,6 +310,7 @@ int glVBOConstruct( glVBO* vbo )
 }
 
 /* copy idle vertices from current VBO */
+/* not tracked by allocator! */
 int glVBOPrepareTstance( glVBO *vbo )
 {
    if(!vbo)
@@ -318,7 +339,12 @@ int glCopyVertexBuffer( glVBO *vbo, glVBO *src )
    if(!vbo || !src)
       return(RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    vbo->vertices  = glCopy( src->vertices, src->v_num * sizeof(kmVec3) );
+   if(!vbo->vertices)
+      return( RETURN_FAIL );
+
    vbo->v_num     = src->v_num;
    vbo->v_use     = src->v_use;
 
@@ -330,7 +356,9 @@ int glFreeVertexBuffer( glVBO *vbo )
    if(!vbo)
       return( RETURN_FAIL );
 
-	glFree( vbo->vertices, sizeof(kmVec3) * vbo->v_num );
+	glSetAlloc( ALLOC_VBO );
+
+   glFree( vbo->vertices, sizeof(kmVec3) * vbo->v_num );
    vbo->vertices = NULL;
    vbo->v_num = 0;
    vbo->v_use = 0;
@@ -345,6 +373,8 @@ int glResetVertexBuffer( glVBO *vbo, unsigned int vertices )
 {
    if(!vbo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    if(vbo->vertices)
    {
@@ -378,6 +408,8 @@ int glInsertVertex( glVBO *vbo,
    if(!vbo->vertices)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    ++vbo->v_use;
    if(vbo->v_use > vbo->v_num)
    {
@@ -409,7 +441,11 @@ int glCopyCoordBuffer( glVBO *vbo, glVBO *src, unsigned int index )
    if(index > _glCore.info.maxTextureUnits)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    vbo->uvw[index].coords        = glCopy( src->uvw[index].coords, src->uvw[index].c_num * sizeof(kmVec2) );
+   if(!vbo->uvw[index].coords)
+      return( RETURN_FAIL );
 
    vbo->uvw[index].c_num         = src->uvw[index].c_num;
    vbo->uvw[index].c_use         = src->uvw[index].c_use;
@@ -424,6 +460,8 @@ int glFreeCoordBuffer( glVBO *vbo, unsigned int index )
 
    if(index > _glCore.info.maxTextureUnits)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    if( vbo->uvw[index].coords )
       glFree( vbo->uvw[index].coords, sizeof(kmVec2) * vbo->uvw[index].c_num );
@@ -444,6 +482,8 @@ int glResetCoordBuffer( glVBO *vbo, unsigned int index, unsigned int vertices )
 
    if(index > _glCore.info.maxTextureUnits)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    if(vbo->uvw[index].coords)
    {
@@ -480,6 +520,8 @@ int glInsertCoord( glVBO *vbo, unsigned int index,
    if(!vbo->uvw[index].coords)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    ++vbo->uvw[index].c_use;
    if(vbo->uvw[index].c_use >= vbo->uvw[index].c_num)
    {
@@ -508,7 +550,11 @@ int glCopyNormalBuffer( glVBO *vbo, glVBO *src )
    if(!vbo || !src)
       return(RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    vbo->normals   = glCopy( src->normals, src->n_num * sizeof(kmVec3) );
+   if(!vbo->normals)
+      return( RETURN_FAIL );
    vbo->n_num     = src->n_num;
    vbo->n_use     = src->n_use;
 
@@ -519,6 +565,8 @@ int glFreeNormalBuffer( glVBO *vbo )
 {
    if(!vbo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    glFree( vbo->normals, vbo->n_num * sizeof(kmVec3) );
    vbo->normals = NULL;
@@ -535,6 +583,8 @@ int glResetNormalBuffer( glVBO *vbo, unsigned int vertices )
 {
    if(!vbo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    if(vbo->normals)
    {
@@ -565,6 +615,8 @@ int glInsertNormal( glVBO *vbo,
    if(!vbo)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    ++vbo->n_use;
    if(vbo->n_use >= vbo->n_num)
    {
@@ -594,7 +646,11 @@ int glCopyColorBuffer( glVBO *vbo, glVBO *src )
    if(!vbo || !src)
       return(RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    vbo->colors    = glCopy( src->colors, src->c_num * sizeof(sColor) );
+   if(!vbo->colors)
+      return( RETURN_FAIL );
    vbo->c_num     = src->c_num;
    vbo->c_use     = src->c_use;
 
@@ -605,6 +661,8 @@ int glFreeColorBuffer( glVBO *vbo )
 {
    if(!vbo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    glFree( vbo->colors, vbo->c_num * sizeof(sColor) );
    vbo->colors = NULL;
@@ -621,6 +679,8 @@ int glResetColorBuffer( glVBO *vbo, unsigned int vertices )
 {
    if(!vbo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_VBO );
 
    if(vbo->colors)
    {
@@ -649,6 +709,8 @@ int glInsertColor( glVBO *vbo,
    if(!vbo)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_VBO );
+
    ++vbo->c_use;
    if(vbo->c_use >= vbo->c_num)
    {
@@ -670,4 +732,4 @@ int glInsertColor( glVBO *vbo,
 
    return( RETURN_OK );
 }
-#endif
+#endif /* USE_COLOR */

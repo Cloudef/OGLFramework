@@ -17,6 +17,7 @@ glAnimTick* glNewAnimTick( glAnim *anim )
       return( NULL );
 
 	/* Allocate animation handler object */
+   glSetAlloc( ALLOC_EVALUATOR );
 	glAnimTick *animTick = (glAnimTick*)glCalloc( 1, sizeof(glAnimTick) );
    if(!animTick)
       return( NULL );
@@ -79,6 +80,10 @@ glAnimTick* glNewAnimTick( glAnim *anim )
    if(!anim->node)
    { glFreeAnimTick( animTick ); return( NULL ); }
 
+   logGreen();
+   glPuts("[A:EVALUATOR]");
+   logNormal();
+
    /* return */
    return( animTick );
 }
@@ -91,6 +96,8 @@ int glFreeAnimTick( glAnimTick *animTick )
    /* invalid object */
    if(!animTick)
       return( RETURN_NOTHING );
+
+   glSetAlloc( ALLOC_EVALUATOR );
 
    /* we should have animation */
    if(animTick->anim)
@@ -118,6 +125,10 @@ int glFreeAnimTick( glAnimTick *animTick )
       }
       animTick->oldNode = NULL;
    }
+
+   logRed();
+   glPuts("[F:EVALUAOTR]");
+   logNormal();
 
    /* free ticker */
    glFree( animTick, sizeof(glAnimTick) );

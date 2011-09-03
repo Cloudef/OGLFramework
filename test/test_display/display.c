@@ -35,9 +35,8 @@ static void cleanup( int ret )
    glCloseWindow();
    SDL_Quit();
 
-   puts("");
-   printf("Exit : %lu\n", _glCore.memory);
-   puts("");
+   /* exit graph */
+   glMemoryGraph();
 
    exit( ret );
 }
@@ -66,15 +65,8 @@ int main( int argc, char **argv )
    if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
-   obj = glNewObject();
-   if(!obj)
-      cleanup(EXIT_FAILURE);
-
-   puts("");
-   printf("Alloc : %lu\n", _glCore.memory);
-   puts("");
-
-   glFreeObject(obj);
+   /* startup graph */
+   glMemoryGraph();
 
    /* wait for escape key */
    while(!keyPress(SDLK_ESCAPE))

@@ -44,6 +44,9 @@ typedef struct glTexture_t
    int height;
    uint8_t channels;
 
+   /* size of data */
+   size_t size;
+
    /* uvw index */
    unsigned int  uvw;
 

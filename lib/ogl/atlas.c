@@ -16,6 +16,7 @@ glAtlas* glNewAtlas(void)
 {
    glAtlas *atlas;
 
+   glSetAlloc( ALLOC_ATLAS );
    atlas = glCalloc( 1, sizeof(glAtlas) );
    if(!atlas)
       return( NULL );
@@ -24,8 +25,11 @@ glAtlas* glNewAtlas(void)
    atlas->rect    = NULL;
    atlas->texture = NULL;
 
-   atlas->refCounter++;
+   logGreen();
+   glPuts("[A:ATLAS]");
+   logNormal();
 
+   atlas->refCounter++;
    return( atlas );
 }
 
@@ -44,6 +48,10 @@ glAtlas* glRefAtlas( glAtlas *src )
    /* ref textures */
    atlas->rect    = glAtlasRefTextures( atlas );
    atlas->texture = glRefTexture( atlas->texture );
+
+   logYellow();
+   glPuts("[R:ATLAS]");
+   logNormal();
 
    atlas->refCounter++;
    return( atlas );
@@ -73,10 +81,16 @@ int glFreeAtlas( glAtlas *atlas )
    if(--atlas->refCounter != 0)
       return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_ATLAS );
+
    /* free everything */
    glFree( atlas->rect, atlas->num_textures * sizeof(glAtlasRect) );
    atlas->rect          = NULL;
    atlas->num_textures  = 0;
+
+   logRed();
+   glPuts("[F:ATLAS]");
+   logNormal();
 
    glFree( atlas, sizeof(glAtlas) );
    return( RETURN_OK );
@@ -105,6 +119,8 @@ int glAtlasAddTexture( glAtlas *atlas, glTexture *texture )
          }
       }
    }
+
+   glSetAlloc( ALLOC_ATLAS );
 
    /* alloc */
    atlas->num_textures++;
@@ -137,6 +153,8 @@ int glAtlasFreeTexture( glAtlas *atlas, glTexture *texture )
       return( RETURN_FAIL );
    if(!texture)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_ATLAS );
 
    /* allocate tmp list */
    tmp = glCalloc( atlas->num_textures, sizeof(glAtlasRect) );
@@ -217,6 +235,7 @@ int glAtlasFreeTextures( glAtlas *atlas )
    }
 
    /* free */
+   glSetAlloc( ALLOC_ATLAS );
    glFree( atlas->rect, atlas->num_textures * sizeof(glAtlasRect) );
    atlas->rect         = NULL;
    atlas->num_textures = 0;
@@ -342,9 +361,6 @@ glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
 
    /* and free the blitted surface */
    SDL_FreeSurface( bitmap );
-
-   /* debug */
-   printf("%dx%d\n", width, height);
 
    /* free packer */
    glFreeTexturePacker( tp );

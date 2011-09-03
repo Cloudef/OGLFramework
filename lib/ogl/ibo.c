@@ -26,6 +26,7 @@ glIBO* glNewIBO( void )
 #endif
 
 	/* Allocate IBO object */
+   glSetAlloc( ALLOC_IBO );
    glIBO *ibo = (glIBO*)glCalloc( 1, sizeof(glIBO) );
    if(!ibo)
       return( NULL );
@@ -44,6 +45,10 @@ glIBO* glNewIBO( void )
    ibo->indices   = NULL;
 #endif
 
+   logGreen();
+   glPuts("[A:IBO]");
+   logNormal();
+
 	/* Increase ref counter */
 	ibo->refCounter++;
 
@@ -60,6 +65,7 @@ glIBO* glCopyIBO( glIBO *src )
 	if(!src) return( NULL );
 
 	/* Allocate IBO object */
+   glSetAlloc( ALLOC_IBO );
 	ibo = (glIBO*)glCalloc( 1, sizeof(glIBO) );
    if(!ibo)
        return( NULL );
@@ -69,6 +75,10 @@ glIBO* glCopyIBO( glIBO *src )
 
    ibo->ibo_size	= src->ibo_size;
 	ibo->hint	   = src->hint;
+
+   logYellow();
+   glPuts("[C:IBO]");
+   logNormal();
 
 	/* Increase ref counter */
 	ibo->refCounter++;
@@ -88,6 +98,10 @@ glIBO* glRefIBO( glIBO *src )
 	/* Simple return pointer to same place */
 	ibo = src;
 
+   logYellow();
+   glPuts("[R:IBO]");
+   logNormal();
+
 	/* Increase ref counter */
 	ibo->refCounter++;
 
@@ -104,12 +118,18 @@ int glFreeIBO( glIBO *ibo )
 	/* There is still references to this object alive */
 	if(--ibo->refCounter != 0) return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_IBO );
+
 	/* Free all data */
    glFreeIndexBuffer( ibo );
 
    /* delete ibo */
    if( ibo->object ) glDeleteBuffers(1, &ibo->object);
    ibo->object = 0;
+
+   logRed();
+   glPuts("[F:IBO]");
+   logNormal();
 
 	/* Free IBO object */
 	glFree( ibo, sizeof(glIBO) );
@@ -218,6 +238,8 @@ int glCopyIndexBuffer( glIBO *ibo, glIBO *src )
    if(!ibo || !src)
       return(RETURN_FAIL );
 
+   glSetAlloc( ALLOC_IBO );
+
 #if USE_BUFFERS
    i = 0;
    while(i != GL_MAX_BUFFERS)
@@ -245,6 +267,8 @@ int glFreeIndexBuffer( glIBO *ibo )
 
    if(!ibo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_IBO );
 
 #if USE_BUFFERS
    i = 0;
@@ -276,6 +300,8 @@ int glResetIndexBuffer( glIBO *ibo, unsigned int indices )
 {
    if(!ibo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_IBO );
 
 #if USE_BUFFERS
    unsigned int thisMany = indices / USHRT_MAX;
@@ -344,6 +370,8 @@ int glInsertIndex( glIBO *ibo,
 {
    if(!ibo)
       return( RETURN_FAIL );
+
+   glSetAlloc( ALLOC_IBO );
 
 #if USE_BUFFERS
    /* select buffer to put the index */

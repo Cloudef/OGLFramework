@@ -6,6 +6,7 @@
 /* new anim */
 glAnim* glNewAnim(void)
 {
+   glSetAlloc( ALLOC_ANIM );
    glAnim *anim = glCalloc( 1, sizeof(glAnim) );
    if(!anim)
       return( NULL );
@@ -47,6 +48,8 @@ int glFreeAnim( glAnim *anim )
 
    if(--anim->refCounter!=0)
       return( RETURN_NOTHING );
+
+   glSetAlloc( ALLOC_ANIM );
 
    /* free strdupped name */
    if(anim->name) free( anim->name );
@@ -103,6 +106,7 @@ glNodeAnim* glAnimAddNode( glAnim *anim )
       ptr = &node->next;
 
    /* allocate new node */
+   glSetAlloc( ALLOC_ANIM );
    *ptr = glCalloc( 1, sizeof(glNodeAnim) );
    if(!*ptr)
       return( NULL );
@@ -141,6 +145,7 @@ glVectorKey* glNodeAddTranslationKey(glNodeAnim *node, kmVec3 value, float time 
       ptr = &key->next;
 
    /* allocate new node */
+   glSetAlloc( ALLOC_ANIM );
    *ptr = glCalloc( 1, sizeof(glVectorKey) );
    if(!*ptr)
       return( NULL );
@@ -176,6 +181,7 @@ glQuatKey* glNodeAddRotationKey(glNodeAnim *node, kmQuaternion value, float time
 
 
    /* allocate new node */
+   glSetAlloc( ALLOC_ANIM );
    *ptr = glCalloc( 1, sizeof(glQuatKey) );
    if(!*ptr)
       return( NULL );
@@ -210,6 +216,7 @@ glVectorKey* glNodeAddScalingKey(glNodeAnim *node, kmVec3 value, float time)
       ptr = &key->next;
 
    /* allocate new node */
+   glSetAlloc( ALLOC_ANIM );
    *ptr = glCalloc( 1, sizeof(glVectorKey) );
    if(!*ptr)
       return( NULL );

@@ -84,6 +84,7 @@ static void glCameraReset( glCamera *object )
 glCamera* glNewCamera( void )
 {
 	/* Allocate camera */
+   glSetAlloc( ALLOC_CAMERA );
 	glCamera *object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
 	if(!object)
       return( NULL );
@@ -95,6 +96,10 @@ glCamera* glNewCamera( void )
 
    /* Reset */
    glCameraReset( object );
+
+   logGreen();
+   glPuts("[A:CAMERA]");
+   logNormal();
 
 	/* Increase ref counter */
 	object->refCounter++;
@@ -112,9 +117,14 @@ glCamera* glCopyCamera( glCamera *src )
 	if(!src) return( NULL );
 
 	/* Allocate scene object */
-	object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
+	glSetAlloc( ALLOC_CAMERA );
+   object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
 	if(!object)
       return( NULL );
+
+   logYellow();
+   glPuts("[C:CAMERA]");
+   logNormal();
 
 	/* Increase ref counter */
 	object->refCounter++;
@@ -134,6 +144,10 @@ glCamera* glRefCamera( glCamera *src )
 	/* Point magic */
 	object                      = src;
 
+   logYellow();
+   glPuts("[R:CAMERA]");
+   logNormal();
+
 	/* Increase ref counter */
 	object->refCounter++;
 
@@ -150,11 +164,17 @@ int glFreeCamera( glCamera *object )
 	/* There is still references to this object alive */
 	if(--object->refCounter != 0) return( RETURN_NOTHING );
 
+   glSetAlloc( ALLOC_CAMERA );
+
    /* Check if this is active */
    if(glGetCamera() == object)
       glSetCamera( NULL );
 
-	/* Free camera */
+   logRed();
+   glPuts("[F:CAMERA]");
+   logNormal();
+
+   /* Free camera */
    glFree( object, sizeof(glCamera) );
    return( RETURN_OK );
 }

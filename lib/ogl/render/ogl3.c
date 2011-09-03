@@ -1,5 +1,7 @@
 #ifndef GLES1
 
+/* NOTE: it's copy of OGL140 renderer ATM */
+
 #include <limits.h>
 
 #include "config.h"

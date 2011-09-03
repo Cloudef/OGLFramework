@@ -34,6 +34,7 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
    if(obj)  return( obj );
 
    /* Allocate texture */
+   glSetAlloc( ALLOC_TEXTURE );
    obj = (glTexture*)glCalloc( 1, sizeof(glTexture) );
    if(!obj)
       return( NULL );
@@ -41,6 +42,7 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
    /* GL Texture object */
    obj->object = 0;
    obj->file   = NULL;
+   obj->data   = NULL;
 
    /* If file is passed, then try import it */
    if( file )
@@ -62,12 +64,18 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
          glFreeTexture(obj);
          return( NULL );
       }
+
+      obj->size = obj->width * obj->height * obj->channels;
+#ifdef DEBUG
+      glFakeAlloc( obj->size );
+#endif
+
       glTextureAddCache( obj );
 
       logGreen();
-      glPrint("[TEXTURE] %dx%d\n", obj->width, obj->height);
+      glPrint("[A:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
       logNormal();
-   }
+ }
 
    /* Increase ref counter */
    obj->refCounter++;
@@ -84,6 +92,7 @@ glTexture* glCopyTexture( glTexture *src )
    if(!src) return( NULL );
 
    /* Allocate texture */
+   glSetAlloc( ALLOC_TEXTURE );
    obj = (glTexture*)glCalloc( 1, sizeof(glTexture) );
    if(!obj)
       return( NULL );
@@ -91,6 +100,11 @@ glTexture* glCopyTexture( glTexture *src )
    /* GL Texture object */
    obj->object = src->object;
    obj->file   = strdup(src->file);
+   obj->data   = glCopy(src->data, src->size);
+
+   logYellow();
+   glPrint("[C:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
+   logNormal();
 
    /* Increase ref counter */
    obj->refCounter++;
@@ -111,6 +125,10 @@ glTexture* glRefTexture( glTexture *src )
    /*  pointer to pointer */
    obj = src;
 
+   logYellow();
+   glPrint("[R:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
+   logNormal();
+
    /* Increase ref counter */
    obj->refCounter++;
 
@@ -129,15 +147,16 @@ int glFreeTexture( glTexture *obj )
 	if(--obj->refCounter != 0) return( RETURN_NOTHING );
 
    logRed();
-   glPrint("[TEXTURE] %dx%d\n", obj->width, obj->height);
+   glPrint("[F:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
    logNormal();
 
    /* remove from cache */
    glTextureRemoveCache( obj );
+   glSetAlloc( ALLOC_TEXTURE );
 
    /* delete OGL texture if there is one */
    if(obj->object)   glDeleteTextures( 1, &obj->object );
-   if(obj->data)     free(obj->data);
+   if(obj->data)     glFree(obj->data, obj->size);
    if(obj->file)     free(obj->file);
 
    /* free */
@@ -153,9 +172,11 @@ int glTextureCreate( glTexture *texture, unsigned char *data,
    if(!texture)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_TEXTURE );
+
    /* Create GL texture */
    if(texture->object)  glDeleteTextures( 1, &texture->object );
-   if(texture->data)    free(texture->data);
+   if(texture->data)    glFree(texture->data, texture->size);
 
    texture->object =
    SOIL_create_OGL_texture(
@@ -167,12 +188,18 @@ int glTextureCreate( glTexture *texture, unsigned char *data,
    texture->height   = height;
    texture->channels = channels;
    texture->data     = data;
+   texture->size     = width * height * channels;
+
+#ifdef DEBUG
+   /* to keep with statistics */
+   glFakeAlloc( texture->size );
+#endif
 
    if(!texture->object)
       return( RETURN_FAIL );
 
    logGreen();
-   glPrint("[TEXTURE] %dx%d\n", texture->width, texture->height);
+   glPrint("[A:TEXTURE] %dx%d %.2f MiB\n", texture->width, texture->height, (float)texture->size / 1048576);
    logNormal();
 
    return( RETURN_OK );
@@ -227,6 +254,7 @@ int glTextureAddCache( glTexture *texture )
       return( RETURN_FAIL );
 
    /* alloc */
+   glSetAlloc( ALLOC_TEXTURE_CACHE );
    GL_TEXTURE_CACHE.num_textures++;
    if(!GL_TEXTURE_CACHE.texture)
       GL_TEXTURE_CACHE.texture = glCalloc( GL_TEXTURE_CACHE.num_textures,
@@ -259,6 +287,7 @@ int glTextureRemoveCache( glTexture *texture )
    if(!GL_TEXTURE_CACHE.num_textures)
       return( RETURN_FAIL );
 
+   glSetAlloc( ALLOC_TEXTURE_CACHE );
    tmp = glCalloc( GL_TEXTURE_CACHE.num_textures, sizeof(glTexture*) );
    if(!tmp)
       return( RETURN_FAIL );
@@ -315,6 +344,7 @@ int glTextureFreeCache( void )
       return( RETURN_OK );
 
    /* free */
+   glSetAlloc( ALLOC_TEXTURE_CACHE );
    glFree( GL_TEXTURE_CACHE.texture, GL_TEXTURE_CACHE.num_textures * sizeof(glTexture*) );
    GL_TEXTURE_CACHE.texture = NULL;
 

@@ -42,8 +42,8 @@ static void cleanup( int ret )
    glCloseWindow();
    SDL_Quit();
 
-   puts("");
-   printf("Exit : %lu\n", _glCore.memory);
+   /* exit graph */
+   glMemoryGraph();
 
    exit( ret );
 }
@@ -180,9 +180,8 @@ int main( int argc, char **argv )
    /* Sets this as active camera */
    glCameraRender( camera );
 
-   puts("");
-   printf("Alloc : %.2f MB\n", (float)_glCore.memory / 1048576);
-   puts("");
+   /* Startup graph */
+   glMemoryGraph();
 
    /* wait for escape key */
    while(!keyPress(SDLK_ESCAPE))
