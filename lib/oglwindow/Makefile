@@ -11,6 +11,7 @@ all: ${TARGET}
 
 ${TARGET}: ${OBJ}
 	${AR} rcs   ../${TARGET} $^
+	mkdir -p    ../../include/ogl
 	cp window.h ../../include/ogl/
 
 clean:

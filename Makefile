@@ -151,18 +151,32 @@ else
      CFLAGS += -DVERTEX_COLOR=0
 endif
 
-all: ogl
+all: ogl test
 
-ogl:
+openctm:
 ifeq (${OPENCTM}, 1)
 	@${MAKE} -C lib/openctm 	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 endif
+
+kazmath:
 	@${MAKE} -C lib/kazmath    	CFLAGS="${CFLAGS} -std=c99"
+
+SOIL:
 	@${MAKE} -C lib/SOIL		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+logfile:
 	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
-	@${MAKE} -C lib/ogl 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+oglwindow: logfile
 	@${MAKE} -C lib/oglwindow	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+input:
 	@${MAKE} -C lib/input 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+ogl: kazmath SOIL openctm logfile
+	@${MAKE} -C lib/ogl 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+
+test: ogl oglwindow input
 ifeq (${BUILD_TESTS}, 1)
 	@${MAKE} -C test 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 endif
