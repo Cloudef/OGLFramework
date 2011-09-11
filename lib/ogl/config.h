@@ -18,19 +18,19 @@
 
 /* Keyframe animation */
 #ifndef USE_KEYFRAME_ANIMATION
-   #define USE_KEYFRAME_ANIMATION 0
+   #define USE_KEYFRAME_ANIMATION   0
 #endif
 
 /* Vertex color support */
 #ifndef VERTEX_COLOR
-   #define VERTEX_COLOR 0
+   #define VERTEX_COLOR    0
 #endif
 
 /* Enable/Disable formats */
 
 /* OpenCTM http://openctm.sourceforge.net/ */
 #ifndef WITH_OCTM
-   #define WITH_OCTM    0
+   #define WITH_OCTM       0
 #endif
 
 /* MikuMikuDance PMD loader */
@@ -41,7 +41,7 @@
 
 /* ASSIMP imports lots of formats */
 #ifndef WITH_ASSIMP
-   #define WITH_ASSIMP  0
+   #define WITH_ASSIMP     0
 #endif
 
 #endif /* GL_CONFIG_H */

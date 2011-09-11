@@ -11,12 +11,12 @@
 #include "SOIL.h"
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #elif  GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #else
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
@@ -75,7 +75,7 @@ glTexture* glNewTexture( const char *file, unsigned int flags )
       logGreen();
       glPrint("[A:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
       logNormal();
- }
+   }
 
    /* Increase ref counter */
    obj->refCounter++;
@@ -143,8 +143,8 @@ int glFreeTexture( glTexture *obj )
    if(!obj)
       return( RETURN_NOTHING );
 
-	/* There is still references to this object alive */
-	if(--obj->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--obj->refCounter != 0) return( RETURN_NOTHING );
 
    logRed();
    glPrint("[F:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
@@ -180,9 +180,9 @@ int glTextureCreate( glTexture *texture, unsigned char *data,
 
    texture->object =
    SOIL_create_OGL_texture(
-         data, width, height, channels,
-         0,
-         flags );
+      data, width, height, channels,
+      0,
+      flags );
 
    texture->width    = width;
    texture->height   = height;
@@ -211,13 +211,13 @@ int glTextureSave( glTexture *texture, const char *path )
    if(!texture)
       return( RETURN_FAIL );
 
-	if(!SOIL_save_image
-	(
-		path,
-		SOIL_SAVE_TYPE_TGA,
-		texture->width, texture->height, texture->channels,
-		texture->data
-	))
+   if(!SOIL_save_image
+      (
+          path,
+          SOIL_SAVE_TYPE_TGA,
+          texture->width, texture->height, texture->channels,
+          texture->data
+      ))
       return( RETURN_FAIL );
 
    return( RETURN_OK );

@@ -12,7 +12,7 @@ extern "C" {
 typedef struct glIBO_t
 {
 #if USE_BUFFERS
-	unsigned short *indices[GL_MAX_BUFFERS + 1];
+   unsigned short *indices[GL_MAX_BUFFERS + 1];
    unsigned int   i_num[GL_MAX_BUFFERS + 1], i_use[GL_MAX_BUFFERS + 1];
    unsigned int   index_buffer;
 
@@ -26,15 +26,15 @@ typedef struct glIBO_t
    unsigned int object;
    unsigned int hint;
    uint8_t      up_to_date;
-   size_t ibo_size;
+   size_t       ibo_size;
 
-	unsigned int refCounter;
+   unsigned int refCounter;
 } glIBO;
 
-glIBO*      glNewIBO( void );			                  /* Allocate new ibo object */
-glIBO*      glCopyIBO( glIBO *src );	               /* Copy ibo object */
-glIBO*      glRefIBO( glIBO *src );	                  /* Reference ibo object */
-int         glFreeIBO( glIBO *ibo );		            /* Free ibo object */
+glIBO*      glNewIBO( void );		     /* Allocate new ibo object */
+glIBO*      glCopyIBO( glIBO *src );	     /* Copy ibo object */
+glIBO*      glRefIBO( glIBO *src );	     /* Reference ibo object */
+int         glFreeIBO( glIBO *ibo );	     /* Free ibo object */
 
 /* IBO Actions */
 int         glIBOConstruct( glIBO *ibo );

@@ -15,12 +15,12 @@
 /* maybe map the basic GL enums
  * to own structure, so these become useless */
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #elif  GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #else
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
@@ -142,7 +142,7 @@ int glImportOCTM( glObject* object, const char *file, int bAnimated )
       /* load if exists */
       if(texturePath)
       {
-         texture = glNewTexture( texturePath, 0 );
+         texture = glNewTexture( texturePath, SOIL_FLAG_DEFAULTS );
          if(texture)
             glObjectAddTexture( object, i, texture );
 

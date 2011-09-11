@@ -7,19 +7,19 @@ void keyHandle()
    while(SDL_PollEvent(&event))
    {
       switch (event.type) {
-         case SDL_KEYDOWN:                                                  
+         case SDL_KEYDOWN:
             keyAdd(event.key.keysym.sym);
-         break;  /* SDL_KEYDOWN */
-         case SDL_KEYUP:      
-            keyDel(event.key.keysym.sym);					 
-         break;  /* SDL_KEYUP */
-         case SDL_VIDEOEXPOSE:              
-         break;  /* SDL_VIDEOEXPOSE */
-	      case SDL_VIDEORESIZE: 
-		   break;  /* SDL_VIDEORESIZE */
-         case SDL_QUIT: 
+            break;  /* SDL_KEYDOWN */
+         case SDL_KEYUP:
+            keyDel(event.key.keysym.sym);
+            break;  /* SDL_KEYUP */
+         case SDL_VIDEOEXPOSE:
+            break;  /* SDL_VIDEOEXPOSE */
+         case SDL_VIDEORESIZE:
+            break;  /* SDL_VIDEORESIZE */
+         case SDL_QUIT:
             keyAdd(SDLK_ESCAPE);
-		   break;  /* SDL_QUIT */
+            break;  /* SDL_QUIT */
       }
    }
 }

@@ -31,19 +31,19 @@ typedef struct glMaterial_t
    unsigned int   refCounter;
 } glMaterial;
 
-glMaterial*    glNewMaterial( void );			               /* Allocate material */
-glMaterial*    glCopyMaterial( glMaterial *src );	         /* Copy material  */
-glMaterial*    glRefMaterial( glMaterial *src );	         /* Reference material  */
-int            glFreeMaterial( glMaterial *object );	      /* Free material */
+glMaterial*    glNewMaterial( void );			       /* Allocate material */
+glMaterial*    glCopyMaterial( glMaterial *src );	       /* Copy material  */
+glMaterial*    glRefMaterial( glMaterial *src );	       /* Reference material  */
+int            glFreeMaterial( glMaterial *object );	       /* Free material */
 
 /* add texture */
 int glMaterialAddTexture( glMaterial *object,
-                        unsigned int index,
-                        glTexture *texture );
+                          unsigned int index,
+                          glTexture *texture );
 
 /* free texture */
 int glMaterialFreeTexture( glMaterial *object,
-                         unsigned int index );
+                           unsigned int index );
 
 /* free all textures */
 int glMaterialFreeTexturesAll( glMaterial *object );

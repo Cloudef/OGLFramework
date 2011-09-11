@@ -25,11 +25,11 @@ static void keyHandle( void )
          break;  /* SDL_KEYUP */
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
-	      case SDL_VIDEORESIZE:
-		   break;  /* SDL_VIDEORESIZE */
+         case SDL_VIDEORESIZE:
+         break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
             keyAdd(SDLK_ESCAPE);
-		   break;  /* SDL_QUIT */
+         break;  /* SDL_QUIT */
       }
    }
 }

@@ -1,7 +1,7 @@
 SOURCE		= aabb.c mat3.c mat4.c plane.c quaternion.c utility.c vec2.c vec3.c vec4.c
-INCLUDES		= -I. -I../../include
+INCLUDES	= -I. -I../../include
 TARGET		= libkazmath.a
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -11,8 +11,8 @@ all: ${TARGET}
 
 ${TARGET}: ${OBJ}
 	${AR} rcs ../${TARGET} $^
-	mkdir -p ../../include/kazmath
-	cp *.h ../../include/kazmath
+	mkdir -p  ../../include/kazmath
+	cp *.h    ../../include/kazmath
 
 clean:
 	${RM}  ${OBJ}

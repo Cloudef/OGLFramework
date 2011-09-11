@@ -1,7 +1,7 @@
 SOURCE		= logfile.c logcolor.c
-INCLUDES		= -I.
+INCLUDES	= -I.
 TARGET		= liblogfile.a
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -10,8 +10,8 @@ all: ${TARGET}
 	${CC} ${CFLAGS} ${INCLUDES} -c $^ -o $@
 
 ${TARGET}: ${OBJ}
-	${AR} rcs ../${TARGET} $^
-	cp logfile.h 			../../include/
+	${AR} rcs    ../${TARGET} $^
+	cp logfile.h ../../include/
 
 clean:
 	${RM} -f ${OBJ}

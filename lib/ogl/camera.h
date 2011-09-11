@@ -32,25 +32,25 @@ typedef struct glCamera_t
    uint8_t transform_changed;
    uint8_t viewport_changed;
 
- 	unsigned int refCounter;
+   unsigned int refCounter;
 } glCamera;
 
-glCamera*   glNewCamera( void );			               /* Allocate camera */
-glCamera*   glCopyCamera( glCamera *src );	         /* Copy camera  */
-glCamera*   glRefCamera( glCamera *src );	            /* Reference camera  */
-int         glFreeCamera( glCamera *object );	      /* Free camera */
+glCamera*   glNewCamera( void );		   /* Allocate camera */
+glCamera*   glCopyCamera( glCamera *src );	   /* Copy camera  */
+glCamera*   glRefCamera( glCamera *src );	   /* Reference camera  */
+int         glFreeCamera( glCamera *object );	   /* Free camera */
 
 /* translation */
 
 void glTargetCamera( glCamera *object, const kmVec3 ); /* Target camera */
 void glTargetCameraf( glCamera *object, const kmScalar, const kmScalar,
-                     const kmScalar );
+                      const kmScalar );
 void glPositionCamera( glCamera *object, const kmVec3 ); /* Position camera */
 void glPositionCameraf( glCamera *object, const kmScalar, const kmScalar,
                         const kmScalar );
 void glMoveCamera( glCamera *object, const kmVec3 ); /* Move camera */
 void glMoveCameraf( glCamera *object, const kmScalar, const kmScalar,
-                     const kmScalar );
+                    const kmScalar );
 void glRotateCamera( glCamera *object, const kmVec3 ); /* Rotate camera */
 void glRotateCameraf( glCamera *object, const kmScalar, const kmScalar,
                       const kmScalar );

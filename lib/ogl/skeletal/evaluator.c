@@ -152,129 +152,129 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
    /* get glAnim */
    anim = animTick->anim;
 
-	ticksPerSecond = anim->ticksPerSecond != 0.0 ? anim->ticksPerSecond : 25.0f;
-	pTime *= ticksPerSecond;
+   ticksPerSecond = anim->ticksPerSecond != 0.0 ? anim->ticksPerSecond : 25.0f;
+   pTime *= ticksPerSecond;
 
-	/* map into anim's duration */
-	float time = 0.0f;
-	if( anim->duration > 0.0)
-		time = fmod( pTime, anim->duration);
+   /* map into anim's duration */
+   float time = 0.0f;
+   if( anim->duration > 0.0)
+      time = fmod( pTime, anim->duration);
 
-	/* calculate the transformations for each animation channel */
-	node     = anim->node;
+   /* calculate the transformations for each animation channel */
+   node     = anim->node;
    oldNode  = animTick->oldNode;
    while(node && oldNode)
-	{
-		/* ******** Position **** */
+   {
+      /* ******** Position **** */
       presentTranslation.x = 0;
       presentTranslation.y = 0;
       presentTranslation.z = 0;
 
-		if(node->translation)
-		{
-			frame = (time >= animTick->oldTime) ? oldNode->translationTime : 0;
-			while( frame < node->num_translation - 1)
-			{
-				if( time < oldNode->translation[frame+1]->time)
-					break;
-				++frame;
-			}
+      if(node->translation)
+      {
+         frame = (time >= animTick->oldTime) ? oldNode->translationTime : 0;
+         while( frame < node->num_translation - 1)
+         {
+            if( time < oldNode->translation[frame+1]->time)
+               break;
+            ++frame;
+         }
 
-			/* interpolate between this frame's value and next frame's value */
-			nextFrame   = (frame + 1) % node->num_translation;
-			vkey        = oldNode->translation[frame];
-		   nextvKey    = oldNode->translation[nextFrame];
-			diffTime    = nextvKey->time - vkey->time;
+         /* interpolate between this frame's value and next frame's value */
+         nextFrame   = (frame + 1) % node->num_translation;
+         vkey        = oldNode->translation[frame];
+         nextvKey    = oldNode->translation[nextFrame];
+         diffTime    = nextvKey->time - vkey->time;
 #if 1
-			if( diffTime < 0.0)
-				diffTime += anim->duration;
-			if( diffTime > 0)
-			{
-			   factor            = (time - vkey->time) / diffTime;
-				presentTranslation.x = vkey->value.x + (nextvKey->value.x - vkey->value.x) * factor;
-				presentTranslation.y = vkey->value.y + (nextvKey->value.y - vkey->value.y) * factor;
+         if( diffTime < 0.0)
+            diffTime += anim->duration;
+         if( diffTime > 0)
+         {
+            factor            = (time - vkey->time) / diffTime;
+            presentTranslation.x = vkey->value.x + (nextvKey->value.x - vkey->value.x) * factor;
+            presentTranslation.y = vkey->value.y + (nextvKey->value.y - vkey->value.y) * factor;
             presentTranslation.z = vkey->value.z + (nextvKey->value.z - vkey->value.z) * factor;
-			} else
-			{
-				presentTranslation = vkey->value;
-			}
+         } else
+         {
+            presentTranslation = vkey->value;
+         }
 #else
          presentTranslation = vkey->value;
 #endif
 
-			oldNode->translationTime = frame;
-		}
+         oldNode->translationTime = frame;
+      }
 
-		/* ******** Rotation ******** */
+      /* ******** Rotation ******** */
       presentRotation.w = 0;
       presentRotation.x = 0;
       presentRotation.y = 0;
       presentRotation.z = 0;
 
-		if(node->rotation)
-		{
-			frame = (time >= animTick->oldTime) ? oldNode->rotationTime : 0;
-			while( frame < node->num_rotation - 1)
-			{
-				if( time < oldNode->rotation[frame+1]->time)
-					break;
-				++frame;
-			}
+      if(node->rotation)
+      {
+         frame = (time >= animTick->oldTime) ? oldNode->rotationTime : 0;
+         while( frame < node->num_rotation - 1)
+         {
+            if( time < oldNode->rotation[frame+1]->time)
+               break;
+            ++frame;
+         }
 
-			/* interpolate between this frame's value and next frame's value */
-			nextFrame   = (frame + 1) % node->num_rotation;
-			qkey        = oldNode->rotation[frame];
+         /* interpolate between this frame's value and next frame's value */
+         nextFrame   = (frame + 1) % node->num_rotation;
+         qkey        = oldNode->rotation[frame];
          nextqKey    = oldNode->rotation[nextFrame];
-			diffTime    = nextqKey->time - qkey->time;
+         diffTime    = nextqKey->time - qkey->time;
 
 #if 1
          if( diffTime < 0.0f)
-				diffTime += anim->duration;
-			if( diffTime > 0.0f)
-			{
-				factor   = (time - qkey->time) / diffTime;
+            diffTime += anim->duration;
+         if( diffTime > 0.0f)
+         {
+            factor   = (time - qkey->time) / diffTime;
             kmQuaternionSlerp( &presentRotation,
-								&qkey->value,
-								&nextqKey->value,
-								factor);
-			} else
-			{
-				presentRotation = qkey->value;
-			}
+                  &qkey->value,
+                  &nextqKey->value,
+                  factor);
+         } else
+         {
+            presentRotation = qkey->value;
+         }
 #else
          presentRotation = qkey->value;
 #endif
 
-			oldNode->rotationTime = frame;
-		}
+         oldNode->rotationTime = frame;
+      }
 
-		/* ******** Scaling ********** */
-		presentScaling.x = 1;
+      /* ******** Scaling ********** */
+      presentScaling.x = 1;
       presentScaling.y = 1;
       presentScaling.z = 1;
 
-		if(node->scaling)
-		{
-			frame = (time >= animTick->oldTime) ? oldNode->scalingTime : 0;
-			while( frame < node->num_scaling - 1)
-			{
-				if( time < oldNode->scaling[frame+1]->time)
-					break;
-				++frame;
-			}
+      if(node->scaling)
+      {
+         frame = (time >= animTick->oldTime) ? oldNode->scalingTime : 0;
+         while( frame < node->num_scaling - 1)
+         {
+            if( time < oldNode->scaling[frame+1]->time)
+               break;
+            ++frame;
+         }
 
-			/* TODO: (thom) interpolation maybe? This time maybe even logarithmic, not linear */
-			presentScaling        = oldNode->scaling[frame]->value;
-			oldNode->scalingTime  = frame;
-		}
+         /* TODO: (thom) interpolation maybe? This time maybe even logarithmic, not linear */
+         presentScaling        = oldNode->scaling[frame]->value;
+         oldNode->scalingTime  = frame;
+      }
 
-		// build a transformation matrix from it
-		kmMat4 *mat = &node->bone->relativeMatrix;
+      // build a transformation matrix from it
+      kmMat4 *mat = &node->bone->relativeMatrix;
       kmMat4RotationQuaternion( mat, &presentRotation );
 
-		mat->mat[0] *= presentScaling.x; mat->mat[4] *= presentScaling.x; mat->mat[8] *= presentScaling.x;
-		mat->mat[1] *= presentScaling.y; mat->mat[5] *= presentScaling.y; mat->mat[9] *= presentScaling.y;
-		mat->mat[2] *= presentScaling.z; mat->mat[6] *= presentScaling.z; mat->mat[10] *= presentScaling.z;
+      mat->mat[0] *= presentScaling.x; mat->mat[4] *= presentScaling.x; mat->mat[8] *= presentScaling.x;
+      mat->mat[1] *= presentScaling.y; mat->mat[5] *= presentScaling.y; mat->mat[9] *= presentScaling.y;
+      mat->mat[2] *= presentScaling.z; mat->mat[6] *= presentScaling.z; mat->mat[10] *= presentScaling.z;
       mat->mat[3] = presentTranslation.x; mat->mat[7] = presentTranslation.y; mat->mat[11] = presentTranslation.z;
 
       node      = node->next;
@@ -282,5 +282,5 @@ void glAdvanceAnimTick( glAnimTick *animTick, float pTime )
    }
 
    /* old time */
-	animTick->oldTime = time;
+   animTick->oldTime = time;
 }

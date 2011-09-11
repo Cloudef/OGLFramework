@@ -4,12 +4,12 @@
 #include "texture.h"
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #elif  GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #else
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
@@ -18,13 +18,13 @@ glMaterial* glNewMaterial( void )
 {
    unsigned int i;
 
-	/* Allocate material object */
+   /* Allocate material object */
    glSetAlloc( ALLOC_MATERIAL );
-	glMaterial* object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
-	if(!object)
+   glMaterial* object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
+   if(!object)
       return( NULL );
 
-	/* Nullify pointers */
+   /* Nullify pointers */
    object->texture = glCalloc( _glCore.info.maxTextureUnits, sizeof(glTexture*) );
    if(!object->texture)
    {
@@ -47,11 +47,11 @@ glMaterial* glNewMaterial( void )
    glPuts("[A:MATERIAL]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Copy material object */
@@ -61,17 +61,17 @@ glMaterial* glCopyMaterial( glMaterial *src )
    glMaterial *object;
 
    /* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   if(!src) return( NULL );
 
-	/* Allocate scene object */
+   /* Allocate scene object */
    glSetAlloc( ALLOC_MATERIAL );
-	object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
-	if(!object)
+   object = (glMaterial*)glCalloc( 1, sizeof(glMaterial) );
+   if(!object)
       return( NULL );
 
-	/* Copy data */
+   /* Copy data */
    object->texture = glCopy( src->texture,
-                     _glCore.info.maxTextureUnits * sizeof(glTexture*) );
+         _glCore.info.maxTextureUnits * sizeof(glTexture*) );
    if(!object->texture)
    {
       glFree( object, sizeof(glMaterial) );
@@ -93,11 +93,11 @@ glMaterial* glCopyMaterial( glMaterial *src )
    glPuts("[C:MATERIAL]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Reference material object */
@@ -105,11 +105,11 @@ glMaterial* glRefMaterial( glMaterial *src )
 {
    glMaterial* object;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Point magic */
-	object                      = src;
+   /* Point magic */
+   object                      = src;
 
    /* Ref textures */
    object->texture = glMaterialRefTextures( object );
@@ -118,24 +118,24 @@ glMaterial* glRefMaterial( glMaterial *src )
    glPuts("[R:MATERIAL]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Free material object */
 int glFreeMaterial( glMaterial *object )
 {
-	/* Fuuuuuuuuu--- We have non valid object */
+   /* Fuuuuuuuuu--- We have non valid object */
    if(!object) return( RETURN_NOTHING );
 
-	/* Free textures */
+   /* Free textures */
    glMaterialFreeTexturesAll( object );
 
-	/* There is still references to this object alive */
-	if(--object->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--object->refCounter != 0) return( RETURN_NOTHING );
 
    glSetAlloc( ALLOC_MATERIAL );
 
@@ -148,7 +148,7 @@ int glFreeMaterial( glMaterial *object )
    glPuts("[F:MATERIAL]");
    logNormal();
 
-	/* Free scene object */
+   /* Free scene object */
    glFree( object, sizeof(glMaterial) );
    return( RETURN_OK );
 }

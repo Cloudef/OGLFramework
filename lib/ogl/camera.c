@@ -83,10 +83,10 @@ static void glCameraReset( glCamera *object )
 /* Allocate camera */
 glCamera* glNewCamera( void )
 {
-	/* Allocate camera */
+   /* Allocate camera */
    glSetAlloc( ALLOC_CAMERA );
-	glCamera *object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
-	if(!object)
+   glCamera *object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
+   if(!object)
       return( NULL );
 
    /* Defaults */
@@ -101,11 +101,11 @@ glCamera* glNewCamera( void )
    glPuts("[A:CAMERA]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Copy camera */
@@ -114,23 +114,23 @@ glCamera* glCopyCamera( glCamera *src )
    glCamera *object;
 
    /* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   if(!src) return( NULL );
 
-	/* Allocate scene object */
-	glSetAlloc( ALLOC_CAMERA );
+   /* Allocate scene object */
+   glSetAlloc( ALLOC_CAMERA );
    object = (glCamera*)glCalloc( 1, sizeof(glCamera) );
-	if(!object)
+   if(!object)
       return( NULL );
 
    logYellow();
    glPuts("[C:CAMERA]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Reference camera */
@@ -138,31 +138,31 @@ glCamera* glRefCamera( glCamera *src )
 {
    glCamera* object;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Point magic */
-	object                      = src;
+   /* Point magic */
+   object                      = src;
 
    logYellow();
    glPuts("[R:CAMERA]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Free camera */
 int glFreeCamera( glCamera *object )
 {
-	/* Fuuuuuuuuu--- We have non valid object */
+   /* Fuuuuuuuuu--- We have non valid object */
    if(!object) return( RETURN_NOTHING );
 
-	/* There is still references to this object alive */
-	if(--object->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--object->refCounter != 0) return( RETURN_NOTHING );
 
    glSetAlloc( ALLOC_CAMERA );
 

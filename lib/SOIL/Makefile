@@ -1,7 +1,7 @@
 SOURCE		= SOIL.c image_DXT.c image_helper.c stb_image_aug.c
-INCLUDES		= -I../../include
+INCLUDES	= -I../../include
 TARGET		= libSOIL.a
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -11,7 +11,7 @@ all: ${TARGET}
 
 ${TARGET}: ${OBJ}
 	${AR} rcs ../${TARGET} $^
-	cp SOIL.h 			../../include/
+	cp SOIL.h ../../include/
 
 clean:
 	${RM} -f ${OBJ}

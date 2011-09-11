@@ -10,14 +10,14 @@
 #include "core.h"
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #endif
 #ifdef GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #endif
 #if !defined(GLES1) && !defined(GLES2)
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
@@ -26,9 +26,9 @@ glVBO* glNewVBO( void )
 {
    unsigned int i;
 
-	/* Allocate VBO object */
+   /* Allocate VBO object */
    glSetAlloc( ALLOC_VBO );
-	glVBO *vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
+   glVBO *vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
    if(!vbo)
       return( NULL );
 
@@ -43,17 +43,17 @@ glVBO* glNewVBO( void )
       return( NULL );
    }
 
-	/* Nullify pointers */
+   /* Nullify pointers */
    i = 0;
    while(i != _glCore.info.maxTextureUnits)
    {
-	   vbo->uvw[i].coords  = NULL;
+      vbo->uvw[i].coords  = NULL;
       ++i;
    }
 
    vbo->tstance   = NULL;
-	vbo->vertices	= NULL;
-	vbo->normals	= NULL;
+   vbo->vertices  = NULL;
+   vbo->normals   = NULL;
 #if VERTEX_COLOR
    vbo->colors    = NULL;
 #endif
@@ -62,11 +62,11 @@ glVBO* glNewVBO( void )
    glPuts("[A:VBO]");
    logNormal();
 
-	/* Increase ref counter */
-	vbo->refCounter++;
+   /* Increase ref counter */
+   vbo->refCounter++;
 
-	/* Return VBO object */
-	return( vbo );
+   /* Return VBO object */
+   return( vbo );
 }
 
 /* Copy VBO object */
@@ -75,14 +75,14 @@ glVBO* glCopyVBO( glVBO *src )
    unsigned int i = 0;
    glVBO *vbo;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Allocate VBO object */
-	glSetAlloc( ALLOC_VBO );
+   /* Allocate VBO object */
+   glSetAlloc( ALLOC_VBO );
    vbo = (glVBO*)glCalloc( 1, sizeof(glVBO) );
    if(!vbo)
-       return( NULL );
+      return( NULL );
 
    /* Allocate uvws */
    vbo->uvw = glCalloc( _glCore.info.maxTextureUnits, sizeof(glUVW) );
@@ -92,7 +92,7 @@ glVBO* glCopyVBO( glVBO *src )
       return( NULL );
    }
 
-	/* Copy data */
+   /* Copy data */
    while(i != _glCore.info.maxTextureUnits)
    {
       glCopyCoordBuffer( vbo, src, i );
@@ -106,18 +106,18 @@ glVBO* glCopyVBO( glVBO *src )
 #endif
    if(src->tstance) glVBOPrepareTstance( vbo );
 
-   vbo->vbo_size	= src->vbo_size;
+   vbo->vbo_size  = src->vbo_size;
    vbo->hint      = src->hint;
 
    logYellow();
    glPuts("[C:VBO]");
    logNormal();
 
-	/* Increase ref counter */
-	vbo->refCounter++;
+   /* Increase ref counter */
+   vbo->refCounter++;
 
-	/* Return VBO object */
-	return( vbo );
+   /* Return VBO object */
+   return( vbo );
 }
 
 /* Reference VBO object */
@@ -125,21 +125,21 @@ glVBO* glRefVBO( glVBO *src )
 {
    glVBO *vbo;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Simple return pointer to same place */
-	vbo = src;
+   /* Simple return pointer to same place */
+   vbo = src;
 
    logYellow();
    glPuts("[R:VBO]");
    logNormal();
 
-	/* Increase ref counter */
-	vbo->refCounter++;
+   /* Increase ref counter */
+   vbo->refCounter++;
 
-	/* Return VBO object */
-	return( vbo );
+   /* Return VBO object */
+   return( vbo );
 }
 
 /* Free VBO object */
@@ -147,15 +147,15 @@ int glFreeVBO( glVBO *vbo )
 {
    unsigned int i;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!vbo) return( RETURN_NOTHING );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!vbo) return( RETURN_NOTHING );
 
-	/* There is still references to this object alive */
-	if(--vbo->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--vbo->refCounter != 0) return( RETURN_NOTHING );
 
    glSetAlloc( ALLOC_VBO );
 
-	/* Free all data */
+   /* Free all data */
    i = 0;
    while( i != _glCore.info.maxTextureUnits )
    {
@@ -179,8 +179,8 @@ int glFreeVBO( glVBO *vbo )
    glPuts("[F:VBO]");
    logNormal();
 
-	/* Free VBO object */
-	glFree( vbo, sizeof(glVBO) );
+   /* Free VBO object */
+   glFree( vbo, sizeof(glVBO) );
    return( RETURN_OK );
 }
 
@@ -328,7 +328,7 @@ int glVBOPrepareTstance( glVBO *vbo )
       return( RETURN_FAIL );
 
    memcpy( vbo->tstance, vbo->vertices,
-           vbo->v_num * sizeof(kmVec3) );
+         vbo->v_num * sizeof(kmVec3) );
 
    return( RETURN_OK );
 }
@@ -356,7 +356,7 @@ int glFreeVertexBuffer( glVBO *vbo )
    if(!vbo)
       return( RETURN_FAIL );
 
-	glSetAlloc( ALLOC_VBO );
+   glSetAlloc( ALLOC_VBO );
 
    glFree( vbo->vertices, sizeof(kmVec3) * vbo->v_num );
    vbo->vertices = NULL;
@@ -398,7 +398,7 @@ int glResetVertexBuffer( glVBO *vbo, unsigned int vertices )
 }
 
 int glInsertVertex( glVBO *vbo,
-                    const kmScalar x, const kmScalar y, const kmScalar z )
+      const kmScalar x, const kmScalar y, const kmScalar z )
 {
    kmVec3 vertex;
 
@@ -507,7 +507,7 @@ int glResetCoordBuffer( glVBO *vbo, unsigned int index, unsigned int vertices )
 }
 
 int glInsertCoord( glVBO *vbo, unsigned int index,
-                   const kmScalar x, const kmScalar y )
+      const kmScalar x, const kmScalar y )
 {
    kmVec2 vertex;
 
@@ -608,7 +608,7 @@ int glResetNormalBuffer( glVBO *vbo, unsigned int vertices )
 }
 
 int glInsertNormal( glVBO *vbo,
-                    const kmScalar x, const kmScalar y, const kmScalar z )
+      const kmScalar x, const kmScalar y, const kmScalar z )
 {
    kmVec3 vertex;
 
@@ -704,7 +704,7 @@ int glResetColorBuffer( glVBO *vbo, unsigned int vertices )
 }
 
 int glInsertColor( glVBO *vbo,
-                   const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a )
+      const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a )
 {
    if(!vbo)
       return( RETURN_FAIL );

@@ -12,17 +12,17 @@ extern "C" {
 #ifndef SOIL_FLAG_T
 typedef enum
 {
-	SOIL_FLAG_POWER_OF_TWO = 1,
-	SOIL_FLAG_MIPMAPS = 2,
-	SOIL_FLAG_TEXTURE_REPEATS = 4,
-	SOIL_FLAG_MULTIPLY_ALPHA = 8,
-	SOIL_FLAG_INVERT_Y = 16,
-	SOIL_FLAG_COMPRESS_TO_DXT = 32,
-	SOIL_FLAG_DDS_LOAD_DIRECT = 64,
-	SOIL_FLAG_NTSC_SAFE_RGB = 128,
-	SOIL_FLAG_CoCg_Y = 256,
-	SOIL_FLAG_TEXTURE_RECTANGLE = 512,
-   SOIL_FLAG_DEFAULTS = 1024
+   SOIL_FLAG_POWER_OF_TWO        = 1,
+   SOIL_FLAG_MIPMAPS             = 2,
+   SOIL_FLAG_TEXTURE_REPEATS     = 4,
+   SOIL_FLAG_MULTIPLY_ALPHA      = 8,
+   SOIL_FLAG_INVERT_Y            = 16,
+   SOIL_FLAG_COMPRESS_TO_DXT     = 32,
+   SOIL_FLAG_DDS_LOAD_DIRECT     = 64,
+   SOIL_FLAG_NTSC_SAFE_RGB       = 128,
+   SOIL_FLAG_CoCg_Y              = 256,
+   SOIL_FLAG_TEXTURE_RECTANGLE   = 512,
+   SOIL_FLAG_DEFAULTS            = 1024
 } SOIL_FLAG_T;
 #define SOIL_FLAG_T
 #endif
@@ -31,7 +31,7 @@ typedef enum
 typedef struct glTexture_t
 {
    /* GL Texture object */
-	unsigned int object;
+   unsigned int object;
 
    /* string used to identify in texture cache */
    char *file;
@@ -50,7 +50,7 @@ typedef struct glTexture_t
    /* uvw index */
    unsigned int  uvw;
 
- 	unsigned int refCounter;
+   unsigned int refCounter;
 } glTexture;
 
 typedef struct glTextureCache_t
@@ -70,7 +70,7 @@ int        glFreeTexture( glTexture* );         /* Free texture */
 
 /* Create GL texture manually */
 int glTextureCreate(  glTexture*, unsigned char *data,
-      int width, int height, int channels, unsigned int flags );
+    int width, int height, int channels, unsigned int flags );
 
 /* Save texture to TGA */
 int glTextureSave( glTexture *texture, const char *path );

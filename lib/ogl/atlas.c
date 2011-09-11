@@ -128,7 +128,7 @@ int glAtlasAddTexture( glAtlas *atlas, glTexture *texture )
       atlas->rect = glCalloc( atlas->num_textures, sizeof(glAtlasRect) );
    else
       atlas->rect = glRealloc( atlas->rect, atlas->num_textures - 1,
-                              atlas->num_textures, sizeof(glAtlasRect) );
+                               atlas->num_textures, sizeof(glAtlasRect) );
 
    /* check success */
    if(!atlas->rect)
@@ -261,11 +261,11 @@ glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
 
    Uint32 rmask, gmask, bmask, amask;
 
-	#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
-	#else
-	rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
-	#endif
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+   rmask = 0xff000000; gmask = 0x00ff0000; bmask = 0x0000ff00; amask = 0x000000ff;
+#else
+   rmask = 0x000000ff; gmask = 0x0000ff00; bmask = 0x00ff0000; amask = 0xff000000;
+#endif
 
    if(!atlas)
       return( NULL );
@@ -285,7 +285,7 @@ glTexture* glAtlasPack( glAtlas *atlas, int pow2, int border )
    for(; i != atlas->num_textures; ++i)
    {
       glTexturePackerAdd( tp,
-            atlas->rect[i].texture->width, atlas->rect[i].texture->height );
+         atlas->rect[i].texture->width, atlas->rect[i].texture->height );
    }
 
    /* pack */

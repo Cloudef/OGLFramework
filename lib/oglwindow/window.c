@@ -102,8 +102,8 @@ int glCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
    EGLConfig g_allConfigs[g_totalConfigsIn];
    EGLConfig g_eglConfig;
 
-   if(eglChooseConfig(g_eglDisplay, s_configAttribs, g_allConfigs, g_totalConfigsIn, &numConfigsOut) != EGL_TRUE ||
-         numConfigsOut == 0)
+   if(eglChooseConfig(g_eglDisplay, s_configAttribs, g_allConfigs, g_totalConfigsIn, &numConfigsOut) != EGL_TRUE
+      || numConfigsOut == 0)
    {
       logPuts(logFile,"[WINDOW] Could not find suitable EGL configuration");
       return( RETURN_FAIL );
@@ -165,25 +165,25 @@ struct SDL_Surface *glGetSDLSurface(void)
 
 void glCloseWindow(void)
 {
-   #if defined(GLES1) || defined(GLES2)
-	if(g_eglDisplay)
+#if defined(GLES1) || defined(GLES2)
+   if(g_eglDisplay)
    {
-		eglMakeCurrent(g_eglDisplay, NULL, NULL, EGL_NO_CONTEXT);
+      eglMakeCurrent(g_eglDisplay, NULL, NULL, EGL_NO_CONTEXT);
       if(g_eglContext)
          eglDestroyContext(g_eglDisplay, g_eglContext);
-	   if(g_eglSurface)
+      if(g_eglSurface)
          eglDestroySurface(g_eglDisplay, g_eglSurface);
-	   eglTerminate(g_eglDisplay);
+      eglTerminate(g_eglDisplay);
 
       g_eglSurface = 0;
-	   g_eglContext = 0;
-	   g_eglDisplay = 0;
+      g_eglContext = 0;
+      g_eglDisplay = 0;
    }
 
-	if (x11Disp)
-		XCloseDisplay(x11Disp);
-	x11Disp = NULL;
-   #endif
+   if (x11Disp)
+      XCloseDisplay(x11Disp);
+   x11Disp = NULL;
+#endif
 }
 
 void glSwapBuffers(void)
@@ -191,7 +191,7 @@ void glSwapBuffers(void)
 #if defined(GLES1) || defined(GLES2)
    eglSwapBuffers(g_eglDisplay, g_eglSurface);
 #else
-	SDL_GL_SwapBuffers();
+   SDL_GL_SwapBuffers();
 #endif
 }
 

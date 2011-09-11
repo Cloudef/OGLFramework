@@ -1,7 +1,7 @@
 SOURCE		= input.c
-INCLUDES		= -I.
+INCLUDES	= -I.
 TARGET		= libinput.a
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -10,8 +10,8 @@ all: ${TARGET}
 	${CC} ${CFLAGS} ${INCLUDES} -c $^ -o $@
 
 ${TARGET}: ${OBJ}
-	${AR} rcs ../${TARGET} $^
-	cp input.h 			../../include/
+	${AR} rcs  ../${TARGET} $^
+	cp input.h ../../include/
 
 clean:
 	${RM} -f ${OBJ}

@@ -7,14 +7,14 @@
 #include "config.h"
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #endif
 #ifdef GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #endif
 #if !defined(GLES1) && !defined(GLES2)
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
@@ -25,7 +25,7 @@ glIBO* glNewIBO( void )
    unsigned int i;
 #endif
 
-	/* Allocate IBO object */
+   /* Allocate IBO object */
    glSetAlloc( ALLOC_IBO );
    glIBO *ibo = (glIBO*)glCalloc( 1, sizeof(glIBO) );
    if(!ibo)
@@ -42,18 +42,18 @@ glIBO* glNewIBO( void )
       ++i;
    }
 #else
-   ibo->indices   = NULL;
+   ibo->indices = NULL;
 #endif
 
    logGreen();
    glPuts("[A:IBO]");
    logNormal();
 
-	/* Increase ref counter */
-	ibo->refCounter++;
+   /* Increase ref counter */
+   ibo->refCounter++;
 
-	/* Return IBO object */
-	return( ibo );
+   /* Return IBO object */
+   return( ibo );
 }
 
 /* Copy IBO object */
@@ -61,30 +61,30 @@ glIBO* glCopyIBO( glIBO *src )
 {
    glIBO *ibo;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Allocate IBO object */
+   /* Allocate IBO object */
    glSetAlloc( ALLOC_IBO );
-	ibo = (glIBO*)glCalloc( 1, sizeof(glIBO) );
+   ibo = (glIBO*)glCalloc( 1, sizeof(glIBO) );
    if(!ibo)
-       return( NULL );
+      return( NULL );
 
-	/* Copy data */
+   /* Copy data */
    glCopyIndexBuffer( ibo, src );
 
-   ibo->ibo_size	= src->ibo_size;
-	ibo->hint	   = src->hint;
+   ibo->ibo_size  = src->ibo_size;
+   ibo->hint	  = src->hint;
 
    logYellow();
    glPuts("[C:IBO]");
    logNormal();
 
-	/* Increase ref counter */
-	ibo->refCounter++;
+   /* Increase ref counter */
+   ibo->refCounter++;
 
-	/* Return IBO object */
-	return( ibo );
+   /* Return IBO object */
+   return( ibo );
 }
 
 /* Reference IBO object */
@@ -92,35 +92,35 @@ glIBO* glRefIBO( glIBO *src )
 {
    glIBO *ibo;
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) return( NULL );
 
-	/* Simple return pointer to same place */
-	ibo = src;
+   /* Simple return pointer to same place */
+   ibo = src;
 
    logYellow();
    glPuts("[R:IBO]");
    logNormal();
 
-	/* Increase ref counter */
-	ibo->refCounter++;
+   /* Increase ref counter */
+   ibo->refCounter++;
 
-	/* Return IBO object */
-	return( ibo );
+   /* Return IBO object */
+   return( ibo );
 }
 
 /* Free IBO object */
 int glFreeIBO( glIBO *ibo )
 {
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!ibo) return( RETURN_NOTHING );
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!ibo) return( RETURN_NOTHING );
 
-	/* There is still references to this object alive */
-	if(--ibo->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--ibo->refCounter != 0) return( RETURN_NOTHING );
 
    glSetAlloc( ALLOC_IBO );
 
-	/* Free all data */
+   /* Free all data */
    glFreeIndexBuffer( ibo );
 
    /* delete ibo */
@@ -131,8 +131,8 @@ int glFreeIBO( glIBO *ibo )
    glPuts("[F:IBO]");
    logNormal();
 
-	/* Free IBO object */
-	glFree( ibo, sizeof(glIBO) );
+   /* Free IBO object */
+   glFree( ibo, sizeof(glIBO) );
    return( RETURN_OK );
 }
 

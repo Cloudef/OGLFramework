@@ -2,10 +2,10 @@
 #define OGL_H
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #else
-#	include "GL/glew.h"
-#	include "GL/gl.h"
+#  include "GL/glew.h"
+#  include "GL/gl.h"
 #endif
 
 #include "kazmath/kazmath.h"

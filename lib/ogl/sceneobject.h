@@ -13,20 +13,20 @@ extern "C" {
 /* sceneobject struct */
 typedef struct glObject_t
 {
-	glMaterial  *material;
-	glVBO       *vbo;
+   glMaterial  *material;
+   glVBO       *vbo;
    glIBO       *ibo;
 
    /* Animator */
    glAnimator  *animator;
 
    /* Matrix */
- 	kmMat4 matrix;
+   kmMat4 matrix;
 
    /* Translation */
- 	kmVec3 translation;
-	kmVec3 rotation;
-	kmVec3 scale;
+   kmVec3 translation;
+   kmVec3 rotation;
+   kmVec3 scale;
    kmVec3 target;
 
    /* Bounding box */
@@ -34,20 +34,20 @@ typedef struct glObject_t
 
    /* GL Primitive type,
     * GL_TRIANGLES, GL_TRIANGLE_STRIP etc */
- 	unsigned int primitive_type;
+   unsigned int primitive_type;
 
-	uint8_t      transform_changed;
+   uint8_t      transform_changed;
 
    /* childs */
    struct glObject_t **child;
    unsigned int num_childs;
 
- 	unsigned int refCounter;
+   unsigned int refCounter;
 } glObject;
 
-glObject*   glNewObject( void );			               /* Allocate sceneobject */
-glObject*   glCopyObject( glObject *src );	         /* Copy sceneobject  */
-glObject*   glRefObject( glObject *src );	            /* Reference sceneobject  */
+glObject*   glNewObject( void );		      /* Allocate sceneobject */
+glObject*   glCopyObject( glObject *src );	      /* Copy sceneobject  */
+glObject*   glRefObject( glObject *src );	      /* Reference sceneobject  */
 int         glFreeObject( glObject *object );	      /* Free sceneobject */
 void        glDraw( glObject *object );               /* Draw sceneobject */
 

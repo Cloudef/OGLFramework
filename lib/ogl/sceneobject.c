@@ -4,34 +4,34 @@
 #include "texture.h"
 
 #ifdef GLES2
-#	include <GLES2/gl2.h>
+#  include <GLES2/gl2.h>
 #elif  GLES1
 #  include <GLES/gl.h>
 #  include <GLES/glext.h>
 #else
-#	include <GL/glew.h>
+#  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
 
 /* Allocate scene object */
 glObject* glNewObject( void )
 {
-	/* Allocate scene object */
-	glSetAlloc( ALLOC_SCENEOBJECT );
+   /* Allocate scene object */
+   glSetAlloc( ALLOC_SCENEOBJECT );
    glObject *object = (glObject*)glCalloc( 1, sizeof(glObject) );
-	if(!object)
+   if(!object)
       return( NULL );
 
-	/* Nullify pointers */
-	object->material	      = NULL;
-	object->vbo		         = NULL;
+   /* Nullify pointers */
+   object->material	   = NULL;
+   object->vbo		   = NULL;
    object->ibo             = NULL;
 
    object->animator        = NULL;
    object->child           = NULL;
 
-	/* Default primitive type */
-	object->primitive_type = GL_TRIANGLE_STRIP;
+   /* Default primitive type */
+   object->primitive_type = GL_TRIANGLE_STRIP;
 
    /* Default transformation */
    object->scale.x = 100; object->scale.y = 100; object->scale.z = 100;
@@ -43,11 +43,11 @@ glObject* glNewObject( void )
    glPuts("[A:SCENEOBJECT]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Copy scene object */
@@ -56,28 +56,28 @@ glObject* glCopyObject( glObject *src )
    glObject *object;
 
    /* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+   if(!src) return( NULL );
 
-	/* Allocate scene object */
+   /* Allocate scene object */
    glSetAlloc( ALLOC_SCENEOBJECT );
-	object = (glObject*)glCalloc( 1, sizeof(glObject) );
-	if(!object)
+   object = (glObject*)glCalloc( 1, sizeof(glObject) );
+   if(!object)
       return( NULL );
 
-	/* Copy data */
-	object->matrix                = src->matrix;
-	object->translation	         = src->translation;
-	object->rotation              = src->rotation;
-	object->scale		            = src->scale;
-	object->target			         = src->target;
+   /* Copy data */
+   object->matrix                = src->matrix;
+   object->translation	         = src->translation;
+   object->rotation              = src->rotation;
+   object->scale		 = src->scale;
+   object->target	         = src->target;
 
    object->aabb_box              = src->aabb_box;
 
-	/* Reference data */
-	object->material	            = glRefMaterial( src->material );
+   /* Reference data */
+   object->material	         = glRefMaterial( src->material );
 
    if(!src->animator) /* reference when no anim */
-      object->vbo		            = glRefVBO( src->vbo );
+      object->vbo		 = glRefVBO( src->vbo );
    else
       object->vbo                = glCopyVBO( src->vbo );
 
@@ -88,8 +88,8 @@ glObject* glCopyObject( glObject *src )
    object->child                 = glObjectCopyChilds( src );
    object->num_childs            = src->num_childs;
 
-	/* Copy hints */
-	object->primitive_type	      = src->primitive_type;
+   /* Copy hints */
+   object->primitive_type	 = src->primitive_type;
 
    /* Update it */
    object->transform_changed = 1;
@@ -98,11 +98,11 @@ glObject* glCopyObject( glObject *src )
    glPuts("[C:SCENEOBJECT]");
    logNormal();
 
-	/* Increase ref counter */
-	object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+   /* Return the instance */
+   return( object );
 }
 
 /* Reference scene object */
@@ -116,15 +116,15 @@ glObject* glRefObject( glObject *src )
 	/* Point magic */
 	object                      = src;
 
-	/* Reference data */
-	object->material	         = glRefMaterial( src->material );
-	object->vbo		            = glRefVBO( src->vbo );
-   object->ibo                = glRefIBO( src->ibo );
-   object->animator           = glRefAnimator( src->animator );
+        /* Reference data */
+        object->material	    = glRefMaterial( src->material );
+        object->vbo		    = glRefVBO( src->vbo );
+        object->ibo                 = glRefIBO( src->ibo );
+        object->animator            = glRefAnimator( src->animator );
 
-   logYellow();
-   glPuts("[R:SCENEOBJECT]");
-   logNormal();
+        logYellow();
+        glPuts("[R:SCENEOBJECT]");
+        logNormal();
 
 	/* Increase ref counter */
 	object->refCounter++;
@@ -138,14 +138,14 @@ int glFreeObject( glObject *object )
 {
    unsigned int i;
 
-	/* Fuuuuuuuuu--- We have non valid object */
+   /* Fuuuuuuuuu--- We have non valid object */
    if(!object) return( RETURN_NOTHING );
 
-	/* Free material ( if any ) */
-	if(glFreeMaterial( object->material ) == RETURN_OK)
+   /* Free material ( if any ) */
+   if(glFreeMaterial( object->material ) == RETURN_OK)
       object->material = NULL;
 
-	/* Free VBO Object */
+   /* Free VBO Object */
    if(glFreeVBO( object->vbo )           == RETURN_OK)
       object->vbo = NULL;
 
@@ -165,8 +165,8 @@ int glFreeObject( glObject *object )
          object->child[i] = NULL;
    }
 
-	/* There is still references to this object alive */
-	if(--object->refCounter != 0) return( RETURN_NOTHING );
+   /* There is still references to this object alive */
+   if(--object->refCounter != 0) return( RETURN_NOTHING );
 
    glSetAlloc( ALLOC_SCENEOBJECT );
 
@@ -743,37 +743,37 @@ void glShiftObject( glObject *object, unsigned int uvw, int width, int height, u
    if(!baseCoords)
       baseCoords = object->vbo->uvw[ uvw ].coords;
 
-	windex = 0;
-	hindex = 1;
+   windex = 0;
+   hindex = 1;
 
    x = 0;
-	for(; x < index; x++)
-	{
-		if( width * windex >= texture->width - width )
-		{
-			windex = 0;
-			++hindex;
-		}
-		else
-		{
-			++windex;
-		}
-	}
+   for(; x < index; x++)
+   {
+      if( width * windex >= texture->width - width )
+      {
+         windex = 0;
+         ++hindex;
+      }
+      else
+      {
+         ++windex;
+      }
+   }
    pos.x = width * windex;
    pos.y = texture->height - height * hindex;
 
    awidth  = width  / (float)texture->width;
-	aheight = height / (float)texture->height;
+   aheight = height / (float)texture->height;
 
    x = 0;
-	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
-	{
-		object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + pos.x / (float)texture->width;
-		object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + pos.y / (float)texture->height;
-	}
+   for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+   {
+      object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + pos.x / (float)texture->width;
+      object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + pos.y / (float)texture->height;
+   }
 
    object->vbo->up_to_date = 0;
-	glVBOUpdate( object->vbo );
+   glVBOUpdate( object->vbo );
 }
 
 /* offset object's texture */
@@ -806,14 +806,14 @@ void glOffsetObjectTexture( glObject *object, unsigned int uvw, int px, int py, 
    aheight = height / (float)texture->height;
 
    x = 0;
-	for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
-	{
-		object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + px / (float)texture->width;
-		object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + py / (float)texture->height;
-	}
+   for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+   {
+      object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + px / (float)texture->width;
+      object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + py / (float)texture->height;
+   }
 
    object->vbo->up_to_date = 0;
-	glVBOUpdate( object->vbo );
+   glVBOUpdate( object->vbo );
 }
 
 /* EoF */

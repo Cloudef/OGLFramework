@@ -1,7 +1,7 @@
 SOURCE		= window.c
-INCLUDES		= -I../../include
+INCLUDES	= -I../../include
 TARGET		= liboglwindow.a
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -10,8 +10,8 @@ all: ${TARGET}
 	${CC} ${CFLAGS} ${INCLUDES} -c $^ -o $@
 
 ${TARGET}: ${OBJ}
-	${AR} rcs ../${TARGET} $^
-	cp window.h 			../../include/ogl/
+	${AR} rcs   ../${TARGET} $^
+	cp window.h ../../include/ogl/
 
 clean:
 	${RM} -f ${OBJ}
