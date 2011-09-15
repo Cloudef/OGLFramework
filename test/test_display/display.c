@@ -43,8 +43,6 @@ static void cleanup( int ret )
 
 int main( int argc, char **argv )
 {
-   glObject *obj;
-
    unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
    int            width = 800;
    int            height= 480;

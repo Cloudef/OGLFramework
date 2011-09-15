@@ -44,6 +44,12 @@
    #define WITH_ASSIMP     0
 #endif
 
+#if GLES1
+   #define SHADER_SUPPORT  0
+#else
+   #define SHADER_SUPPORT  1
+#endif
+
 #endif /* GL_CONFIG_H */
 
 /* EoF */

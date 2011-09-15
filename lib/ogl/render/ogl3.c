@@ -307,16 +307,13 @@ static void glOGL3_setup( glObject *object )
 
 static void glOGL3_draw( glObject *object )
 {
-   glLoadMatrixf( (float*)&_glCore.render.projection );
-   glMultMatrixf( (float*)&object->matrix );
-
    glOGL3_setup( object );
 
    drawObject( object );
    drawAABB( object );
 }
 
-/* OpenGL 1.4+ renderer */
+/* OpenGL 3.1+ renderer */
 int glOGL3( void )
 {
    _glCore.render.draw     = glOGL3_draw;

@@ -1,6 +1,8 @@
 #ifndef LOGFILE_H
 #define LOGFILE_H
 
+#include "stdio.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -2,6 +2,7 @@ SOURCE		= framework.c alloc.c sceneobject.c vbo.c	\
 		  ibo.c texture.c logfile_wrapper.c material.c  \
 		  atlas.c camera.c SDL/SDL_rotozoom.c		\
 		  $(patsubst %.c,%,$(wildcard render/*.c)) 	\
+ 		  $(patsubst %.c,%,$(wildcard shader/*.c)) 	\
 		  $(patsubst %.c,%,$(wildcard geometry/*.c))    \
 		  $(patsubst %.c,%,$(wildcard skeletal/*.c))	\
 		  $(patsubst %.c,%,$(wildcard import/*.c)) 	\
@@ -32,6 +33,8 @@ ${TARGET}: ${OBJ}
 	cp material.h		../../include/ogl/
 	cp atlas.h		../../include/ogl/
 	cp camera.h		../../include/ogl/
+	mkdir -p 		../../include/ogl/shader
+	cp shader/*.h		../../include/ogl/shader/
 	mkdir -p 		../../include/ogl/skeletal
 	cp skeletal/*.h		../../include/ogl/skeletal/
 

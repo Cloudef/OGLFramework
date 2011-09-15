@@ -18,6 +18,7 @@ typedef enum
    ALLOC_BONE,          /* Bones */
    ALLOC_ANIMATOR,      /* Animators */
    ALLOC_EVALUATOR,     /* Evaluators */
+   ALLOC_SHADER,        /* Shaders */
    ALLOC_MATERIAL,      /* Materials */
    ALLOC_TEXTURE,       /* Textures */
    ALLOC_TEXTURE_CACHE, /* Texture cache */

@@ -13,6 +13,7 @@
 #include "framework.h"
 #include "sceneobject.h"
 #include "skeletal/evaluator.h"
+#include "shader/shader.h"
 
 #endif /* OGL_H */
 

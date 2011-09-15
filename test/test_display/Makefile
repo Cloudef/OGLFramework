@@ -1,8 +1,8 @@
 SOURCE		= display.c
-INCLUDES		= -I../../include
-LIB		   = -L../../lib
-TARGET		= display
-OBJ			= $(addsuffix .o, $(basename $(SOURCE)))
+INCLUDES	= -I../../include
+LIB		= -L../../lib
+TARGET		= display.bin
+OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
 all: ${TARGET}
 	@true
@@ -16,4 +16,4 @@ ${TARGET}: ${OBJ}
 
 clean:
 	${RM} -f ${OBJ}
-	${RM} -f ../bin/${TARGET}   
+	${RM} -f ../bin/${TARGET}

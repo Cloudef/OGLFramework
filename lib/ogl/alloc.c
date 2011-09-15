@@ -11,7 +11,7 @@ gleAlloc   GL_D_ALLOC                     = ALLOC_CORE;
 static size_t     GL_ALLOC [ ALLOC_LAST ] =
 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 static char*      GL_ALLOCN[ ALLOC_LAST ] =
-{ "Core", "Camera", "Sceneobject", "IBO", "VBO", "Animation", "Bone", "Animator", "Evaluator", "Material", "Texture", "Texture Cache", "Atlas", "Total" };
+{ "Core", "Camera", "Sceneobject", "IBO", "VBO", "Animation", "Bone", "Animator", "Evaluator", "Shader", "Material", "Texture", "Texture Cache", "Atlas", "Total" };
 
 #define ALLOC_CRITICAL 100 * 1048576 /* 100 MiB */
 #define ALLOC_HIGH     80  * 1048576 /* 80  MiB */
