@@ -2,7 +2,7 @@ SOURCE		= framework.c alloc.c sceneobject.c vbo.c	\
 		  ibo.c texture.c logfile_wrapper.c material.c  \
 		  atlas.c camera.c SDL/SDL_rotozoom.c		\
 		  $(patsubst %.c,%,$(wildcard render/*.c)) 	\
- 		  $(patsubst %.c,%,$(wildcard shader/*.c)) 	\
+		  $(patsubst %.c,%,$(wildcard shader/*.c)) 	\
 		  $(patsubst %.c,%,$(wildcard geometry/*.c))    \
 		  $(patsubst %.c,%,$(wildcard skeletal/*.c))	\
 		  $(patsubst %.c,%,$(wildcard import/*.c)) 	\
