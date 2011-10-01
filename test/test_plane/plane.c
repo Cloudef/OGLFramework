@@ -2,9 +2,9 @@
 #include <limits.h>
 #include <SDL/SDL.h>
 
-#include "ogl/ogl.h"
-#include "ogl/window.h"
-#include "input.h"
+#include "DL/dl.h"
+#include "DL/dlWindow.h"
+#include "DL/dlInput.h"
 
 #ifdef WIN32
 #define LINE_MAX 254
@@ -18,17 +18,17 @@ static void keyHandle( void )
    {
       switch (event.type) {
          case SDL_KEYDOWN:
-            keyAdd(event.key.keysym.sym);
+            dlKeyAdd(event.key.keysym.sym);
          break;  /* SDL_KEYDOWN */
          case SDL_KEYUP:
-            keyDel(event.key.keysym.sym);
+            dlKeyDel(event.key.keysym.sym);
          break;  /* SDL_KEYUP */
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
          case SDL_VIDEORESIZE:
          break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
-            keyAdd(SDLK_ESCAPE);
+            dlKeyAdd(SDLK_ESCAPE);
          break;  /* SDL_QUIT */
       }
    }
@@ -36,12 +36,12 @@ static void keyHandle( void )
 
 static void cleanup( int ret )
 {
-   glFreeDisplay();
-   glCloseWindow();
+   dlFreeDisplay();
+   dlCloseWindow();
    SDL_Quit();
 
    /* exit graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    exit( ret );
 }
@@ -49,9 +49,9 @@ static void cleanup( int ret )
 int main( int argc, char **argv )
 {
    float x = 0;
-   glCamera *camera;
-   glObject *obj, *obj2, *obj3;
-   glTexture *texture;
+   dlCamera *camera;
+   dlObject *obj, *obj2, *obj3;
+   dlTexture *texture;
 
    /* FPS Counter */
    unsigned int   now          = 0;
@@ -78,52 +78,52 @@ int main( int argc, char **argv )
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateWindow( width, height, bits, flags ) != 0)
+   if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
-   camera = glNewCamera();
+   camera = dlNewCamera();
    if(!camera)
       cleanup(EXIT_FAILURE);
 
    /* Sets this as active camera */
-   glCameraRender( camera );
+   dlCameraRender( camera );
 
-   texture = glNewTexture( "model/test.png", SOIL_FLAG_DEFAULTS );
+   texture = dlNewTexture( "model/test.png", SOIL_FLAG_DEFAULTS );
    if(!texture)
       cleanup(EXIT_FAILURE);
 
-   obj = glNewPlane( 0.005, 0.005, 1 );
+   obj = dlNewPlane( 0.005, 0.005, 1 );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
    /* Add texture to plane
     * note: This steals the reference of texture object, so you don't have to free it.
     * If you want to still have reference to the texture after object dies, use glRefTexture( texture ); */
-   glObjectAddTexture( obj, 0, texture );
+   dlObjectAddTexture( obj, 0, texture );
 
-   obj2 = glCopyObject( obj );
+   obj2 = dlCopyObject( obj );
    if(!obj2)
       cleanup(EXIT_FAILURE);
 
-   obj3 = glCopyObject( obj );
+   obj3 = dlCopyObject( obj );
    if(!obj3)
       cleanup(EXIT_FAILURE);
 
    /* Move objects a bit */
-   glMoveObjectf( obj, -0.5, 0, 0 );
-   glMoveObjectf( obj2, 0.5, 0, 0 );
+   dlMoveObjectf( obj, -0.5, 0, 0 );
+   dlMoveObjectf( obj2, 0.5, 0, 0 );
 
    /* make center object transparent */
-   obj3->material->flags = GL_MATERIAL_ALPHA;
+   obj3->material->flags = DL_MATERIAL_ALPHA;
 
    /* startup graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    /* wait for escape key */
-   while(!keyPress(SDLK_ESCAPE))
+   while(!dlKeyPress(SDLK_ESCAPE))
    {
       last  = now;
       now   = SDL_GetTicks();
@@ -132,13 +132,13 @@ int main( int argc, char **argv )
       keyHandle();
 
       x += 1.0f;
-      glRotateObjectf( obj3, 0, x, 0 );
+      dlRotateObjectf( obj3, 0, x, 0 );
 
-      glDraw( obj  );
-      glDraw( obj2 );
-      glDraw( obj3 );
+      dlDraw( obj  );
+      dlDraw( obj2 );
+      dlDraw( obj3 );
 
-      glSwapBuffers();
+      dlSwapBuffers();
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       if(fpsDelay < SDL_GetTicks())
@@ -155,10 +155,10 @@ int main( int argc, char **argv )
       ++frameCounter;
       duration += delta;
    }
-   glFreeObject(obj);
-   glFreeObject(obj2);
-   glFreeObject(obj3);
-   glFreeCamera(camera);
+   dlFreeObject(obj);
+   dlFreeObject(obj2);
+   dlFreeObject(obj3);
+   dlFreeCamera(camera);
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

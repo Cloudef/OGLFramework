@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <SDL/SDL.h>
 
-#include "ogl/ogl.h"
-#include "ogl/window.h"
-#include "input.h"
+#include "DL/dl.h"
+#include "DL/dlWindow.h"
+#include "DL/dlInput.h"
 
 static void keyHandle( void )
 {
@@ -13,17 +13,17 @@ static void keyHandle( void )
    {
       switch (event.type) {
          case SDL_KEYDOWN:
-            keyAdd(event.key.keysym.sym);
+            dlKeyAdd(event.key.keysym.sym);
          break;  /* SDL_KEYDOWN */
          case SDL_KEYUP:
-            keyDel(event.key.keysym.sym);
+            dlKeyDel(event.key.keysym.sym);
          break;  /* SDL_KEYUP */
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
          case SDL_VIDEORESIZE:
          break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
-            keyAdd(SDLK_ESCAPE);
+            dlKeyAdd(SDLK_ESCAPE);
          break;  /* SDL_QUIT */
       }
    }
@@ -31,19 +31,19 @@ static void keyHandle( void )
 
 static void cleanup( int ret )
 {
-   glFreeDisplay();
-   glCloseWindow();
+   dlFreeDisplay();
+   dlCloseWindow();
    SDL_Quit();
 
    /* exit graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    exit( ret );
 }
 
 int main( int argc, char **argv )
 {
-   glShader *shader;
+   dlShader *shader;
 
    unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
    int            width = 800;
@@ -59,25 +59,25 @@ int main( int argc, char **argv )
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateWindow( width, height, bits, flags ) != 0)
+   if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
    /* create shader */
-   shader = glNewShader( "shader/ogl3.shd" );
+   shader = dlNewShader( "shader/ogl3.shd" );
 
    /* startup graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    /* wait for escape key */
-   while(!keyPress(SDLK_ESCAPE))
+   while(!dlKeyPress(SDLK_ESCAPE))
    {
       keyHandle();
-      glSwapBuffers();
+      dlSwapBuffers();
    }
-   glFreeShader( shader );
+   dlFreeShader( shader );
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

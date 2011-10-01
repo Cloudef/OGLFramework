@@ -2,9 +2,9 @@
 #include <limits.h>
 #include <SDL/SDL.h>
 
-#include "ogl/ogl.h"
-#include "ogl/window.h"
-#include "input.h"
+#include "DL/dl.h"
+#include "DL/dlWindow.h"
+#include "DL/dlInput.h"
 
 #include "kazmath/kazmath.h"
 
@@ -20,17 +20,17 @@ static void keyHandle( void )
    {
       switch (event.type) {
          case SDL_KEYDOWN:
-            keyAdd(event.key.keysym.sym);
+            dlKeyAdd(event.key.keysym.sym);
          break;  /* SDL_KEYDOWN */
          case SDL_KEYUP:
-            keyDel(event.key.keysym.sym);
+            dlKeyDel(event.key.keysym.sym);
          break;  /* SDL_KEYUP */
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
          case SDL_VIDEORESIZE:
          break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
-            keyAdd(SDLK_ESCAPE);
+            dlKeyAdd(SDLK_ESCAPE);
          break;  /* SDL_QUIT */
       }
    }
@@ -38,12 +38,12 @@ static void keyHandle( void )
 
 static void cleanup( int ret )
 {
-   glFreeDisplay();
-   glCloseWindow();
+   dlFreeDisplay();
+   dlCloseWindow();
    SDL_Quit();
 
    /* exit graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    exit( ret );
 }
@@ -52,14 +52,14 @@ int main( int argc, char **argv )
 {
    float x = 0;
 
-   glCamera *camera;
-   glObject *obj = NULL;
+   dlCamera *camera;
+   dlObject *obj = NULL;
 #if WITH_PMD
-   glObject  *mokou, *reisen, *kaguya;
-   glObject  *plane;
+   dlObject  *mokou, *reisen, *kaguya;
+   dlObject  *plane;
 #elif WITH_ASSIMP
-   glTexture *texture;
-   glObject  *obj2, *obj3;
+   dlTexture *texture;
+   dlObject  *obj2, *obj3;
 #elif WITH_OPENCTM
 
 #endif
@@ -89,88 +89,88 @@ int main( int argc, char **argv )
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateWindow( width, height, bits, flags ) != 0)
+   if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(glCreateDisplay( width, height, GL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
 
-   camera = glNewCamera();
+   camera = dlNewCamera();
    if(!camera)
       cleanup(EXIT_FAILURE);
 
 #if WITH_PMD
-   glPositionCameraf( camera, 0,0,2 );
+   dlPositionCameraf( camera, 0,0,2 );
 
-   plane = glNewPlane( 0.02, 0.02, 1 );
+   plane = dlNewPlane( 0.02, 0.02, 1 );
    if(!plane)
       cleanup(EXIT_FAILURE);
 
-   glPositionObjectf( plane, 0.021, -0.01, 0.5f );
-   glScaleObjectf( plane, 1, 1, 1 );
+   dlPositionObjectf( plane, 0.021, -0.01, 0.5f );
+   dlScaleObjectf( plane, 1, 1, 1 );
 
-   mokou = glNewStaticModel( "model/Mokou/Mokou A.pmd" );
+   mokou = dlNewStaticModel( "model/Mokou/Mokou A.pmd" );
    if(!mokou)
       cleanup(EXIT_FAILURE);
 
-   reisen = glNewStaticModel( "model/Reisen/Reisen.pmd" );
+   reisen = dlNewStaticModel( "model/Reisen/Reisen.pmd" );
    if(!reisen)
       cleanup(EXIT_FAILURE);
 
-   kaguya = glNewStaticModel( "model/Kaguya/Kaguya.pmd" );
+   kaguya = dlNewStaticModel( "model/Kaguya/Kaguya.pmd" );
    if(!kaguya)
       cleanup(EXIT_FAILURE);
 
-   glScaleObjectf( reisen, 0.002, 0.002, 0.002 );
-   glPositionObjectf( reisen, 0, -0.02, 0 );
+   dlScaleObjectf( reisen, 0.002, 0.002, 0.002 );
+   dlPositionObjectf( reisen, 0, -0.02, 0 );
 
-   glScaleObjectf( mokou, 0.002, 0.002, 0.002 );
-   glPositionObjectf( mokou, 0, -0.02, 0 );
+   dlScaleObjectf( mokou, 0.002, 0.002, 0.002 );
+   dlPositionObjectf( mokou, 0, -0.02, 0 );
 
-   glScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
-   glPositionObjectf( kaguya, 0, -0.02, 0 );
+   dlScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
+   dlPositionObjectf( kaguya, 0, -0.02, 0 );
 
    /* mokou by default */
    obj = mokou;
-   glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
+   dlObjectAddTexture( plane, 0, dlRefTexture( obj->material->texture[0] ) );
 #elif WITH_ASSIMP
-   glPositionCameraf( camera, 0,0,15 );
+   dlPositionCameraf( camera, 0,0,15 );
 
-   obj = glNewDynamicModel( "model/lovely.b3d" );
+   obj = dlNewDynamicModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   texture = glNewTexture( "model/npc_1.tga",
+   texture = dlNewTexture( "model/npc_1.tga",
                   SOIL_FLAG_DEFAULTS        |
                   SOIL_FLAG_TEXTURE_REPEATS );
    if(!texture)
       cleanup(EXIT_FAILURE);
 
-   glObjectAddTexture( obj, 0, texture );
+   dlObjectAddTexture( obj, 0, texture );
 
-   glScaleObjectf( obj, 0.005, 0.005, 0.005 );
-   glPositionObjectf( obj, 0, -0.13, 0 );
+   dlScaleObjectf( obj, 0.005, 0.005, 0.005 );
+   dlPositionObjectf( obj, 0, -0.13, 0 );
 
-   obj2 = glCopyObject( obj );
+   obj2 = dlCopyObject( obj );
    if(!obj2)
       cleanup(EXIT_FAILURE);
 
-   obj3 = glCopyObject( obj );
+   obj3 = dlCopyObject( obj );
    if(!obj3)
       cleanup(EXIT_FAILURE);
 
-   glMoveObjectf( obj2, 0.22, 0, 0 );
-   glMoveObjectf( obj3, -0.22, 0, 0 );
-   glRotateObjectf( obj2, 0, 0, 0 );
-   glRotateObjectf( obj3, 0, 180, 0 );
+   dlMoveObjectf( obj2, 0.22, 0, 0 );
+   dlMoveObjectf( obj3, -0.22, 0, 0 );
+   dlRotateObjectf( obj2, 0, 0, 0 );
+   dlRotateObjectf( obj3, 0, 180, 0 );
 #elif WITH_OPENCTM
-   glPositionCameraf( camera, 0,0,8 );
+   dlPositionCameraf( camera, 0,0,8 );
 
-   obj = glNewStaticModel( "model/raf22031.ctm" );
+   obj = dlNewStaticModel( "model/raf22031.ctm" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   glScaleObjectf( obj, 0.04, 0.04, 0.04 );
+   dlScaleObjectf( obj, 0.04, 0.04, 0.04 );
 #endif
 
    /* here if no import was done */
@@ -178,13 +178,13 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    /* Sets this as active camera */
-   glCameraRender( camera );
+   dlCameraRender( camera );
 
    /* Startup graph */
-   glMemoryGraph();
+   dlMemoryGraph();
 
    /* wait for escape key */
-   while(!keyPress(SDLK_ESCAPE))
+   while(!dlKeyPress(SDLK_ESCAPE))
    {
       last  = now;
       now   = SDL_GetTicks();
@@ -196,11 +196,11 @@ int main( int argc, char **argv )
 #if WITH_PMD
       x += 0.08f;
 
-      if(keyPress(SDLK_1))
-         glSetRenderMode( GL_MODE_VERTEX_ARRAY );
-      if(keyPress(SDLK_2))
-         glSetRenderMode( GL_MODE_VBO );
-      if(keyPress(SDLK_3))
+      if(dlKeyPress(SDLK_1))
+         dlSetRenderMode( DL_MODE_VERTEX_ARRAY );
+      if(dlKeyPress(SDLK_2))
+         dlSetRenderMode( DL_MODE_VBO );
+      if(dlKeyPress(SDLK_3))
       {
          if(obj == kaguya)
             obj = mokou;
@@ -209,44 +209,44 @@ int main( int argc, char **argv )
          else
             obj = kaguya;
 
-         glObjectFreeTexture( plane, 0 );
-         glObjectAddTexture( plane, 0, glRefTexture( obj->material->texture[0] ) );
+         dlObjectFreeTexture( plane, 0 );
+         dlObjectAddTexture( plane, 0, dlRefTexture( obj->material->texture[0] ) );
       }
 
-      glPositionObjectf( obj, 0, -0.02, 0 );
-      glRotateObjectf( obj, 0, x, 0 );
-      glDraw( obj );
+      dlPositionObjectf( obj, 0, -0.02, 0 );
+      dlRotateObjectf( obj, 0, x, 0 );
+      dlDraw( obj );
 
-      glRotateObjectf( obj, 0, 0, 0 );
-      glPositionObjectf( obj, 0.03, -0.02, 0 );
-      glDraw( obj );
+      dlRotateObjectf( obj, 0, 0, 0 );
+      dlPositionObjectf( obj, 0.03, -0.02, 0 );
+      dlDraw( obj );
 
-      glRotateObjectf( obj, 0, 180, 0 );
-      glPositionObjectf( obj, -0.03, -0.02, 0 );
-      glDraw( obj );
+      dlRotateObjectf( obj, 0, 180, 0 );
+      dlPositionObjectf( obj, -0.03, -0.02, 0 );
+      dlDraw( obj );
 
-      if(keyHold(SDLK_4))
-         glDraw( plane );
+      if(dlKeyHold(SDLK_4))
+         dlDraw( plane );
 #elif WITH_ASSIMP
-      glRotateObjectf( obj, 0, x, 0 );
-      glDraw( obj2 );
-      glDraw( obj3 );
-      glDraw( obj );
-      glObjectDrawSkeleton( obj );
+      dlRotateObjectf( obj, 0, x, 0 );
+      dlDraw( obj2 );
+      dlDraw( obj3 );
+      dlDraw( obj );
+      dlObjectDrawSkeleton( obj );
 
-      glObjectTick( obj,  x / 10.0f );
-      glObjectCalculateAABB( obj );
-      glObjectTick( obj2, x / 5.0f );
-      glObjectCalculateAABB( obj2 );
-      glObjectTick( obj3, x );
-      glObjectCalculateAABB( obj3 );
+      dlObjectTick( obj,  x / 10.0f );
+      dlObjectCalculateAABB( obj );
+      dlObjectTick( obj2, x / 5.0f );
+      dlObjectCalculateAABB( obj2 );
+      dlObjectTick( obj3, x );
+      dlObjectCalculateAABB( obj3 );
 
 #elif WITH_OPENCTM
-      glRotateObjectf( obj, -90, 0, x );
-      glDraw( obj );
+      dlRotateObjectf( obj, -90, 0, x );
+      dlDraw( obj );
 #endif
 
-      glSwapBuffers();
+      dlSwapBuffers();
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       if(fpsDelay < SDL_GetTicks())
@@ -265,18 +265,18 @@ int main( int argc, char **argv )
    }
 
 #if WITH_PMD
-   glFreeObject(plane);
-   glFreeObject(reisen);
-   glFreeObject(mokou);
-   glFreeObject(kaguya);
+   dlFreeObject(plane);
+   dlFreeObject(reisen);
+   dlFreeObject(mokou);
+   dlFreeObject(kaguya);
 #elif WITH_ASSIMP
-   glFreeObject(obj);
-   glFreeObject(obj2);
-   glFreeObject(obj3);
+   dlFreeObject(obj);
+   dlFreeObject(obj2);
+   dlFreeObject(obj3);
 #elif WITH_OPENCTM
-   glFreeObject(obj);
+   dlFreeObject(obj);
 #endif
-   glFreeCamera(camera);
+   dlFreeCamera(camera);
 
    cleanup(EXIT_SUCCESS);
    return(EXIT_SUCCESS);

@@ -6,7 +6,7 @@ CFLAGS += -fsingle-precision-constant
 
 # Standard libraries for projects
 # Order : Rightmost = first
-GL_LIBS += -logl -loglwindow -linput -llogfile -lSOIL -lkazmath
+GL_LIBS += -lDL -lDLwindow -lDLinput -llogfile -lSOIL -lkazmath
 
 # 0 = OpenGL
 # 1 = GLES 1.0
@@ -47,6 +47,9 @@ ICONV_SJIS_PMD	:= 1
 
 # Assimp loader ( lib: assimp )
 ASSIMP 		:= 1
+
+# Disable Window logging
+DISABLE_WINDOW_LOG	:= 0
 
 # Release settings
 ifeq (${release}, 1)
@@ -151,32 +154,32 @@ else
      CFLAGS += -DVERTEX_COLOR=0
 endif
 
-all: ogl test
+all: dl test
 
 openctm:
 ifeq (${OPENCTM}, 1)
-	@${MAKE} -C lib/openctm 	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/openctm 	CFLAGS="${CFLAGS}"
 endif
 
 kazmath:
 	@${MAKE} -C lib/kazmath    	CFLAGS="${CFLAGS} -std=c99"
 
 SOIL:
-	@${MAKE} -C lib/SOIL		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/SOIL		CFLAGS="${CFLAGS} -Wno-unused-but-set-variable"
 
 logfile:
-	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}"
 
-oglwindow: logfile
-	@${MAKE} -C lib/oglwindow	CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+dlWindow: logfile
+	@${MAKE} -C lib/dlWindow	CFLAGS="${CFLAGS} -DDL_WINDOW_DISABLE_LOG=${DISABLE_WINDOW_LOG}"
 
-input:
-	@${MAKE} -C lib/input 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+dlInput:
+	@${MAKE} -C lib/dlInput 	CFLAGS="${CFLAGS}"
 
-ogl: kazmath SOIL openctm logfile
-	@${MAKE} -C lib/ogl 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+dl: kazmath SOIL openctm logfile
+	@${MAKE} -C lib/dl 		CFLAGS="${CFLAGS}"
 
-test: ogl oglwindow input
+test: dl dlWindow dlInput
 ifeq (${BUILD_TESTS}, 1)
 	@${MAKE} -C test 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
 endif
@@ -185,8 +188,8 @@ clean:
 	@${MAKE} -C lib/kazmath		clean
 	@${MAKE} -C lib/SOIL		clean
 	@${MAKE} -C lib/logfile		clean
-	@${MAKE} -C lib/ogl 		clean
-	@${MAKE} -C lib/oglwindow 	clean
-	@${MAKE} -C lib/input 		clean
+	@${MAKE} -C lib/dl 		clean
+	@${MAKE} -C lib/dlWindow 	clean
+	@${MAKE} -C lib/dlInput 	clean
 	@${MAKE} -C lib/openctm		clean
 	@${MAKE} -C test		clean
