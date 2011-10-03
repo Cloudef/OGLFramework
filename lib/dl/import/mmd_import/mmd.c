@@ -36,7 +36,7 @@ int mmd_readHeader( FILE *f, mmd_header *header )
     * we want to be sure about this since this code may be reused
     * and that we know if the import wrapper screwed up */
 
-   char MAGIC_HEADER[ MAGIC_HEADER_SIZE ];
+   char MAGIC_HEADER[ MAGIC_HEADER_SIZE + 1 ];
    if(fread( MAGIC_HEADER, SIZE_BYTE, MAGIC_HEADER_SIZE, f ) != MAGIC_HEADER_SIZE)
       return( RETURN_FAIL );
    MAGIC_HEADER[ MAGIC_HEADER_SIZE ] = '\0';
@@ -46,7 +46,7 @@ int mmd_readHeader( FILE *f, mmd_header *header )
 
    /* FLOAT: version */ header->version = 0.f;
    if(fread( (void*)(&header->version), SIZE_FLOAT, 1, f )   != 1)
-         return( RETURN_FAIL );
+      return( RETURN_FAIL );
 
    /* SHIFT-JIS STRING: name */
    if(fread( header->name, SIZE_BYTE, MMD_NAME_LEN, f )      != MMD_NAME_LEN)

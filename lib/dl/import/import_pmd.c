@@ -77,7 +77,7 @@ static char* convertSjisToUtf8( char *sjis )
    {
       logRed();
       if(errno == EINVAL)
-         dlPrint( "[SJIS->UTF8] Conversion from '%s' to '%s' is not supported.\n",INSET, OUTSET);
+         dlPrint("[SJIS->UTF8] Conversion from '%s' to '%s' is not supported.\n",INSET,OUTSET);
       else
          dlPrint("[SJIS->UTF8] Initialization failure: %s\n", strerror(errno));
 
