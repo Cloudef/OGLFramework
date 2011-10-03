@@ -37,23 +37,23 @@ int mmd_readHeader( FILE *f, mmd_header *header )
     * and that we know if the import wrapper screwed up */
 
    char MAGIC_HEADER[ MAGIC_HEADER_SIZE ];
-   if(!fread( MAGIC_HEADER, SIZE_BYTE, MAGIC_HEADER_SIZE, f ))
+   if(fread( MAGIC_HEADER, SIZE_BYTE, MAGIC_HEADER_SIZE, f ) != MAGIC_HEADER_SIZE)
       return( RETURN_FAIL );
    MAGIC_HEADER[ MAGIC_HEADER_SIZE ] = '\0';
 
-   if( strcmp( MAGIC_HEADER, MAGIC_HEADER_STRING ) != 0)
+   if(strcmp( MAGIC_HEADER, MAGIC_HEADER_STRING ) != 0)
       return( RETURN_FAIL );
 
-   /* FLOAT: version */
-   if(!fread( (void*)(&header->version), SIZE_FLOAT, 1, f ))
+   /* FLOAT: version */ header->version = 0.f;
+   if(fread( (void*)(&header->version), SIZE_FLOAT, 1, f )   != 1)
          return( RETURN_FAIL );
 
    /* SHIFT-JIS STRING: name */
-   if(!fread( header->name, SIZE_BYTE, 20, f ))
+   if(fread( header->name, SIZE_BYTE, MMD_NAME_LEN, f )      != MMD_NAME_LEN)
       return( RETURN_FAIL );
 
    /* SHIFT-JIS STRING: comment */
-   if(!fread( header->comment, SIZE_BYTE, 256, f))
+   if(fread( header->comment, SIZE_BYTE, MMD_COMMENT_LEN, f) != MMD_COMMENT_LEN)
       return( RETURN_FAIL );
 
    return( RETURN_OK );
@@ -62,10 +62,10 @@ int mmd_readHeader( FILE *f, mmd_header *header )
 /* Read vertex data */
 int mmd_readVertexData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i;
+   uint32_t i;
 
-   /* UNSIGNED INT: vertex count */
-   if(!fread( (void*)(&mmd->num_vertices), SIZE_INTEGER, 1, f ))
+   /* UINT: vertex count */
+   if(fread( (void*)(&mmd->num_vertices), SIZE_INTEGER, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* vertices */
@@ -84,7 +84,7 @@ int mmd_readVertexData( FILE *f, mmd_data *mmd )
       return( RETURN_FAIL );
 
    /* bone indices */
-   mmd->bone_indices = malloc( mmd->num_vertices * sizeof(unsigned int) );
+   mmd->bone_indices = malloc( mmd->num_vertices * sizeof(uint32_t) );
    if(!mmd->bone_indices)
       return( RETURN_FAIL );
 
@@ -102,27 +102,27 @@ int mmd_readVertexData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_vertices; ++i)
    {
       /* 3xFLOAT: vertex */
-      if(!fread( (void*)(&mmd->vertices[ i * 3 ]), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->vertices[ i * 3 ]), SIZE_FLOAT, 3, f ) != 3)
          return( RETURN_FAIL );
 
       /* 3xFLOAT: normal */
-      if(!fread( (void*)(&mmd->normals[ i * 3 ]), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->normals[ i * 3 ]), SIZE_FLOAT, 3, f )  != 3)
          return( RETURN_FAIL );
 
       /* 3xFLOAT: texture coordinate */
-      if(!fread( (void*)(&mmd->coords[ i * 2 ]), SIZE_FLOAT, 2, f ))
+      if(fread( (void*)(&mmd->coords[ i * 2 ]), SIZE_FLOAT, 2, f )   != 2)
          return( RETURN_FAIL );
 
-      /* UNSIGNED INT: bone indices */
-      if(!fread( (void*)(&mmd->bone_indices[i]), SIZE_INTEGER, 1, f ))
+      /* UINT: bone indices */
+      if(fread( (void*)(&mmd->bone_indices[i]), SIZE_INTEGER, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* BYTE: bone weights */
-      if(!fread( (void*)(&mmd->bone_weight[i]), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->bone_weight[i]), SIZE_BYTE, 1, f )     != 1)
          return( RETURN_FAIL );
 
       /* BYTE: edge flag */
-      if(!fread( (void*)(&mmd->edge_flag[i]), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->edge_flag[i]), SIZE_BYTE, 1, f )       != 1)
          return( RETURN_FAIL );
    }
 
@@ -132,17 +132,17 @@ int mmd_readVertexData( FILE *f, mmd_data *mmd )
 /* Read index data */
 int mmd_readIndexData( FILE *f, mmd_data *mmd )
 {
-   /* UNSIGNED INT: index count */
-   if(!fread( (void*)(&mmd->num_indices), SIZE_INTEGER, 1, f ))
+   /* UINT: index count */
+   if(fread( (void*)(&mmd->num_indices), SIZE_INTEGER, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* indices */
-   mmd->indices = malloc( mmd->num_indices * sizeof(unsigned int) );
+   mmd->indices = malloc( mmd->num_indices * sizeof(uint32_t) );
    if(!mmd->indices)
       return( RETURN_FAIL );
 
    /* UNSIGNED SHORT ARRAY: indices */
-   if(!fread( (void*)(mmd->indices), SIZE_SHORT, mmd->num_indices, f ))
+   if(fread( (void*)(mmd->indices), SIZE_SHORT, mmd->num_indices, f ) != mmd->num_indices)
       return( RETURN_FAIL );
 
    return( RETURN_OK );
@@ -151,10 +151,10 @@ int mmd_readIndexData( FILE *f, mmd_data *mmd )
 /* Read material data */
 int mmd_readMaterialData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i;
+   uint32_t i;
 
-   /* UNSIGNED INT: material count */
-   if(!fread( (void*)(&mmd->num_materials), SIZE_INTEGER, 1, f ))
+   /* UINT: material count */
+   if(fread( (void*)(&mmd->num_materials), SIZE_INTEGER, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* diffuse */
@@ -193,12 +193,12 @@ int mmd_readMaterialData( FILE *f, mmd_data *mmd )
       return( RETURN_FAIL );
 
    /* face index */
-   mmd->face         = malloc( mmd->num_materials * sizeof(unsigned int) );
+   mmd->face         = malloc( mmd->num_materials * sizeof(uint32_t) );
    if(!mmd->face)
       return( RETURN_FAIL );
 
    /* texture */
-   mmd->texture      = malloc( mmd->num_materials * sizeof(mmd_texture) );
+   mmd->texture      = calloc( mmd->num_materials, sizeof(mmd_texture) );
    if(!mmd->texture)
       return( RETURN_FAIL );
 
@@ -206,39 +206,39 @@ int mmd_readMaterialData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_materials; ++i)
    {
       /* 3xFLOAT: diffuse */
-      if(!fread( (void*)(&mmd->diffuse[ i * 3 ]), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->diffuse[ i * 3 ]), SIZE_FLOAT, 3, f ) != 3)
          return( RETURN_FAIL );
 
       /* FLOAT: alpha */
-      if(!fread( (void*)(&mmd->alpha[i]), SIZE_FLOAT, 1, f ))
+      if(fread( (void*)(&mmd->alpha[i]), SIZE_FLOAT, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* FLOAT: power */
-      if(!fread( (void*)(&mmd->power[i]), SIZE_FLOAT, 1, f ))
+      if(fread( (void*)(&mmd->power[i]), SIZE_FLOAT, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* 3xFLOAT: specular */
-      if(!fread( (void*)(&mmd->specular[ i * 3 ]), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->specular[ i * 3 ]), SIZE_FLOAT, 3, f ) != 3)
          return( RETURN_FAIL );
 
       /* 3xFLOAT: ambient */
-      if(!fread( (void*)(&mmd->ambient[ i * 3 ]), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->ambient[ i * 3 ]), SIZE_FLOAT, 3, f )  != 3)
          return( RETURN_FAIL );
 
       /* BYTE: toon flag */
-      if(!fread( (void*)(&mmd->toon[i]), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->toon[i]), SIZE_BYTE, 1, f )    != 1)
          return( RETURN_FAIL );
 
       /* BUTE: edge flag */
-      if(!fread( (void*)(&mmd->edge[i]), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->edge[i]), SIZE_BYTE, 1, f )    != 1)
          return( RETURN_FAIL );
 
-      /* UNSIGNED INT: face indices */
-      if(!fread( (void*)(&mmd->face[i]), SIZE_INTEGER, 1, f ))
+      /* UINT: face indices */
+      if(fread( (void*)(&mmd->face[i]), SIZE_INTEGER, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* STRING (SJIS?): texture */
-      if(!fread( (void*)(&mmd->texture[i]), SIZE_BYTE, 20, f ))
+      if(fread( mmd->texture[i].file, SIZE_BYTE, MMD_FILE_PATH_LEN, f ) != MMD_FILE_PATH_LEN)
          return( RETURN_FAIL );
    }
 
@@ -248,14 +248,14 @@ int mmd_readMaterialData( FILE *f, mmd_data *mmd )
 /* Read bone data */
 int mmd_readBoneData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i;
+   uint32_t i;
 
    /* UNSIGNED SHORT: bone count */
-   if(!fread( (void*)(&mmd->num_bones), SIZE_SHORT, 1, f ))
+   if(fread( (void*)(&mmd->num_bones), SIZE_SHORT, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* allocate bones */
-   mmd->bones = malloc( mmd->num_bones * sizeof(mmd_bone) );
+   mmd->bones = calloc( mmd->num_bones, sizeof(mmd_bone) );
    if(!mmd->bones)
       return( RETURN_FAIL );
 
@@ -263,27 +263,27 @@ int mmd_readBoneData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_bones; ++i)
    {
       /* SJIS STRING: bone name */
-      if(!fread( mmd->bones[i].name, SIZE_BYTE, 20, f ))
+      if(fread( mmd->bones[i].name, SIZE_BYTE, MMD_NAME_LEN, f ) != MMD_NAME_LEN)
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: parent bone index */
-      if(!fread( (void*)(&mmd->bones[i].parent_bone_index), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->bones[i].parent_bone_index), SIZE_SHORT, 1, f )   != 1)
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: tail bone index */
-      if(!fread( (void*)(&mmd->bones[i].tail_pos_bone_index), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->bones[i].tail_pos_bone_index), SIZE_SHORT, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* BYTE: bone type */
-      if(!fread( (void*)(&mmd->bones[i].type), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->bones[i].type), SIZE_BYTE, 1, f )                 != 1)
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: parent bone index */
-      if(!fread( (void*)(&mmd->bones[i].parent_bone_index), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->bones[i].parent_bone_index), SIZE_SHORT, 1, f )   != 1)
          return( RETURN_FAIL );
 
        /* 3xFLOAT: head bone position */
-      if(!fread( (void*)(&mmd->bones[i].head_pos), SIZE_FLOAT, 3, f ))
+      if(fread( (void*)(&mmd->bones[i].head_pos), SIZE_FLOAT, 3, f )            != 3)
          return( RETURN_FAIL );
    }
 
@@ -293,14 +293,14 @@ int mmd_readBoneData( FILE *f, mmd_data *mmd )
 /* Read IK data */
 int mmd_readIKData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i, i2;
+   uint32_t i, i2;
 
    /* UNSIGNED SHORT: IK count */
-   if(!fread( (void*)(&mmd->num_ik), SIZE_SHORT, 1, f ))
+   if(fread( (void*)(&mmd->num_ik), SIZE_SHORT, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* alloc IKs */
-   mmd->ik = malloc( mmd->num_ik * sizeof(mmd_ik) );
+   mmd->ik = calloc( mmd->num_ik, sizeof(mmd_ik) );
    if(!mmd->ik)
       return( RETURN_FAIL );
 
@@ -313,23 +313,23 @@ int mmd_readIKData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_ik; ++i)
    {
       /* UNSIGNED SHORT: ik bone index */
-      if(!fread( (void*)(&mmd->ik[i].bone_index), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->ik[i].bone_index), SIZE_SHORT, 1, f )     != 1)
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: bone index */
-      if(!fread( (void*)(&mmd->ik[i].target_bone_index), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->ik[i].target_bone_index), SIZE_SHORT, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* BYTE: chain length */
-      if(!fread( (void*)(&mmd->ik[i].chain_length), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->ik[i].chain_length), SIZE_BYTE, 1, f )    != 1)
          return( RETURN_FAIL );
 
       /* UNSIGNED SHORT: iterations */
-      if(!fread( (void*)(&mmd->ik[i].iterations), SIZE_SHORT, 1, f ))
+      if(fread( (void*)(&mmd->ik[i].iterations), SIZE_SHORT, 1, f )     != 1)
          return( RETURN_FAIL );
 
       /* FLOAT: cotrol weight */
-      if(!fread( (void*)(&mmd->ik[i].cotrol_weight), SIZE_FLOAT, 1, f ))
+      if(fread( (void*)(&mmd->ik[i].cotrol_weight), SIZE_FLOAT, 1, f )  != 1)
          return( RETURN_FAIL );
 
       /* alloc child bone idices */
@@ -341,7 +341,7 @@ int mmd_readIKData( FILE *f, mmd_data *mmd )
       for(; i2 != mmd->ik[i].chain_length; ++i2)
       {
          /* UNSIGNED SHORT: child bone index */
-         if(!fread( (void*)(&mmd->ik[i].child_bone_index[i2]), SIZE_SHORT, 1, f ))
+         if(fread( (void*)(&mmd->ik[i].child_bone_index[i2]), SIZE_SHORT, 1, f ) != 1)
             return( RETURN_FAIL );
       }
    }
@@ -352,14 +352,14 @@ int mmd_readIKData( FILE *f, mmd_data *mmd )
 /* Read Skin data */
 int mmd_readSkinData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i, i2;
+   uint32_t i, i2;
 
    /* UNSIGNED SHORT: Skin count */
-   if(!fread( (void*)(&mmd->num_skins), SIZE_SHORT, 1, f ))
+   if(fread( (void*)(&mmd->num_skins), SIZE_SHORT, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* alloc Skins */
-   mmd->skin = malloc( mmd->num_skins * sizeof(mmd_skin) );
+   mmd->skin = calloc( mmd->num_skins, sizeof(mmd_skin) );
    if(!mmd->skin)
       return( RETURN_FAIL );
 
@@ -367,31 +367,31 @@ int mmd_readSkinData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_skins; ++i)
    {
       /* SJIS STRING: skin name */
-      if(!fread( mmd->skin[i].name, SIZE_BYTE, 20, f ))
+      if(fread( mmd->skin[i].name, SIZE_BYTE, MMD_NAME_LEN, f )           != MMD_NAME_LEN)
          return( RETURN_FAIL );
 
-      /* UNSIGNED INT: vertex count */
-      if(!fread( (void*)(&mmd->skin[i].num_vertices), SIZE_INTEGER, 1, f ))
+      /* UINT: vertex count */
+      if(fread( (void*)(&mmd->skin[i].num_vertices), SIZE_INTEGER, 1, f ) != 1)
          return( RETURN_FAIL );
 
       /* BYTE. skin type */
-      if(!fread( (void*)(&mmd->skin[i].type), SIZE_BYTE, 1, f ))
+      if(fread( (void*)(&mmd->skin[i].type), SIZE_BYTE, 1, f )            != 1)
          return( RETURN_FAIL );
 
       /* alloc Skin data */
-      mmd->skin[i].vertices = malloc( mmd->skin[i].num_vertices * sizeof(mmd_skin_vertices) );
+      mmd->skin[i].vertices = calloc( mmd->skin[i].num_vertices, sizeof(mmd_skin_vertices) );
       if(!mmd->skin[i].vertices)
          return( RETURN_FAIL );
 
       i2 = 0;
       for(; i2 != mmd->skin[i].num_vertices; ++i2)
       {
-         /* UNSIGNED INT: vertex index */
-         if(!fread( (void*)(&mmd->skin[i].vertices[i2].index), SIZE_INTEGER, 1, f ))
+         /* UINT: vertex index */
+         if(fread( (void*)(&mmd->skin[i].vertices[i2].index), SIZE_INTEGER, 1, f )     != 1)
             return( RETURN_FAIL );
 
          /* 3xFLOAT: translation */
-         if(!fread( (void*)(&mmd->skin[i].vertices[i2].translation), SIZE_FLOAT, 3, f ))
+         if(fread( (void*)(&mmd->skin[i].vertices[i2].translation), SIZE_FLOAT, 3, f ) != 3)
             return( RETURN_FAIL );
       }
    }
@@ -403,16 +403,16 @@ int mmd_readSkinData( FILE *f, mmd_data *mmd )
 int mmd_readSkinDisplayData( FILE *f, mmd_data *mmd )
 {
    /* BYTE: Skin display count */
-   if(!fread( (void*)(&mmd->num_skin_displays), SIZE_BYTE, 1, f ))
+   if(fread( (void*)(&mmd->num_skin_displays), SIZE_BYTE, 1, f ) != 1)
       return( RETURN_FAIL );
 
    /* alloc skin displays */
-   mmd->skin_display = malloc( mmd->num_skin_displays * sizeof( unsigned int ) );
+   mmd->skin_display = calloc( mmd->num_skin_displays, sizeof( uint32_t ) );
    if(!mmd->skin_display)
       return( RETURN_FAIL );
 
-   /* UNSIGNED INT ARRAY: indices */
-   if(!fread( (void*)(mmd->skin_display), SIZE_INTEGER, mmd->num_skin_displays, f ))
+   /* uint32_t ARRAY: indices */
+   if(fread( (void*)(mmd->skin_display), SIZE_INTEGER, mmd->num_skin_displays, f ) != mmd->num_skin_displays)
       return( RETURN_FAIL );
 
    return( RETURN_OK );
@@ -421,16 +421,16 @@ int mmd_readSkinDisplayData( FILE *f, mmd_data *mmd )
 /* Read bone name data */
 int mmd_readBoneNameData( FILE *f, mmd_data *mmd )
 {
-   unsigned int i;
+   uint32_t i;
 
    /* BYTE: Bone name count */
-   if(!fread( (void*)(&mmd->num_bone_names), SIZE_BYTE, 1, f ))
+   if(fread( (void*)(&mmd->num_bone_names), SIZE_BYTE, 1, f ) != 1)
       return( RETURN_FAIL );
 
    return( RETURN_OK );
 
    /* alloc bone names */
-   mmd->bone_name = malloc( mmd->num_bone_names * sizeof( mmd_bone_name ));
+   mmd->bone_name = calloc( mmd->num_bone_names, sizeof( mmd_bone_name ));
    if(!mmd->bone_name)
       return( RETURN_FAIL );
 
@@ -438,7 +438,7 @@ int mmd_readBoneNameData( FILE *f, mmd_data *mmd )
    for(; i != mmd->num_bone_names; ++i)
    {
       /* SJIS STRING: bone name */
-      if(!fread( mmd->bone_name[i].name, 1, 50, f ))
+      if(fread( mmd->bone_name[i].name, SIZE_BYTE, MMD_BONE_NAME_LEN, f ) != MMD_BONE_NAME_LEN)
          return( RETURN_FAIL );
    }
 
@@ -493,7 +493,7 @@ mmd_data* newMMD(void)
 /* Free mmd_data structure */
 void freeMMD( mmd_data *mmd )
 {
-   unsigned int i;
+   uint32_t i;
 
    /* vertices */
    if(mmd->vertices) free( mmd->vertices ); mmd->vertices = NULL;

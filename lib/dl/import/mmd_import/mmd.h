@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+#define MMD_NAME_LEN      20
+#define MMD_BONE_NAME_LEN 50
+#define MMD_COMMENT_LEN   256
+#define MMD_FILE_PATH_LEN 20
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,22 +15,22 @@ extern "C" {
 /* header */
 typedef struct mmd_header_t
 {
+   char  name[MMD_NAME_LEN];
+   char  comment[MMD_COMMENT_LEN];
    float version;
-   char  name[20];
-   char  comment[256];
 } mmd_header;
 
 /* texture */
 typedef struct mmd_texture_t
 {
-   char file[20];
+   char file[MMD_FILE_PATH_LEN];
 } mmd_texture;
 
 /* bone */
 typedef struct mmd_bone_t
 {
    /* bone name */
-   char name[20];
+   char name[MMD_NAME_LEN];
 
    /* type */
    uint8_t type;
@@ -61,14 +66,14 @@ typedef struct mmd_ik_t
 typedef struct mmd_bone_name_t
 {
    /* bone name */
-   char name[50];
+   char name[MMD_BONE_NAME_LEN];
 } mmd_bone_name;
 
 /* Skin vertices */
 typedef struct mmd_skin_vertices_t
 {
    /* index */
-   unsigned int index;
+   uint32_t index;
 
    /* translation */
    float translation[3];
@@ -78,10 +83,10 @@ typedef struct mmd_skin_vertices_t
 typedef struct mmd_skin_t
 {
    /* skin name */
-   char name[20];
+   char name[MMD_NAME_LEN];
 
    /* vertices on this skin */
-   unsigned int  num_vertices;
+   uint32_t  num_vertices;
 
    /* skin type */
    uint8_t type;
@@ -94,9 +99,9 @@ typedef struct mmd_skin_t
 typedef struct mmd_data_t
 {
    /* count */
-   unsigned int   num_vertices;
-   unsigned int   num_indices;
-   unsigned int   num_materials;
+   uint32_t   num_vertices;
+   uint32_t   num_indices;
+   uint32_t   num_materials;
    unsigned short num_bones;
    unsigned short num_ik;
    unsigned short num_skins;
@@ -112,7 +117,7 @@ typedef struct mmd_data_t
    unsigned short *indices;
 
    /* bone */
-   unsigned int   *bone_indices;
+   uint32_t       *bone_indices;
    uint8_t        *bone_weight;
    uint8_t        *edge_flag;
 
@@ -123,7 +128,7 @@ typedef struct mmd_data_t
 
    /* skin array */
    mmd_skin       *skin;
-   unsigned int   *skin_display;
+   uint32_t       *skin_display;
 
    /* material */
    float          *diffuse;
@@ -133,7 +138,7 @@ typedef struct mmd_data_t
    float          *power;
    uint8_t        *toon;
    uint8_t        *edge;
-   unsigned int   *face;
+   uint32_t       *face;
    mmd_texture    *texture;
 
 } mmd_data;
@@ -179,7 +184,7 @@ int mmd_readBoneNameData( FILE *f, mmd_data *mmd );
  * mmd_header header;
  * mmd_data   *mmd;
  *
- * unsigned int i;
+ * uint32_t i;
  *
  * f = fopen( "HatsuneMiku.pmd", "rb" );
  * if(!f)
@@ -189,6 +194,7 @@ int mmd_readBoneNameData( FILE *f, mmd_data *mmd );
  *    exit( EXIT_FAILURE );
  *
  * // SJIS encoded, so probably garbage
+ * // You might want to decode them to utf-8 using eg. iconv
  * puts( header.name );
  * puts( header.comment );
  *

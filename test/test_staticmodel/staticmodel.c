@@ -113,6 +113,7 @@ int main( int argc, char **argv )
    if(!mokou)
       cleanup(EXIT_FAILURE);
 
+   /*
    reisen = dlNewStaticModel( "model/Reisen/Reisen.pmd" );
    if(!reisen)
       cleanup(EXIT_FAILURE);
@@ -120,15 +121,17 @@ int main( int argc, char **argv )
    kaguya = dlNewStaticModel( "model/Kaguya/Kaguya.pmd" );
    if(!kaguya)
       cleanup(EXIT_FAILURE);
-
-   dlScaleObjectf( reisen, 0.002, 0.002, 0.002 );
-   dlPositionObjectf( reisen, 0, -0.02, 0 );
-
+   */
    dlScaleObjectf( mokou, 0.002, 0.002, 0.002 );
    dlPositionObjectf( mokou, 0, -0.02, 0 );
 
+   /*
+   dlScaleObjectf( reisen, 0.002, 0.002, 0.002 );
+   dlPositionObjectf( reisen, 0, -0.02, 0 );
+
    dlScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
    dlPositionObjectf( kaguya, 0, -0.02, 0 );
+   */
 
    /* mokou by default */
    obj = mokou;
@@ -266,9 +269,11 @@ int main( int argc, char **argv )
 
 #if WITH_PMD
    dlFreeObject(plane);
-   dlFreeObject(reisen);
    dlFreeObject(mokou);
+   /*
+   dlFreeObject(reisen);
    dlFreeObject(kaguya);
+   */
 #elif WITH_ASSIMP
    dlFreeObject(obj);
    dlFreeObject(obj2);

@@ -431,7 +431,7 @@ dlShader* dlNewShader( const char *file )
 /* free shader */
 int dlFreeShader( dlShader *shader )
 {
-   return( NULL );
+   return( RETURN_OK );
 }
 
 /* bind shader */

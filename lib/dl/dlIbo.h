@@ -12,11 +12,11 @@ extern "C" {
 typedef struct dlIBO_t
 {
 #if USE_BUFFERS
-   unsigned short *indices[dl_MAX_BUFFERS + 1];
-   unsigned int   i_num[dl_MAX_BUFFERS + 1], i_use[dl_MAX_BUFFERS + 1];
+   unsigned short *indices[DL_MAX_BUFFERS + 1];
+   unsigned int   i_num[DL_MAX_BUFFERS + 1], i_use[DL_MAX_BUFFERS + 1];
    unsigned int   index_buffer;
 
-   size_t         iOffset[dl_MAX_BUFFERS + 1];
+   size_t         iOffset[DL_MAX_BUFFERS + 1];
 #else
    unsigned int   *indices;
    unsigned int   i_num, i_use;

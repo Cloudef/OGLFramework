@@ -35,7 +35,6 @@ static struct SDL_Surface* SDLWindow = NULL;
 
 #if defined(GLES1) || defined(GLES2)
    static EGLDisplay g_eglDisplay;
-   static EGLConfig  g_eglConfig;
    static EGLContext g_eglContext;
    static EGLSurface g_eglSurface;
 

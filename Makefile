@@ -165,7 +165,7 @@ kazmath:
 	@${MAKE} -C lib/kazmath    	CFLAGS="${CFLAGS} -std=c99"
 
 SOIL:
-	@${MAKE} -C lib/SOIL		CFLAGS="${CFLAGS} -Wno-unused-but-set-variable"
+	@${MAKE} -C lib/SOIL		CFLAGS="${CFLAGS}"
 
 logfile:
 	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}"

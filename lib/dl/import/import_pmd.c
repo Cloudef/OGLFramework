@@ -35,30 +35,82 @@
  * but it might bloat the code a lot */
 #if ICONV_SJIS_PMD
    #include "iconv.h"
+   #include <errno.h>
 #endif
 
-/*
- * 0 = one VBO and seperate IBO's and textures for childs
- * 1 = one atlas texture and seperate VBO's and IBO's for childs
- */
-#define ATLAS_METHOD 1
+/* 0 = one VBO and seperate IBO's and textures for childs
+ * 1 = one atlas texture and seperate VBO's and IBO's for childs */
+#define ATLAS_METHOD 0
 
 #if ICONV_SJIS_PMD
-/* conversion */
-static void convertSjisToUtf8( char *sjis, char *utf8, size_t sjisSize )
+
+/* conversion from SJIS to UTF8, remember to free the returned pointer.
+ * returns NULL on failure */
+static char* convertSjisToUtf8( char *sjis )
 {
+   const char *INSET  = "UTF-8";
+   const char *OUTSET = "Shift_JIS";
    iconv_t icd;
-   char *p_src, *p_dst;
+   size_t iret;
+   char *p_src, *p_dst, *p_start;
    size_t n_src, n_dst;
 
-   icd = iconv_open("UTF-8", "Shift_JIS");
    p_src = sjis;
-   p_dst = utf8;
-   n_src = sjisSize;
-   n_dst = sjisSize * 2;
+   n_src = strlen(p_src);
+   n_dst = n_src * 2;
 
-   iconv(icd, &p_src, &n_src, &p_dst, &n_dst);
+   if(!p_src || !n_src)
+   {
+      logRed(); dlPuts("[SJIS->UTF8] String null or empty"); logNormal();
+      return( NULL );
+   }
+
+   p_dst = calloc( n_dst, 1 );
+   if(!p_dst)
+   {
+      logRed(); dlPuts("[SJIS->UTF8] Failed to alloc UTF8 string"); logNormal();
+      return( NULL );
+   }
+
+   icd = iconv_open(INSET, OUTSET);
+   if(!icd)
+   {
+      logRed();
+      if(errno == EINVAL)
+         dlPrint( "[SJIS->UTF8] Conversion from '%s' to '%s' is not supported.\n",INSET, OUTSET);
+      else
+         dlPrint("[SJIS->UTF8] Initialization failure: %s\n", strerror(errno));
+
+      logNormal();
+      return( NULL );
+   }
+   p_start = p_dst;
+   iret = iconv(icd, &p_src, &n_src, &p_dst, &n_dst);
+   if(iret == (size_t)-1)
+   {
+      logRed(); dlPuts("[SJIS->UTF8] Conversion failure.");
+      switch (errno)
+      {
+         /* See "man 3 iconv" for an explanation. */
+         case EILSEQ:
+            dlPuts("Invalid multibyte sequence.");
+            break;
+         case EINVAL:
+            dlPuts("Incomplete multibyte sequence.");
+            break;
+         case E2BIG:
+            dlPuts("No more room.\n");
+            break;
+         default:
+            dlPrint("Error: %s.\n", strerror (errno));
+      }
+      logNormal();
+      free(p_start);
+      return( NULL );
+   }
+
    iconv_close(icd);
+   return( p_start );
 }
 #endif
 
@@ -68,17 +120,20 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    FILE *f;
    unsigned int i, i2;
    char *texturePath;
-   char tmp[256];
    dlTexture   *texture;
    unsigned int num_faces;
    unsigned int start = 0;
+
+#if ICONV_SJIS_PMD
+   char *utf8;
+#endif
 
 #if ATLAS_METHOD
    unsigned int ix;
    dlAtlas *atlas;
    dlTexture **textureList;
 #else
-   dlObject    *mObject;
+   dlObject *mObject;
 #endif
 
    mmd_header header;
@@ -109,11 +164,21 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    /* print info about our PMD */
 #if ICONV_SJIS_PMD
    dlPuts("");
-   convertSjisToUtf8( header.name, tmp, strlen(header.name) );
-   dlPuts( tmp );
+
+   if((utf8 = convertSjisToUtf8( header.name )))
+   { dlPuts( utf8 ); free( utf8 ); }
+
+   dlPrint("VER: %f\n", header.version);
    dlPuts("");
-   convertSjisToUtf8( header.comment, tmp, strlen(header.comment) );
-   dlPuts( tmp );
+
+   if((utf8 = convertSjisToUtf8( header.comment )))
+   { dlPuts( utf8 ); free( utf8 ); }
+
+   dlPuts("");
+#else
+   dlPuts("");
+   dlPrint("LEN: %d\n", strlen( header.name ));
+   dlPrint("VER: %f\n", header.version);
    dlPuts("");
 #endif
 
@@ -413,7 +478,9 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
       texturePath = dlImportTexturePath( mmd->texture[i].file, file );
       if(texturePath)
       {
-         texture = dlNewTexture( texturePath, SOIL_FLAG_DEFAULTS );
+         texture = dlNewTexture( texturePath, SOIL_FLAG_DEFAULTS |
+                                              SOIL_FLAG_INVERT_Y |
+                                              SOIL_FLAG_TEXTURE_REPEATS);
          if(texture)
             dlObjectAddTexture( mObject, 0, texture );
 
@@ -432,7 +499,7 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
       start += num_faces;
 
       /* GL_TRIANGLES object */
-      mObject->primitive_type = GL_TRIANGlES;
+      mObject->primitive_type = GL_TRIANGLES;
    }
 
 #endif

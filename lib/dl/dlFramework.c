@@ -75,13 +75,15 @@ void dlSetRenderMode( dleRenderMode mode )
 #endif
 }
 
-/* Get Opendl information */
+/* Get OpenGL information */
 static int dlGetInfo( void )
 {
+#if !defined(GLES1) && !defined(GLES2)
    char *gl_ver;
    int num_parsed;
+#endif
 
-   /* get Odl extensions */
+   /* get ogl extensions */
    _dlCore.extensions  = (char*)glGetString( GL_EXTENSIONS );
    if(!_dlCore.extensions)
    {
@@ -89,14 +91,15 @@ static int dlGetInfo( void )
       return(RETURN_FAIL);
    }
 
-   /* get Odl version */
+#if !defined(GLES1) && !defined(GLES2)
+   /* get ogl version */
    gl_ver                   = (char*)glGetString(GL_VERSION);
    _dlCore.version.vendor   = (char*)glGetString(GL_VENDOR);
 
-   num_parsed = sscanf(gl_ver, "%c.%c.%c",
-         &_dlCore.version.major,
-         &_dlCore.version.minor,
-         &_dlCore.version.patch);
+   num_parsed = sscanf(gl_ver, "%u.%u.%u",
+         (unsigned int*)&_dlCore.version.major,
+         (unsigned int*)&_dlCore.version.minor,
+         (unsigned int*)&_dlCore.version.patch);
 
    if (num_parsed == 1) {
       _dlCore.version.minor = 0;
@@ -104,6 +107,7 @@ static int dlGetInfo( void )
    } else if (num_parsed == 2) {
       _dlCore.version.patch = 0;
    }
+#endif
 
    glGetIntegerv (GL_MAX_LIGHTS,                   &_dlCore.info.maxLights);
    glGetIntegerv (GL_MAX_CLIP_PLANES,              &_dlCore.info.maxClipPlanes);
@@ -114,14 +118,24 @@ static int dlGetInfo( void )
    return( RETURN_OK );
 }
 
-/* Output Opendl information */
+/* Output OpenGL information */
 static void dlOutputInfo( void )
 {
    logGreen();
    dlPrint("[Renderer %s]\n",                   _dlCore.render.string);
-   dlPrint("[Opendl %u.%u.%u]\n",               _dlCore.version.major,
+
+#if !defined(GLES1) && !defined(GLES2)
+   dlPrint("[OpenGL %u.%u.%u]\n",               _dlCore.version.major,
                                                 _dlCore.version.minor,
                                                 _dlCore.version.patch);
+#else
+#  ifdef GLES1
+      dlPuts("[GLES 1.1]");
+#  else
+      dlPuts("[GLES 2.0]");
+#  endif
+#endif
+
    if(_dlCore.version.vendor) {
       dlPrint( "[GPU %s]\n",                    _dlCore.version.vendor);
    }
@@ -140,7 +154,7 @@ static void dlOutputInfo( void )
    logWhite();  dlPrint("%s\n\n", _dlCore.extensions); logNormal();
 }
 
-/* creates virtual display and inits Odl Framework */
+/* creates virtual display and inits dl Framework */
 int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
 {
    /* NULL these */
@@ -159,7 +173,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
    glClear( GL_COLOR_BUFFER_BIT );
    if(GLEW_OK != glewInit())
    {
-      logRed(); dlPrint("[GL] There is no Opendl context"); logNormal();
+      logRed(); dlPrint("[GL] There is no OpenGL context"); logNormal();
       return( RETURN_FAIL );
    }
    logGreen(); dlPuts("[GLEW] OK"); logNormal();
@@ -175,7 +189,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       return( RETURN_FAIL );
    }
 
-   /* get Opendl information */
+   /* get OpenGL information */
    if(dlGetInfo() != RETURN_OK)
       return( RETURN_FAIL );
 
@@ -196,7 +210,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       }
       else
       {
-         logBlue(); dlPuts("-!- Unknown Opendl version, trying to use Odl 3.1+]"); logNormal();
+         logBlue(); dlPuts("-!- Unknown OpenGL version, trying to use OGL 3.1+]"); logNormal();
          /* OGL 3 */
       }
    }
@@ -240,7 +254,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       return(RETURN_FAIL);
    }
 
-   /* Output opendl information */
+   /* Output opengl information */
    dlOutputInfo();
    dlPuts( "");
    logGreen(); dlPuts("[GL] Created"); logNormal();
@@ -251,7 +265,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
    return( RETURN_OK );
 }
 
-/* frees virtual display and deinits Odl framework */
+/* frees virtual display and deinits dl framework */
 int dlFreeDisplay( void )
 {
    logRed(); dlPuts("[GL] Destroyed"); logNormal();
