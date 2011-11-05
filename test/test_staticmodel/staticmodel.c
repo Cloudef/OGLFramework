@@ -9,7 +9,7 @@
 #include "kazmath/kazmath.h"
 
 #ifdef WIN32
-#define LINE_MAX 254
+#define LINE_MAX 256
 #endif
 
 static void keyHandle( void )
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
    if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_OGL140 ) != 0)
       cleanup(EXIT_FAILURE);
 
    camera = dlNewCamera();
@@ -113,7 +113,6 @@ int main( int argc, char **argv )
    if(!mokou)
       cleanup(EXIT_FAILURE);
 
-   /*
    reisen = dlNewStaticModel( "model/Reisen/Reisen.pmd" );
    if(!reisen)
       cleanup(EXIT_FAILURE);
@@ -121,21 +120,19 @@ int main( int argc, char **argv )
    kaguya = dlNewStaticModel( "model/Kaguya/Kaguya.pmd" );
    if(!kaguya)
       cleanup(EXIT_FAILURE);
-   */
+
    dlScaleObjectf( mokou, 0.002, 0.002, 0.002 );
    dlPositionObjectf( mokou, 0, -0.02, 0 );
 
-   /*
    dlScaleObjectf( reisen, 0.002, 0.002, 0.002 );
    dlPositionObjectf( reisen, 0, -0.02, 0 );
 
    dlScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
    dlPositionObjectf( kaguya, 0, -0.02, 0 );
-   */
 
    /* mokou by default */
    obj = mokou;
-   dlObjectAddTexture( plane, 0, dlRefTexture( obj->material->texture[0] ) );
+   plane->material = dlNewMaterialFromTexture( dlRefTexture( obj->material->texture ) );
 #elif WITH_ASSIMP
    dlPositionCameraf( camera, 0,0,15 );
 
@@ -143,13 +140,11 @@ int main( int argc, char **argv )
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   texture = dlNewTexture( "model/npc_1.tga",
-                  SOIL_FLAG_DEFAULTS        |
-                  SOIL_FLAG_TEXTURE_REPEATS );
-   if(!texture)
+   obj->material = dlNewMaterialWithTexture( "model/npc_1.tga",
+                                             SOIL_FLAG_DEFAULTS        |
+                                             SOIL_FLAG_TEXTURE_REPEATS );
+   if(!obj->material)
       cleanup(EXIT_FAILURE);
-
-   dlObjectAddTexture( obj, 0, texture );
 
    dlScaleObjectf( obj, 0.005, 0.005, 0.005 );
    dlPositionObjectf( obj, 0, -0.13, 0 );
@@ -212,8 +207,8 @@ int main( int argc, char **argv )
          else
             obj = kaguya;
 
-         dlObjectFreeTexture( plane, 0 );
-         dlObjectAddTexture( plane, 0, dlRefTexture( obj->material->texture[0] ) );
+         dlFreeTexture( plane->material->texture );
+         plane->material->texture = dlRefTexture( obj->material->texture );
       }
 
       dlPositionObjectf( obj, 0, -0.02, 0 );
@@ -270,10 +265,8 @@ int main( int argc, char **argv )
 #if WITH_PMD
    dlFreeObject(plane);
    dlFreeObject(mokou);
-   /*
    dlFreeObject(reisen);
    dlFreeObject(kaguya);
-   */
 #elif WITH_ASSIMP
    dlFreeObject(obj);
    dlFreeObject(obj2);

@@ -6,6 +6,7 @@
 
 #include "dlSceneobject.h"
 #include "dlCamera.h"
+#include "shader/dlShader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,6 +38,7 @@ typedef struct
 
    kmMat4         projection;
    dlCamera      *camera;
+   dlShader      *shader;
 } dlRenderInfo;
 
 /* version info */

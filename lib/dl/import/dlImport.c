@@ -265,7 +265,8 @@ int dlImportImage( dlTexture *texture,
 
    /* check succes */
    if( !texture->object )
-      return( RETURN_FAIL );
+   { logRed(); dlPrint( "[IMAGE IMPORT] Failed to load %s\n", file ); logNormal();
+     return( RETURN_FAIL ); }
 
    return( RETURN_OK );
 }

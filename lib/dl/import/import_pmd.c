@@ -40,7 +40,7 @@
 
 /* 0 = one VBO and seperate IBO's and textures for childs
  * 1 = one atlas texture and seperate VBO's and IBO's for childs */
-#define ATLAS_METHOD 0
+#define ATLAS_METHOD 1
 
 #if ICONV_SJIS_PMD
 
@@ -355,7 +355,8 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    dlRefTexture( texture );
 
    /* assign atlas texture to object */
-   dlObjectAddTexture( object, 0, texture );
+   if(object->material) dlFreeMaterial(object->material);
+   object->material = dlNewMaterialFromTexture( texture );
 
    /* reset buffers */
    dlResetIndexBuffer( object->ibo,    mmd->num_indices );
@@ -478,11 +479,9 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
       texturePath = dlImportTexturePath( mmd->texture[i].file, file );
       if(texturePath)
       {
-         texture = dlNewTexture( texturePath, SOIL_FLAG_DEFAULTS |
-                                              SOIL_FLAG_INVERT_Y |
-                                              SOIL_FLAG_TEXTURE_REPEATS);
-         if(texture)
-            dlObjectAddTexture( mObject, 0, texture );
+         object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS |
+                                                                   SOIL_FLAG_INVERT_Y |
+                                                                   SOIL_FLAG_TEXTURE_REPEATS);
 
          free( texturePath );
       }

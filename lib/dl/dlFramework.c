@@ -48,6 +48,18 @@ dlCamera* dlGetCamera( void )
    return( _dlCore.render.camera );
 }
 
+/* Set active shader */
+void dlSetShader( dlShader *shader )
+{
+   _dlCore.render.shader = shader;
+}
+
+/* Get active shader */
+dlShader* dlGetShader( void )
+{
+   return( _dlCore.render.shader );
+}
+
 /* Set render mode */
 void dlSetRenderMode( dleRenderMode mode )
 {
@@ -161,12 +173,10 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
    _dlCore.render.draw     = NULL;
    _dlCore.render.string   = NULL;
    _dlCore.render.camera   = NULL;
+   _dlCore.render.shader   = NULL;
 
    /* Open log */
    dlLogOpen();
-
-   /* just for temporary */
-   renderer = DL_RENDER_OGL140;
 
 #if !defined(GLES1) && !defined(GLES2)
    /* initialize dlEW if on correct platform */
@@ -200,6 +210,8 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       if(_dlCore.version.major >= 3)
       {
          /* OGL 3 */
+         if(dlOGL3() != RETURN_OK)
+            return(RETURN_FAIL);
       }
       else if(_dlCore.version.major >= 1 &&
               _dlCore.version.minor >= 4)
@@ -212,17 +224,21 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       {
          logBlue(); dlPuts("-!- Unknown OpenGL version, trying to use OGL 3.1+]"); logNormal();
          /* OGL 3 */
+         if(dlOGL3() != RETURN_OK)
+            return(RETURN_FAIL);
       }
    }
    else
    {
-      /*
-      if(renderer == eOGL3)
-      */
+      if(renderer == DL_RENDER_OGL3)
+      {
+         if(dlOGL3() != RETURN_OK)
+            return(RETURN_FAIL);
+      }
 
       if(renderer == DL_RENDER_OGL140)
       {
-         if(dlOGL140() != 0)
+         if(dlOGL140() != RETURN_OK)
             return(RETURN_FAIL);
       }
 
@@ -233,10 +249,12 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
 #else
 #  ifdef GLES1
       /* GLES 1.0 */
-      if(dlOGL140() != 0)
+      if(dlOGL140() != RETURN_OK)
          return(RETURN_FAIL);
 #  else
       /* GLES 2.0 */
+      if(dlOGL3() != RETURN_OK)
+         return(RETURN_FAIL);
 #  endif
 #endif
 

@@ -19,7 +19,7 @@ typedef enum
 typedef struct dlMaterial_t
 {
    /* texture */
-   dlTexture      **texture;
+   dlTexture      *texture;
 
    /* draw flags */
    unsigned int flags;
@@ -36,20 +36,18 @@ dlMaterial*    dlCopyMaterial( dlMaterial *src );	       /* Copy material  */
 dlMaterial*    dlRefMaterial( dlMaterial *src );	       /* Reference material  */
 int            dlFreeMaterial( dlMaterial *object );	       /* Free material */
 
+/* material from texture */
+dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags );
+dlMaterial* dlNewMaterialFromTexture( dlTexture *texture );
+
 /* add texture */
-int dlMaterialAddTexture( dlMaterial *object,
-                          unsigned int index,
-                          dlTexture *texture );
+int dlMaterialAddTexture( dlMaterial *object, dlTexture *texture );
 
 /* free texture */
-int dlMaterialFreeTexture( dlMaterial *object,
-                           unsigned int index );
+int dlMaterialFreeTexture( dlMaterial *object );
 
 /* free all textures */
 int dlMaterialFreeTexturesAll( dlMaterial *object );
-
-/* ref textures */
-dlTexture** dlMaterialRefTextures( dlMaterial *object );
 
 #ifdef __cplusplus
 }

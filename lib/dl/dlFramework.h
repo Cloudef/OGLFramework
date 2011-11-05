@@ -26,6 +26,10 @@ kmMat4 dlGetProjection( void );
 void dlSetCamera( dlCamera *camera );
 dlCamera* dlGetCamera( void );
 
+/* Active shader */
+void dlSetShader( dlShader *shader );
+dlShader* dlGetShader( void );
+
 /* Output memory graph */
 void dlMemoryGraph( void );
 

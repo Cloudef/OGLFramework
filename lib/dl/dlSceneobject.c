@@ -514,64 +514,6 @@ void dlDraw( dlObject *object )
 
 /* Operations */
 
-/* Add texture to UVW, steals reference */
-int dlObjectAddTexture( dlObject *object,
-                        unsigned int index,
-                        dlTexture *texture )
-{
-   if(!object)
-      return( RETURN_FAIL );
-
-   if(!object->vbo)
-      return( RETURN_FAIL );
-
-   if(!object->material)
-   {
-      object->material = dlNewMaterial();
-      if(!object->material)
-         return( RETURN_FAIL );
-   }
-
-   dlMaterialAddTexture( object->material, index, texture );
-
-   /* assign coords */
-   if(object->vbo->uvw[index].c_use)
-      texture->uvw = index;
-   else
-      texture->uvw = 0;
-
-   return( RETURN_OK );
-}
-
-/* Free texture on UVW */
-int dlObjectFreeTexture( dlObject *object,
-                         unsigned int index )
-{
-   if(!object)
-      return( RETURN_FAIL );
-
-   if(!object->material)
-      return( RETURN_FAIL );
-
-   dlMaterialFreeTexture( object->material, index );
-
-   return( RETURN_OK );
-}
-
-/* Free all textures */
-int dlObjectFreeTexturesAll( dlObject *object )
-{
-   if(!object)
-      return( RETURN_FAIL );
-
-   if(!object->material)
-      return( RETURN_FAIL );
-
-   dlMaterialFreeTexturesAll( object->material );
-
-   return( RETURN_OK );
-}
-
 /* Calculate bounding box */
 int dlObjectCalculateAABB( dlObject *object )
 {
@@ -718,7 +660,7 @@ void dlScaleObjectf( dlObject *object,
 }
 
 /* shift object's texture */
-void dlShiftObject( dlObject *object, unsigned int uvw, int width, int height, unsigned int index, kmVec2 *baseCoords )
+void dlShiftObject( dlObject *object, int width, int height, unsigned int index, kmVec2 *baseCoords )
 {
    dlTexture *texture;
    unsigned int windex, hindex, x;
@@ -734,15 +676,12 @@ void dlShiftObject( dlObject *object, unsigned int uvw, int width, int height, u
    if(!object->material->texture)
       return;
 
-   if(uvw > _dlCore.info.maxTextureUnits)
-      return;
-
-   texture = object->material->texture[uvw];
+   texture = object->material->texture;
    if(!texture)
       return;
 
    if(!baseCoords)
-      baseCoords = object->vbo->uvw[ uvw ].coords;
+      baseCoords = object->vbo->uvw[ texture->uvw ].coords;
 
    windex = 0;
    hindex = 1;
@@ -767,10 +706,10 @@ void dlShiftObject( dlObject *object, unsigned int uvw, int width, int height, u
    aheight = height / (float)texture->height;
 
    x = 0;
-   for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+   for(; x != object->vbo->uvw[ texture->uvw ].c_num; ++x)
    {
-      object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + pos.x / (float)texture->width;
-      object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + pos.y / (float)texture->height;
+      object->vbo->uvw[ texture->uvw ].coords[ x ].x = baseCoords[x].x * awidth  + pos.x / (float)texture->width;
+      object->vbo->uvw[ texture->uvw ].coords[ x ].y = baseCoords[x].y * aheight + pos.y / (float)texture->height;
    }
 
    object->vbo->up_to_date = 0;
@@ -778,7 +717,7 @@ void dlShiftObject( dlObject *object, unsigned int uvw, int width, int height, u
 }
 
 /* offset object's texture */
-void dlOffsetObjectTexture( dlObject *object, unsigned int uvw, int px, int py, int width, int height, kmVec2 *baseCoords)
+void dlOffsetObjectTexture( dlObject *object, int px, int py, int width, int height, kmVec2 *baseCoords)
 {
    dlTexture *texture;
    float awidth, aheight;
@@ -793,24 +732,21 @@ void dlOffsetObjectTexture( dlObject *object, unsigned int uvw, int px, int py, 
    if(!object->material->texture)
       return;
 
-   if(uvw > _dlCore.info.maxTextureUnits)
-      return;
-
-   texture = object->material->texture[uvw];
+   texture = object->material->texture;
    if(!texture)
       return;
 
    if(!baseCoords)
-      baseCoords = object->vbo->uvw[ uvw ].coords;
+      baseCoords = object->vbo->uvw[ texture->uvw ].coords;
 
    awidth  = width  / (float)texture->width;
    aheight = height / (float)texture->height;
 
    x = 0;
-   for(; x != object->vbo->uvw[ uvw ].c_num; ++x)
+   for(; x != object->vbo->uvw[ texture->uvw ].c_num; ++x)
    {
-      object->vbo->uvw[ uvw ].coords[ x ].x = baseCoords[x].x * awidth  + px / (float)texture->width;
-      object->vbo->uvw[ uvw ].coords[ x ].y = baseCoords[x].y * aheight + py / (float)texture->height;
+      object->vbo->uvw[ texture->uvw ].coords[ x ].x = baseCoords[x].x * awidth  + px / (float)texture->width;
+      object->vbo->uvw[ texture->uvw ].coords[ x ].y = baseCoords[x].y * aheight + py / (float)texture->height;
    }
 
    object->vbo->up_to_date = 0;

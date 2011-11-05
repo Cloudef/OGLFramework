@@ -75,6 +75,7 @@ CODING STYLE:
 
 TO-DO ->
    """Adding stuff whenever I get old ones done"""
+   /* Shaders and OpenGL 3.1+(GLES2.0) renderers are not high priority right now */
 
     +  =  DONE
    /+  =  PARTIALLY DONE
@@ -101,6 +102,11 @@ MESH IMPORTERS:
    /+PMD Importer (MikuMikuDance)
 
    -Framework friendly format
+
+RENDERERS:
+   +OGL 1.4+ (GLES 1.1)
+
+   -OGL 3.1+ (GLES 2.0)
 
 GENERAL:
    +OGL/GLES Context creation

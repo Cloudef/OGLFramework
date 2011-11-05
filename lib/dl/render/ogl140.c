@@ -63,16 +63,16 @@ static void unbindVBO( dlVBO *vbo )
 }
 
 /* bind texture from UVW */
-static void bindTexture( dlObject *object, unsigned int index )
+static void bindTexture( dlObject *object )
 {
-   if(!object->material->texture[index]->object)
+   if(!object->material->texture->object)
        return;
-   if(object->material->texture[index]->object == draw.last_texture)
+   if(object->material->texture->object == draw.last_texture)
        return;
 
-   draw.last_texture = object->material->texture[index]->object;
+   draw.last_texture = object->material->texture->object;
    glBindTexture( GL_TEXTURE_2D,
-                  object->material->texture[index]->object );
+                  object->material->texture->object );
 }
 
 /* texture coordinates */
@@ -98,25 +98,8 @@ static void uvwPointer( dlObject *object, size_t offset )
    if(!draw.texture)
       return;
 
-   unsigned int i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
-      if( object->material->texture[i] )
-      {
-         if(draw.active_texture != i)
-         {
-            glActiveTexture( GL_TEXTURE0 + i );
-            glClientActiveTexture( GL_TEXTURE0 + i );
-
-            draw.active_texture = i;
-         }
-
-         bindTexture( object, i );
-         coordPointer( object->vbo, object->material->texture[i]->uvw, offset );
-      }
-
-      ++i;
-   }
+   bindTexture( object );
+   coordPointer( object->vbo, object->material->texture->uvw, offset );
 }
 
 /* vertices */
@@ -171,7 +154,6 @@ static void elementDraw( dlObject *object, unsigned int index )
    {
       if(object->vbo->v_use)
          glDrawArrays( object->primitive_type, 0, object->vbo->v_use );
-
       return;
    }
 
@@ -217,7 +199,8 @@ static void drawObject( dlObject *object )
    /* with indices */
    if( object->ibo )
    {
-      while( i != object->ibo->index_buffer )
+      i = 0;
+      for(; i != object->ibo->index_buffer; ++i )
       {
          tmp =  i * USHRT_MAX;
 
@@ -230,8 +213,6 @@ static void drawObject( dlObject *object )
 
          /* bind automatically */
          elementDraw( object, i );
-
-         ++i;
       }
    }
    else
@@ -266,7 +247,8 @@ static void drawAABB( dlObject *object )
 {
    kmVec3 min = object->aabb_box.min;
    kmVec3 max = object->aabb_box.max;
-   float points[] = { min.x, min.y, min.z,
+   const float points[] = {
+                      min.x, min.y, min.z,
                       max.x, min.y, min.z,
                       min.x, min.y, min.z,
                       min.x, max.y, min.z,
@@ -309,6 +291,7 @@ static void drawAABB( dlObject *object )
    glColor4f( 0, 1, 0, 1 );
    glVertexPointer( 3, GL_FLOAT, 0, &points[0] );
    glDrawArrays( GL_LINES, 0, 24 );
+   glColor4f( 1, 1, 1, 1 );
 }
 
 static void dlOGL140_setup( dlObject *object )
@@ -359,7 +342,7 @@ static void dlOGL140_setup( dlObject *object )
    /* we are going to use coords and texture */
    if(object->material)
    {
-      if(object->material->texture[0])
+      if(object->material->texture)
       {
          if(object->vbo->uvw[0].c_use)
          {

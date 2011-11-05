@@ -66,18 +66,6 @@ int         dlObjectFreeChilds( dlObject* );               /* Free all childs */
 /* Calculate AABB */
 int dlObjectCalculateAABB( dlObject* );
 
-/* Add texture to the object */
-int dlObjectAddTexture( dlObject *object,
-                        unsigned int index,
-                        dlTexture *texture );
-
-/* Free texture */
-int dlObjectFreeTexture( dlObject *object,
-                         unsigned int index );
-
-/* Free all textures */
-int dlObjectFreeTexturesAll( dlObject *object );
-
 /* Translation */
 void dlPositionObject(  dlObject*, const kmVec3 );
 void dlPositionObjectf( dlObject*,
@@ -98,12 +86,13 @@ void dlScaleObjectf( dlObject*,
                      const kmScalar x, const kmScalar y, const kmScalar z );
 
 /* Shift object's texture to part from atlas texture */
-void dlShiftObject( dlObject*, unsigned int uvw, int width, int height, unsigned int index, kmVec2 *baseCoords );
-void dlOffsetObjectTexture( dlObject *object, unsigned int uvw, int x, int y, int width, int height, kmVec2 *baseCoords );
+void dlShiftObject( dlObject *object, int width, int height, unsigned int index, kmVec2 *baseCoords );
+void dlOffsetObjectTexture( dlObject *object, int x, int y, int width, int height, kmVec2 *baseCoords );
 
 /* Some basic geometry */
 dlObject*   dlNewPlane( const kmScalar, const kmScalar, int center );
 dlObject*   dlNewGrid( int, int, const kmScalar );
+dlObject*   dlNewSprite( const char *image, unsigned int flags, int center );
 dlObject*   dlNewStaticModel( const char *file );
 dlObject*   dlNewDynamicModel( const char *file );
 

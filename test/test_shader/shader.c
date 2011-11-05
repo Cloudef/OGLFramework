@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <limits.h>
 #include <SDL/SDL.h>
 
 #include "DL/dl.h"
 #include "DL/dlWindow.h"
 #include "DL/dlInput.h"
+
+#ifdef WIN32
+#define LINE_MAX 256
+#endif
 
 static void keyHandle( void )
 {
@@ -43,7 +48,20 @@ static void cleanup( int ret )
 
 int main( int argc, char **argv )
 {
+   dlCamera *camera;
    dlShader *shader;
+   dlObject *object;
+
+   /* FPS Counter */
+   unsigned int   now          = 0;
+   unsigned int   last         = 0;
+   unsigned int   frameCounter = 0;
+   unsigned int   FPS          = 0;
+   unsigned int   fpsDelay     = 0;
+   float          duration     = 0;
+   float          delta        = 0;
+
+   char           WIN_TITLE[LINE_MAX];
 
    unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
    int            width = 800;
@@ -62,11 +80,29 @@ int main( int argc, char **argv )
    if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_OGL3 ) != 0)
+      cleanup(EXIT_FAILURE);
+
+   /* create camera */
+   camera = dlNewCamera();
+   if(!camera)
+      cleanup(EXIT_FAILURE);
+
+   /* sets this as active camera */
+   dlCameraRender( camera );
+
+   /* create test plane */
+   object = dlNewPlane( 0.005, 0.005, 1 );
+   if(!object)
       cleanup(EXIT_FAILURE);
 
    /* create shader */
    shader = dlNewShader( "shader/ogl3.shd" );
+   if(!shader)
+      cleanup(EXIT_FAILURE);
+
+   /* bind */
+   dlBindShader(shader);
 
    /* startup graph */
    dlMemoryGraph();
@@ -74,9 +110,33 @@ int main( int argc, char **argv )
    /* wait for escape key */
    while(!dlKeyPress(SDLK_ESCAPE))
    {
+      last  = now;
+      now   = SDL_GetTicks();
+      delta = (now - last) / 1000.0f;
+
       keyHandle();
+
+      dlDraw( object );
+
       dlSwapBuffers();
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      if(fpsDelay < SDL_GetTicks())
+      {
+         if(duration > 0.0f)
+            FPS = (float)frameCounter / duration;
+
+         sprintf(WIN_TITLE, "OpenGL [FPS: %d]", FPS);
+         SDL_WM_SetCaption( WIN_TITLE, NULL );
+
+         frameCounter = 0; fpsDelay = now + 1000; duration = 0;
+      }
+
+      ++frameCounter;
+      duration += delta;
    }
+   dlFreeCamera( camera );
+   dlFreeObject( object );
    dlFreeShader( shader );
 
    cleanup(EXIT_SUCCESS);

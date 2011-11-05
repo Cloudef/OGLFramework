@@ -76,11 +76,11 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
                                          file );
       if( texturePath )
       {
-         texture = dlNewTexture( texturePath, 0 );
-         if(texture)
-            dlObjectAddTexture( object, i, texture );
-
+         if(object->material) dlFreeMaterial(object->material);
+         object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS );
          free( texturePath );
+
+         return( RETURN_OK ); /* add multiple material support */
       }
    }
 

@@ -48,10 +48,10 @@ dlObject* dlNewPlane( const kmScalar width, const kmScalar height, int center )
 
    /* reset texture coord buffer and insert coords */
    dlResetCoordBuffer( object->vbo, 0, 4 );
-	dlInsertCoord( object->vbo, 0, 1, 1 );
-	dlInsertCoord( object->vbo, 0, 0, 1 );
-	dlInsertCoord( object->vbo, 0, 1, 0 );
-	dlInsertCoord( object->vbo, 0, 0, 0 );
+   dlInsertCoord( object->vbo, 0, 1, 1 );
+   dlInsertCoord( object->vbo, 0, 0, 1 );
+   dlInsertCoord( object->vbo, 0, 1, 0 );
+   dlInsertCoord( object->vbo, 0, 0, 0 );
 
    /* needs some normals */
 

@@ -38,11 +38,9 @@ dlIBO* dlNewIBO( void )
 
 #if USE_BUFFERS
    i = 0;
-   while(i != DL_MAX_BUFFERS)
-   {
+   for(;i != DL_MAX_BUFFERS; ++i)
       ibo->indices[i] = NULL;
-      ++i;
-   }
+
 #else
    ibo->indices = NULL;
 #endif
@@ -159,14 +157,12 @@ int dlIBOUpdate( dlIBO* ibo )
    ibo->ibo_size = 0;
 #if USE_BUFFERS
    i = 0;
-   while( i != DL_MAX_BUFFERS )
+   for(;i != DL_MAX_BUFFERS; ++i)
    {
       tmp = ibo->i_use[i] * sizeof( unsigned short );
 
       ibo->iOffset[i]    = ibo->ibo_size;
       ibo->ibo_size     += tmp;
-
-      ++i;
    }
 #else
    ibo->ibo_size = ibo->i_use * sizeof( unsigned int );
@@ -180,13 +176,11 @@ int dlIBOUpdate( dlIBO* ibo )
 
 #if USE_BUFFERS
    i = 0;
-   while( i != DL_MAX_BUFFERS )
+   for(; i != DL_MAX_BUFFERS; ++i)
    {
       if(ibo->i_use[i])
          glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, ibo->iOffset[i],
                          ibo->i_use[i] * sizeof( unsigned short ), &ibo->indices[i][0]);
-
-      ++i;
    }
 #else
    if(ibo->i_use)
@@ -244,13 +238,11 @@ int dlCopyIndexBuffer( dlIBO *ibo, dlIBO *src )
 
 #if USE_BUFFERS
    i = 0;
-   while(i != DL_MAX_BUFFERS)
+   for(;i != DL_MAX_BUFFERS; ++i)
    {
       ibo->indices[i]= dlCopy( src->indices[i], src->i_num[i] * sizeof(unsigned short) );
       ibo->i_num[i]  = src->i_num[i];
       ibo->i_use[i]  = src->i_use[i];
-
-      ++i;
    }
 #else
    ibo->indices   = dlCopy( src->indices, src->i_num * sizeof(unsigned int) );
@@ -274,15 +266,13 @@ int dlFreeIndexBuffer( dlIBO *ibo )
 
 #if USE_BUFFERS
    i = 0;
-   while(i != DL_MAX_BUFFERS)
+   for(;i != DL_MAX_BUFFERS; ++i)
    {
       dlFree( ibo->indices[i], ibo->i_num[i] * sizeof(unsigned short) );
       ibo->indices[i] = NULL;
 
       ibo->i_num[i] = 0;
       ibo->i_use[i] = 0;
-
-      ++i;
    }
 #else
    dlFree( ibo->indices, ibo->i_num * sizeof(unsigned int) );
@@ -312,7 +302,7 @@ int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
 
    unsigned int i = 0;
    unsigned int actual_amount;
-   while(i != thisMany + 1)
+   for(; i != thisMany + 1; ++i)
    {
       if( indices > USHRT_MAX )
       {
@@ -340,8 +330,6 @@ int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
 
       ibo->i_use[i] = 0;
       ibo->i_num[i] = actual_amount;
-
-      ++i;
    }
    ibo->index_buffer = 1;
 #else

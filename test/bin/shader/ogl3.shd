@@ -1,60 +1,23 @@
 #if VERTEX_SHADER
-// IN
-in vec3 a_vertex;
-#if TEXTURE
-in vec2 a_coord;
-#endif
-#if NORMAL
-in vec3 a_normal;
-#endif
-// UNIFORM
-uniform mat4 projection;
-uniform mat4 view;
-
-// OUT
-#if TEXTURE
-out vec2 v_coord;
-#endif
-#if NORMAL
-out vec3 v_normal;
-#endif
-
 // MAIN
 void main()
 {
-   vec4 position = vec4(a_vertex.xyz,1);
+   vec4 position = vec4(DL_IN_VERTEX.xyz,1);
 #if TEXTURE
-   v_coord = a_coord;
+   DL_OUT_COORD = DL_IN_COORD;
 #endif
-
-   gl_Position = projection * view * position;
+   DL_POSITION = DL_PROJECTION * DL_VIEW * position;
 }
 #endif /* VERTEX SHADER */
 
 #if FRAGMENT_SHADER
-// IN
-#if TEXTURE
-in vec2 v_coord;
-#endif
-#if NORMAL
-in vec3 v_normal;
-#endif
-
-// UNIFORM
-#if TEXTURE
-uniform sampler2D texture0;
-#endif
-#if COLOR
-uniform vec4 color;
-#endif
-
 // MAIN
 void main()
 {
 #if TEXTURE
-   FRAGMENT_COLOR = texture2D(texture0, v_coord);
+   DL_FRAGMENT = texture2D(DL_TEXTURE0, DL_IN_COORD);
 #else
-   FRAGMENT_COLOR = vec4(1,1,1,1);
+   DL_FRAGMENT = vec4(1,1,1,1);
 #endif
 }
 #endif /* FRAGMENT SHADER */

@@ -17,8 +17,6 @@
 /* Allocate material object */
 dlMaterial* dlNewMaterial( void )
 {
-   unsigned int i;
-
    /* Allocate material object */
    dlSetAlloc( ALLOC_MATERIAL );
    dlMaterial* object = (dlMaterial*)dlCalloc( 1, sizeof(dlMaterial) );
@@ -26,19 +24,7 @@ dlMaterial* dlNewMaterial( void )
       return( NULL );
 
    /* Nullify pointers */
-   object->texture = dlCalloc( _dlCore.info.maxTextureUnits, sizeof(dlTexture*) );
-   if(!object->texture)
-   {
-      dlFree( object, sizeof(dlMaterial) );
-      return( NULL );
-   }
-
-   i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
-      object->texture[i] = NULL;
-      ++i;
-   }
+   object->texture = NULL;
 
    /* default blend modes */
    object->blend1 = GL_SRC_ALPHA;
@@ -55,10 +41,37 @@ dlMaterial* dlNewMaterial( void )
    return( object );
 }
 
+/* Allocate new material from texture */
+dlMaterial* dlNewMaterialFromTexture( dlTexture *texture )
+{
+   dlMaterial *object = dlNewMaterial();
+   if(!object)
+      return(NULL);
+
+   object->texture = texture;
+
+   return(object);
+}
+
+dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags )
+{
+   dlTexture  *object;
+   dlMaterial *material;
+
+   object = dlNewTexture( texture, flags );
+   if(!object)
+      return(NULL);
+
+   material = dlNewMaterialFromTexture( object );
+   if(!material)
+      dlFreeTexture(object);
+
+   return(material);
+}
+
 /* Copy material object */
 dlMaterial* dlCopyMaterial( dlMaterial *src )
 {
-   unsigned int i;
    dlMaterial *object;
 
    /* Fuuuuuuuuu--- We have non valid object */
@@ -71,20 +84,7 @@ dlMaterial* dlCopyMaterial( dlMaterial *src )
       return( NULL );
 
    /* Copy data */
-   object->texture = dlCopy( src->texture,
-         _dlCore.info.maxTextureUnits * sizeof(dlTexture*) );
-   if(!object->texture)
-   {
-      dlFree( object, sizeof(dlMaterial) );
-      return( NULL );
-   }
-
-   i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
-      object->texture[i] = dlCopyTexture(src->texture[i]);
-      ++i;
-   }
+   object->texture = dlCopyTexture(src->texture);
 
    object->blend1 = src->blend1;
    object->blend2 = src->blend2;
@@ -113,7 +113,7 @@ dlMaterial* dlRefMaterial( dlMaterial *src )
    object                      = src;
 
    /* Ref textures */
-   object->texture = dlMaterialRefTextures( object );
+   object->texture = dlRefTexture( object->texture );
 
    logYellow();
    dlPuts("[R:MATERIAL]");
@@ -132,18 +132,14 @@ int dlFreeMaterial( dlMaterial *object )
    /* Fuuuuuuuuu--- We have non valid object */
    if(!object) return( RETURN_NOTHING );
 
-   /* Free textures */
-   dlMaterialFreeTexturesAll( object );
+   /* Free texture */
+   if(dlFreeTexture( object->texture ) == RETURN_OK)
+      object->texture = NULL;
 
    /* There is still references to this object alive */
    if(--object->refCounter != 0) return( RETURN_NOTHING );
 
    dlSetAlloc( ALLOC_MATERIAL );
-
-   /* Free texture array */
-   dlFree( object->texture,
-           _dlCore.info.maxTextureUnits * sizeof(dlTexture*) );
-   object->texture = NULL;
 
    logRed();
    dlPuts("[F:MATERIAL]");
@@ -156,75 +152,26 @@ int dlFreeMaterial( dlMaterial *object )
 
 /* Add texture, steals reference */
 int dlMaterialAddTexture( dlMaterial *object,
-                          unsigned int index,
                           dlTexture *texture )
 {
    if(!object)
       return( RETURN_FAIL );
 
-   if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
-
-   object->texture[index] = texture;
+   object->texture = texture;
 
    return( RETURN_OK );
 }
 
 /* Free texture */
-int dlMaterialFreeTexture( dlMaterial *object,
-                           unsigned int index )
+int dlMaterialFreeTexture( dlMaterial *object )
 {
    if(!object)
       return( RETURN_FAIL );
 
-   if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
-
-   if(!object->texture[index])
-      return( RETURN_OK );
-
-   if( dlFreeTexture( object->texture[index] ) == RETURN_OK )
-      object->texture[index] = NULL;
+   if( dlFreeTexture( object->texture ) == RETURN_OK )
+      object->texture = NULL;
 
    return( RETURN_OK );
-}
-
-/* Free all textures */
-int dlMaterialFreeTexturesAll( dlMaterial *object )
-{
-   unsigned int i;
-
-   if(!object)
-      return( RETURN_FAIL );
-
-   i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
-      if( dlMaterialFreeTexture( object, i ) != RETURN_OK )
-         return( RETURN_FAIL );
-      ++i;
-   }
-
-   return( RETURN_OK );
-}
-
-/* reference textures */
-dlTexture** dlMaterialRefTextures( dlMaterial *object )
-{
-   unsigned int i;
-
-   if(!object)
-      return( NULL );
-
-   i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
-      if(object->texture[i])
-         dlRefTexture( object->texture[i] );
-      ++i;
-   }
-
-   return( object->texture );
 }
 
 /* EoF */

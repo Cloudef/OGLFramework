@@ -47,11 +47,8 @@ dlVBO* dlNewVBO( void )
 
    /* Nullify pointers */
    i = 0;
-   while(i != _dlCore.info.maxTextureUnits)
-   {
+   for(; i != _dlCore.info.maxTextureUnits; ++i)
       vbo->uvw[i].coords  = NULL;
-      ++i;
-   }
 
    vbo->tstance   = NULL;
    vbo->vertices  = NULL;
@@ -95,11 +92,8 @@ dlVBO* dlCopyVBO( dlVBO *src )
    }
 
    /* Copy data */
-   while(i != _dlCore.info.maxTextureUnits)
-   {
+   for(;i != _dlCore.info.maxTextureUnits; ++i)
       dlCopyCoordBuffer( vbo, src, i );
-      ++i;
-   }
 
    dlCopyVertexBuffer( vbo, src );
    dlCopyNormalBuffer( vbo, src );
@@ -159,11 +153,8 @@ int dlFreeVBO( dlVBO *vbo )
 
    /* Free all data */
    i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
-   {
+   for(;i != _dlCore.info.maxTextureUnits; ++i)
       dlFreeCoordBuffer( vbo, i );
-      ++i;
-   }
    dlFree( vbo->uvw, _dlCore.info.maxTextureUnits * sizeof(dlUVW) );
 
    if(vbo->tstance) free(vbo->tstance);
@@ -208,13 +199,10 @@ int dlVBOUpdate( dlVBO* vbo )
 
    /* calculate total size of vbo */
    i = 0;
-   while( i !=  _dlCore.info.maxTextureUnits )
-   {
+   for(;i !=  _dlCore.info.maxTextureUnits; ++i)
       if(vbo->uvw[i].c_use)
          vboSize += vbo->uvw[i].c_use * 2 * sizeof(float);
 
-      ++i;
-   }
    if(vbo->v_use)
       vboSize += vbo->v_use * 3 * sizeof(float);
    if(vbo->n_use)
@@ -230,7 +218,7 @@ int dlVBOUpdate( dlVBO* vbo )
 
    /* buffer data to the VBO */
    i = 0;
-   while( i != _dlCore.info.maxTextureUnits )
+   for(; i != _dlCore.info.maxTextureUnits; ++i)
    {
       if(vbo->uvw[i].c_use)
       {
@@ -242,8 +230,6 @@ int dlVBOUpdate( dlVBO* vbo )
 
          vboOffset += tmp;
       }
-
-      ++i;
    }
 
    /* buffer vertices */

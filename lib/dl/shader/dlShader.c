@@ -1,6 +1,7 @@
 #include <malloc.h>
 #include <string.h>
 
+#include "dlFramework.h"
 #include "dlShader.h"
 #include "dlAlloc.h"
 #include "dlLog.h"
@@ -26,6 +27,26 @@
 
 #define VERTEX_SHADER   "VERTEX_SHADER"
 #define FRAGMENT_SHADER "FRAGMENT_SHADER"
+
+#define DL_IN_VERTEX  "DL_IN_VERTEX"
+#define DL_OUT_VERTEX "DL_OUT_VERTEX"
+#define DL_IN_COORD   "DL_IN_COORD"
+#define DL_OUT_COORD  "DL_OUT_COORD"
+#define DL_IN_NORMAL  "DL_IN_NORMAL"
+#define DL_OUT_NORMAL "DL_OUT_NORMAL"
+#define DL_IN_COLOR   "DL_IN_COLOR"
+#define DL_OUT_COLOR  "DL_OUT_COLOR"
+
+#define DL_POSITION   "DL_POSITION"
+#define DL_FRAGMENT   "DL_FRAGMENT"
+
+#define DL_POSITION_CONV "gl_Position"
+#define DL_FRAGMENT_CONV "gl_FragColor"
+
+#define DL_PROJECTION "DL_PROJECTION"
+#define DL_VIEW       "DL_VIEW"
+
+#define DL_TEXTURE    "DL_TEXTURE"
 
 static const dlShaderType uniformTypes[] =
 {
@@ -270,21 +291,52 @@ static int process_shader( dlShader *shader )
    {
       glGetActiveUniform( shader->object, i, maxLen, 0, &size, &type, buffer );
       dlPuts( buffer );
-      shader->uniforms[i].name = strdup(buffer);
+      shader->uniforms[i].name   = strdup(buffer);
+      shader->uniforms[i].object = glGetUniformLocation( shader->object, buffer );
+      shader->uniforms[i].shader = shader;
    }
    free(buffer);
+
+   /* Assing attribute locations */
+   glBindAttribLocation(shader->object, DL_VERTEX_ATTRIB, DL_IN_VERTEX);
+   glBindAttribLocation(shader->object, DL_COORD_ATTRIB , DL_IN_COORD);
+   glBindAttribLocation(shader->object, DL_NORMAL_ATTRIB, DL_IN_NORMAL);
+
+   /* Assing projection && view */
+   shader->projection = dlShaderGetUniform( shader, DL_PROJECTION );
+   shader->view       = dlShaderGetUniform( shader, DL_VIEW );
 
    return( RETURN_OK );
 }
 
 static unsigned int process_vertex_GLSL( char *data )
 {
-   char *data2 = NULL;
+   char *data2 = NULL, *tmp;
    unsigned int vertexShader;
 
    /* vertex shader */
    data2 = append( data2, "#define "VERTEX_SHADER" 1\n" );
+   /* if shader->state.projection
+    * { */
+   data2 = append( data2, "uniform mat4 "DL_PROJECTION";\n" );
+   data2 = append( data2, "uniform mat4 "DL_VIEW";\n" );
+   /* } */
+   /* if shader->state.vertex
+    * { */
+   data2 = append( data2, "in vec3 "DL_IN_VERTEX";\n" );
+   /* } */
+   /* if shader->state.texture
+    * {
+    * data2 = append( data2, "in vec3 "DL_IN_COORD";\n" );
+    * data2 = append( data2, "out vec3 "DL_OUT_COORD";\n" );
+    * } */
+
+   /* SHADER CODE */
    data2 = append( data2, data );
+
+   tmp = str_replace( data2, DL_POSITION, DL_POSITION_CONV );
+   if(tmp)
+   { free(data2); data2 = tmp; }
 
    vertexShader = glCreateShader(GL_VERTEX_SHADER);
    glShaderSource(vertexShader, 1, (const GLchar**)&data2, NULL);
@@ -301,9 +353,17 @@ static unsigned int process_fragment_GLSL( char *data )
 
    /* fragment shader */
    data2 = append( data2, "#define "FRAGMENT_SHADER" 1\n" );
+
+   /* if shader->state.texture
+    * {
+    * data2 = append( data2, "in vec3 "DL_IN_COORD";\n" );
+    * data2 = append( data2, "uniform sampler2D "DL_TEXTURE"0;\n" );
+    * } */
+
+   /* SHADER CODE */
    data2 = append( data2, data );
 
-   tmp = str_replace( data2, "FRAGMENT_COLOR", "gl_FragColor" );
+   tmp = str_replace( data2, DL_FRAGMENT, DL_FRAGMENT_CONV );
    if(tmp)
    { free(data2); data2 = tmp; }
 
@@ -342,6 +402,8 @@ dlShader* dlNewShader( const char *file )
       return( NULL );
    }
    shader->uniforms  = NULL;
+   shader->projection= NULL;
+   shader->view      = NULL;
    shader->file      = strdup(file);
 
    /* create shader program */
@@ -350,8 +412,8 @@ dlShader* dlNewShader( const char *file )
    glAttachShader( shader->object, fragmentShader );
 
    /* we don't need these anymore */
-   glDeleteShader(vertexShader);
-   glDeleteShader(fragmentShader);
+   //glDeleteShader(vertexShader);
+   //glDeleteShader(fragmentShader);
 
    /* link shader */
    if(link_shader( shader ) != RETURN_OK)
@@ -406,6 +468,7 @@ void dlBindShader( dlShader *shader )
    if( _DL_BIND_SHADER == shader->object )
       return;
 
+   dlSetShader( shader );
    glUseProgram( shader->object );
    _DL_BIND_SHADER = shader->object;
 }
@@ -418,6 +481,25 @@ void dlBindShaderi( GLuint shader )
 
    glUseProgram( shader );
    _DL_BIND_SHADER = shader;
+}
+
+/* set shader uniform */
+void dlShaderUniformMatrix4( dlShaderUniform *uniform, kmMat4 *mat  )
+{
+   if(!uniform) return;
+   glUniformMatrix4fv( uniform->object, 1, GL_FALSE, &mat->mat[0] );
+}
+
+/* get uniform */
+dlShaderUniform* dlShaderGetUniform( dlShader *shader, const char *name )
+{
+   unsigned int i = 0;
+   for(; i != shader->uniformCount; ++i)
+   {
+      if(strcmp( name, shader->uniforms[i].name) == 0)
+         return( &shader->uniforms[i] );
+   }
+   return( NULL );
 }
 
 #else  /* SHADER SUPPORT == 1 */
@@ -444,6 +526,16 @@ void dlBindShader( dlShader *shader )
 void dlBindShaderi( GLuint shader )
 {
    return;
+}
+
+void dlShaderUniformMatrix4( dlShaderUniform *uniform, kmMat4 *mat )
+{
+   return;
+}
+
+dlShaderUniform* dlShaderGetUniform( dlShader *shader, const char *name )
+{
+   return( NULL );
 }
 
 #endif /* SHADER SUPPORT == 0 */

@@ -7,7 +7,7 @@
 #include "DL/dlInput.h"
 
 #ifdef WIN32
-#define LINE_MAX 254
+#define LINE_MAX 256
 #endif
 
 static void keyHandle( void )
@@ -81,14 +81,15 @@ int main( int argc, char **argv )
    if(dlCreateWindow( width, height, bits, flags ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
+   if(dlCreateDisplay( width, height, DL_RENDER_OGL140 ) != 0)
       cleanup(EXIT_FAILURE);
 
+   /* create camera */
    camera = dlNewCamera();
    if(!camera)
       cleanup(EXIT_FAILURE);
 
-   /* Sets this as active camera */
+   /* sets this as active camera */
    dlCameraRender( camera );
 
    texture = dlNewTexture( "model/test.png", SOIL_FLAG_DEFAULTS );
@@ -102,7 +103,9 @@ int main( int argc, char **argv )
    /* Add texture to plane
     * note: This steals the reference of texture object, so you don't have to free it.
     * If you want to still have reference to the texture after object dies, use glRefTexture( texture ); */
-   dlObjectAddTexture( obj, 0, texture );
+   obj->material = dlNewMaterialFromTexture( texture );
+   if(!obj->material)
+      cleanup(EXIT_FAILURE);
 
    obj2 = dlCopyObject( obj );
    if(!obj2)

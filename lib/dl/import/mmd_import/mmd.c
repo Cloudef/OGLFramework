@@ -553,4 +553,12 @@ void freeMMD( mmd_data *mmd )
    free( mmd );
 }
 
+#undef MAGIC_HEADER_SIZE
+#undef MAGIC_HEADER_STRING
+
+#undef SIZE_BYTE
+#undef SIZE_INTEGER
+#undef SIZE_FLOAT
+#undef SIZE_SHORT
+
 /* EoF */
