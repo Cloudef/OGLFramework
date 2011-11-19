@@ -75,7 +75,7 @@ static void dlCameraReset( dlCamera *object )
    object->transform_changed = 1;
    object->viewport_changed  = 1;
 
-   object->aspect = (float)_dlCore.display.width/(float)_dlCore.display.height;
+   object->aspect = object->viewSize.x / object->viewSize.y;
 
    dlCameraCalculateProjectionMatrix( object );
    dlCameraCalculateViewMatrix( object );
@@ -91,9 +91,9 @@ dlCamera* dlNewCamera( void )
       return( NULL );
 
    /* Defaults */
-   object->zNear = 1.0;
-   object->zFar  = 3800.0;
-   object->fov   = kmPI / 2.0;
+   object->zNear = 1.0f;
+   object->zFar  = 3800.0f;
+   object->fov   = kmPI / 2.0f;
 
    /* Reset */
    dlCameraReset( object );
