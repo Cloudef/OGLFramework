@@ -45,9 +45,9 @@ typedef struct
 typedef struct
 {
    const char  *vendor;
-   uint8_t     major;
-   uint8_t     minor;
-   uint8_t     patch;
+   unsigned int major;
+   unsigned int minor;
+   unsigned int patch;
 } dlVersionInfo;
 
 /* display info */
