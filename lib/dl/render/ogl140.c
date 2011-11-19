@@ -468,8 +468,11 @@ static void dlOGL140_setup( dlObject *object )
 
 static void dlOGL140_draw( dlObject *object )
 {
+   glMatrixMode(GL_PROJECTION);
    glLoadMatrixf( (float*)&_dlCore.render.projection );
-   glMultMatrixf( (float*)&object->matrix );
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadMatrixf( (float*)&object->matrix );
 
    dlOGL140_setup( object );
 
