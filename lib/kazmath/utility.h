@@ -40,12 +40,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define KM_TRUE 1
 #endif
 
+#ifndef FLT_MAX
+#define FLT_MAX 3.402823466E+38F
+#endif
+
 #define kmPI         3.14159265359f
-#define kmPIOver180  kmPI / 180   //  PI / 180
-#define kmPIUnder180 180 / kmPI  // 180 / PI
+#define kmPIOver180  kmPI / 180.f   //  PI / 180
+#define kmPIUnder180 180.f / kmPI   // 180 / PI
 #define kmEpsilon    1.0 / 64.0
-
-
 
 #ifdef __cplusplus
 extern "C" {

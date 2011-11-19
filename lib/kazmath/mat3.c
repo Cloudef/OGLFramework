@@ -41,7 +41,7 @@ kmMat3* kmMat3Fill(kmMat3* pOut, const kmScalar* pMat)
 /** Sets pOut to an identity matrix returns pOut*/
 kmMat3* kmMat3Identity(kmMat3* pOut)
 {
-	memset(pOut->mat, 0, sizeof(float) * 9);
+	memset(pOut->mat, 0, sizeof(kmScalar) * 9);
 	pOut->mat[0] = pOut->mat[4] = pOut->mat[8] = 1.0f;
 	return pOut;
 }
@@ -101,11 +101,11 @@ kmMat3* kmMat3Inverse(kmMat3* pOut, const kmScalar pDeterminate, const kmMat3* p
 /** Returns true if pIn is an identity matrix */
 int  kmMat3IsIdentity(const kmMat3* pIn)
 {
-	static const float identity [] = { 	1.0f, 0.0f, 0.0f,
-										0.0f, 1.0f, 0.0f,
-										0.0f, 0.0f, 1.0f};
+	static const kmScalar identity [] = { 	1.0, 0.0, 0.0,
+                                                0.0, 1.0, 0.0,
+                                                0.0, 0.0, 1.0  };
 
-	return (memcmp(identity, pIn->mat, sizeof(float) * 9) == 0);
+	return (memcmp(identity, pIn->mat, sizeof(kmScalar) * 9) == 0);
 }
 
 /** Sets pOut to the transpose of pIn, returns pOut */
@@ -124,9 +124,9 @@ kmMat3* kmMat3Transpose(kmMat3* pOut, const kmMat3* pIn)
 /* Multiplies pM1 with pM2, stores the result in pOut, returns pOut */
 kmMat3* kmMat3Multiply(kmMat3* pOut, const kmMat3* pM1, const kmMat3* pM2)
 {
-	float mat[9];
+	kmScalar mat[9];
 
-	const float *m1 = pM1->mat, *m2 = pM2->mat;
+	const kmScalar *m1 = pM1->mat, *m2 = pM2->mat;
 
 	mat[0] = m1[0] * m2[0] + m1[3] * m2[1] + m1[6] * m2[2];
 	mat[1] = m1[1] * m2[0] + m1[4] * m2[1] + m1[7] * m2[2];
@@ -140,14 +140,14 @@ kmMat3* kmMat3Multiply(kmMat3* pOut, const kmMat3* pM1, const kmMat3* pM2)
 	mat[7] = m1[1] * m2[6] + m1[4] * m2[7] + m1[7] * m2[8];
 	mat[8] = m1[2] * m2[6] + m1[5] * m2[7] + m1[8] * m2[8];
 
-	memcpy(pOut->mat, mat, sizeof(float)*9);
+	memcpy(pOut->mat, mat, sizeof(kmScalar)*9);
 
 	return pOut;
 }
 
 kmMat3* kmMat3ScalarMultiply(kmMat3* pOut, const kmMat3* pM, const kmScalar pFactor)
 {
-    float mat[9];
+    kmScalar mat[9];
     int i;
 
     for(i = 0; i < 9; i++)
@@ -155,7 +155,7 @@ kmMat3* kmMat3ScalarMultiply(kmMat3* pOut, const kmMat3* pM, const kmScalar pFac
         mat[i] = pM->mat[i] * pFactor;
     }
 
-    memcpy(pOut->mat, mat, sizeof(float)*9);
+    memcpy(pOut->mat, mat, sizeof(kmScalar)*9);
 
 	return pOut;
 }
@@ -165,7 +165,7 @@ kmMat3* kmMat3Assign(kmMat3* pOut, const kmMat3* pIn)
 {
 	assert(pOut != pIn); //You have tried to self-assign!!
 
-	memcpy(pOut->mat, pIn->mat, sizeof(float)*9);
+	memcpy(pOut->mat, pIn->mat, sizeof(kmScalar)*9);
 
 	return pOut;
 }
@@ -187,7 +187,7 @@ int kmMat3AreEqual(const kmMat3* pMat1, const kmMat3* pMat2)
 }
 
 /* Rotation around the z axis so everything stays planar in XY */
-kmMat3* kmMat3Rotation(kmMat3* pOut, const float radians)
+kmMat3* kmMat3Rotation(kmMat3* pOut, const kmScalar radians)
 {
 	/*
          |  cos(A)  -sin(A)   0  |
@@ -213,7 +213,7 @@ kmMat3* kmMat3Rotation(kmMat3* pOut, const float radians)
 /** Builds a scaling matrix */
 kmMat3* kmMat3Scaling(kmMat3* pOut, const kmScalar x, const kmScalar y)
 {
-	memset(pOut->mat, 0, sizeof(float) * 9);
+	memset(pOut->mat, 0, sizeof(kmScalar) * 9);
 	pOut->mat[0] = x;
 	pOut->mat[4] = y;
 	pOut->mat[8] = 1.0;
@@ -223,7 +223,7 @@ kmMat3* kmMat3Scaling(kmMat3* pOut, const kmScalar x, const kmScalar y)
 
 kmMat3* kmMat3Translation(kmMat3* pOut, const kmScalar x, const kmScalar y)
 {
-    memset(pOut->mat, 0, sizeof(float) * 9);
+    memset(pOut->mat, 0, sizeof(kmScalar) * 9);
     pOut->mat[6] = x;
     pOut->mat[7] = y;
     pOut->mat[8] = 1.0;
