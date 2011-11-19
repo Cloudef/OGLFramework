@@ -77,7 +77,7 @@ int main( int argc, char **argv )
 
    unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
    int            width = 800;
-   int            height= 512;
+   int            height= 480;
    int            bits  = 32;
 #if defined(GLES1) || defined(GLES2)
    flags = SDL_RESIZABLE;

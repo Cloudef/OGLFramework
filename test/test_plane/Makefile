@@ -1,19 +1,26 @@
 SOURCE		= plane.c
 INCLUDES	= -I../../include
 LIB		= -L../../lib
-TARGET		= plane.bin
+TARGET		= plane
 OBJ		= $(addsuffix .o, $(basename $(SOURCE)))
 
-all: ${TARGET}
+ifeq (${mingw}, 1)
+	FTARGET = $(addsuffix .exe, $(TARGET))
+else
+	FTARGET = $(addsuffix .run, $(TARGET))
+endif
+
+all: ${FTARGET}
 	@true
 
 %.o : %.c
 	${CC} ${CFLAGS} ${INCLUDES} -c $^ -o $@
 
-${TARGET}: ${OBJ}
+${FTARGET}: ${OBJ}
 	${CC} ${CFLAGS} -o $@ $^ ${GL_LIBS} ${LIB}
-	mv ${TARGET} ../bin/
+	mv ${FTARGET} ../bin/
 
 clean:
 	${RM} -f ${OBJ}
-	${RM} -f ../bin/${TARGET}
+	${RM} -f ../bin/${TARGET}.exe
+	${RM} -f ../bin/${TARGET}.run

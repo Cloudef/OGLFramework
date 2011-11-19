@@ -79,7 +79,16 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    if(dlCreateWindow( width, height, bits, flags ) != 0)
+   {
+      logRed();
+      puts(dlWindowGetError());
+      logNormal();
       cleanup(EXIT_FAILURE);
+   } else {
+      logGreen();
+      puts(dlWindowGetError());
+      logNormal();
+   }
 
    if(dlCreateDisplay( width, height, DL_RENDER_OGL140 ) != 0)
       cleanup(EXIT_FAILURE);
