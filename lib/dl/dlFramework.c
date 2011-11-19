@@ -36,6 +36,8 @@ kmMat4 dlGetProjection( void )
 /* Set active camera */
 void dlSetCamera( dlCamera *camera )
 {
+   CALL("%p", camera);
+
    _dlCore.render.camera     = camera;
 
    if(camera) /* camera can also be set NULL */
@@ -45,24 +47,31 @@ void dlSetCamera( dlCamera *camera )
 /* Get active camera */
 dlCamera* dlGetCamera( void )
 {
+   TRACE();
+   RET("%p", _dlCore.render.camera);
    return( _dlCore.render.camera );
 }
 
 /* Set active shader */
 void dlSetShader( dlShader *shader )
 {
+   CALL("%p", shader);
    _dlCore.render.shader = shader;
 }
 
 /* Get active shader */
 dlShader* dlGetShader( void )
 {
+   TRACE();
+   RET("%p", _dlCore.render.shader);
    return( _dlCore.render.shader );
 }
 
 /* Set render mode */
 void dlSetRenderMode( dleRenderMode mode )
 {
+   CALL("%d", mode);
+
 #if defined(GLES1) || defined(GLES2)
    _dlCore.render.mode = mode;
 #else
@@ -71,18 +80,18 @@ void dlSetRenderMode( dleRenderMode mode )
       if( GL_ARB_vertex_buffer_object )
       {
          _dlCore.render.mode = mode;
-         logBlue(); dlPuts("-!- DL_MODE_VBO"); logNormal();
+         LOGINFO("!", "DL_MODE_VBO");
       }
       else
       {
          _dlCore.render.mode = DL_MODE_VERTEX_ARRAY;
-         logBlue(); dlPuts("-!- VBO rendering method is not avaible on this hardware"); logNormal();
+         LOGINFO("!", "VBO rendering method is not avaible on this hardware");
       }
    }
    else
    {
       _dlCore.render.mode = mode;
-      logBlue(); dlPuts("-!- DL_MODE_VERTEX_ARRAY"); logNormal();
+      LOGINFO("!", "DL_MODE_VERTEX_ARRAY");
    }
 #endif
 }
@@ -94,12 +103,13 @@ static int dlGetInfo( void )
    char *gl_ver;
    int num_parsed;
 #endif
+   TRACE();
 
    /* get ogl extensions */
    _dlCore.extensions  = (char*)glGetString( GL_EXTENSIONS );
    if(!_dlCore.extensions)
    {
-      logRed(); dlPrint("[GL] Failed to retive extensions, maybe no context?"); logNormal();
+      LOGERR("GL", "Failed to retive extensions, maybe no context?");
       return(RETURN_FAIL);
    }
 
@@ -127,12 +137,15 @@ static int dlGetInfo( void )
    glGetIntegerv (GL_MAX_TEXTURE_SIZE,             &_dlCore.info.maxTextureSize);
    glGetIntegerv (GL_MAX_TEXTURE_UNITS,            &_dlCore.info.maxTextureUnits);
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* Output OpenGL information */
 static void dlOutputInfo( void )
 {
+   TRACE();
+
    logGreen();
    dlPrint("[Renderer %s]\n",                   _dlCore.render.string);
 
@@ -169,6 +182,8 @@ static void dlOutputInfo( void )
 /* creates virtual display and inits dl Framework */
 int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
 {
+   CALL("%d, %d, %d", display_width, display_height, renderer);
+
    /* NULL these */
    _dlCore.render.draw     = NULL;
    _dlCore.render.string   = NULL;
@@ -179,14 +194,14 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
    dlLogOpen();
 
 #if !defined(GLES1) && !defined(GLES2)
-   /* initialize dlEW if on correct platform */
+   /* initialize GLEW if on correct platform */
    glClear( GL_COLOR_BUFFER_BIT );
    if(GLEW_OK != glewInit())
    {
-      logRed(); dlPrint("[GL] There is no OpenGL context"); logNormal();
+      LOGERR("GL", "There is no OpenGL context");
       return( RETURN_FAIL );
    }
-   logGreen(); dlPuts("[GLEW] OK"); logNormal();
+   LOGOK("GLEW", "Init");
 #endif
 
    /* check display resolution */
@@ -195,7 +210,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       _dlCore.display.width   = display_width;
       _dlCore.display.height  = display_height;
    } else {
-      logRed(); dlPuts("[GL] Incorrect display width or height"); logNormal();
+      LOGERRP("GL", "Incorrect display: %dx%d", display_width, display_height);
       return( RETURN_FAIL );
    }
 
@@ -222,7 +237,7 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
       }
       else
       {
-         logBlue(); dlPuts("-!- Unknown OpenGL version, trying to use OGL 3.1+]"); logNormal();
+         LOGINFO("!", "Unknown OpenGL version, trying to use OGL 3.1+");
          /* OGL 3 */
          if(dlOGL3() != RETURN_OK)
             return(RETURN_FAIL);
@@ -261,39 +276,43 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
    /* renderer fail ? */
    if(!_dlCore.render.draw)
    {
-      logRed(); dlPuts("[GL] There is no renderer"); logNormal();
+      LOGERR("GL", "There is no renderer");
       return(RETURN_FAIL);
    }
 
    /* Init texture cache */
    if(dlTextureInitCache() != RETURN_OK)
    {
-      logRed(); dlPuts("[GL] Failed to init texture cache"); logNormal();
+      LOGERR("GL", "Failed to init texture cache");
       return(RETURN_FAIL);
    }
 
    /* Output opengl information */
-   dlOutputInfo();
-   dlPuts( "");
-   logGreen(); dlPuts("[GL] Created"); logNormal();
+   dlOutputInfo(); dlPuts("");
+   LOGOKP("GL", "%dx%d created",
+          _dlCore.display.width, _dlCore.display.height);
 
    /* Default to VBO */
    dlSetRenderMode( DL_MODE_VBO );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* frees virtual display and deinits dl framework */
 int dlFreeDisplay( void )
 {
-   logRed(); dlPuts("[GL] Destroyed"); logNormal();
+   TRACE();
 
    /* Deinit texture cache */
    dlTextureFreeCache();
 
+   LOGERR("GL", "Destroyed");
+
    /* close log */
    dlLogClose( );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

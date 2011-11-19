@@ -17,6 +17,8 @@
 /* Allocate scene object */
 dlObject* dlNewObject( void )
 {
+   TRACE();
+
    /* Allocate scene object */
    dlSetAlloc( ALLOC_SCENEOBJECT );
    dlObject *object = (dlObject*)dlCalloc( 1, sizeof(dlObject) );
@@ -40,14 +42,13 @@ dlObject* dlNewObject( void )
    /* Update matrix on start */
    object->transform_changed = 1;
 
-   logGreen();
-   dlPuts("[A:SCENEOBJECT]");
-   logNormal();
+   LOGOK("SCENEOBJECT", "NEW");
 
    /* Increase ref counter */
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
@@ -55,6 +56,7 @@ dlObject* dlNewObject( void )
 dlObject* dlCopyObject( dlObject *src )
 {
    dlObject *object;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
    if(!src) return( NULL );
@@ -95,14 +97,13 @@ dlObject* dlCopyObject( dlObject *src )
    /* Update it */
    object->transform_changed = 1;
 
-   logYellow();
-   dlPuts("[C:SCENEOBJECT]");
-   logNormal();
+   LOGWARN("SCENEOBJECT", "COPY");
 
    /* Increase ref counter */
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
@@ -110,37 +111,38 @@ dlObject* dlCopyObject( dlObject *src )
 dlObject* dlRefObject( dlObject *src )
 {
    dlObject* object;
+   CALL("%p", src);
 
-	/* Fuuuuuuuuu--- We have non valid object */
-	if(!src) return( NULL );
+  /* Fuuuuuuuuu--- We have non valid object */
+  if(!src) return( NULL );
 
-	/* Point magic */
-	object                      = src;
+  /* Point magic */
+  object                      = src;
 
-        /* Reference data */
-        object->material	    = dlRefMaterial( src->material );
-        object->vbo		    = dlRefVBO( src->vbo );
-        object->ibo                 = dlRefIBO( src->ibo );
-        object->animator            = dlRefAnimator( src->animator );
+  /* Reference data */
+  object->material	    = dlRefMaterial( src->material );
+  object->vbo		    = dlRefVBO( src->vbo );
+  object->ibo                 = dlRefIBO( src->ibo );
+  object->animator            = dlRefAnimator( src->animator );
 
-        logYellow();
-        dlPuts("[R:SCENEOBJECT]");
-        logNormal();
+  LOGWARN("SCENEOBJECT", "REF");
 
-	/* Increase ref counter */
-	object->refCounter++;
+  /* Increase ref counter */
+  object->refCounter++;
 
-	/* Return the instance */
-	return( object );
+  /* Return the instance */
+  RET("%p", object);
+  return( object );
 }
 
 /* Free scene object */
 int dlFreeObject( dlObject *object )
 {
    unsigned int i;
+   CALL("%p", object);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!object) return( RETURN_NOTHING );
+   if(!object) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* Free material ( if any ) */
    if(dlFreeMaterial( object->material ) == RETURN_OK)
@@ -176,12 +178,12 @@ int dlFreeObject( dlObject *object )
    object->child = NULL;
    object->num_childs = 0;
 
-   logRed();
-   dlPuts("[F:SCENEOBJECT]");
-   logNormal();
+   LOGERR("SCENEOBJECT", "FREE");
 
-	/* Free scene object */
+   /* Free scene object */
    dlFree( object, sizeof(dlObject) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -220,7 +222,11 @@ static void dlObjectUpdateSkeletal( dlObject *object )
 
    kmVec3 tStance;
    kmMat4 boneMat;
-   dlAnimator *animator = object->animator;
+   dlAnimator *animator;
+
+   CALL("%p", object);
+
+   animator = object->animator;
 
    /* TO-DO: Shader implentation */
    /* Reset all vertices to 0 here */
@@ -270,6 +276,7 @@ static void dlObjectUpdateSkeletal( dlObject *object )
 void dlObjectTick( dlObject *object, float tick )
 {
    unsigned int i;
+   CALL("%p, %f", object, tick);
 
    if(!object)
       return;
@@ -290,6 +297,8 @@ void dlObjectTick( dlObject *object, float tick )
 /* Set animation */
 void dlObjectSetAnimation( dlObject *object, DL_NODE_TYPE index )
 {
+   CALL("%p, %d", object, index);
+
    if(!object)
       return;
    if(!object->animator)
@@ -301,6 +310,8 @@ void dlObjectSetAnimation( dlObject *object, DL_NODE_TYPE index )
 /* Add child, steals reference */
 int dlObjectAddChild( dlObject *object, dlObject *child )
 {
+   CALL("%p, %p", object, child);
+
    if(!object)
       return( RETURN_FAIL );
    if(!child)
@@ -322,6 +333,7 @@ int dlObjectAddChild( dlObject *object, dlObject *child )
    /* assign */
    object->child[ object->num_childs - 1 ] = child;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -329,6 +341,7 @@ int dlObjectAddChild( dlObject *object, dlObject *child )
 dlObject** dlObjectRefChilds( dlObject *object )
 {
    unsigned int i;
+   CALL("%p", object);
 
    if(!object)
       return( NULL );
@@ -342,6 +355,7 @@ dlObject** dlObjectRefChilds( dlObject *object )
       dlRefObject( object->child[i] );
    }
 
+   RET("%p", object->child);
    return( object->child );
 }
 
@@ -350,6 +364,7 @@ dlObject** dlObjectCopyChilds( dlObject *object )
 {
    unsigned int i;
    dlObject     **newList;
+   CALL("%p", object);
 
    if(!object)
       return( NULL );
@@ -368,6 +383,7 @@ dlObject** dlObjectCopyChilds( dlObject *object )
       newList[i] = dlCopyObject( object->child[i] );
    }
 
+   RET("%p", newList);
    return( newList );
 }
 
@@ -377,6 +393,8 @@ int dlObjectFreeChild( dlObject *object, dlObject *child )
    unsigned int i;
    unsigned int found;
    dlObject     **tmp;
+
+   CALL("%p, %p", object, child);
 
    if(!object)
       return( RETURN_FAIL );
@@ -423,6 +441,7 @@ int dlObjectFreeChild( dlObject *object, dlObject *child )
    object->child        = tmp;
    object->num_childs   = found;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -430,6 +449,7 @@ int dlObjectFreeChild( dlObject *object, dlObject *child )
 int dlObjectFreeChilds( dlObject *object )
 {
    unsigned int i;
+   CALL("%p", object);
 
    if(!object)
       return( RETURN_FAIL );
@@ -447,9 +467,10 @@ int dlObjectFreeChilds( dlObject *object )
    dlSetAlloc( ALLOC_SCENEOBJECT );
    dlFree( object->child, object->num_childs * sizeof(dlObject*) );
    object->child = NULL;
-
    object->num_childs = 0;
-    return( RETURN_OK );
+
+   RET("%d", RETURN_OK);
+   return( RETURN_OK );
 }
 
 static void dlUpdateMatrix( dlObject *object )
@@ -458,6 +479,8 @@ static void dlUpdateMatrix( dlObject *object )
           rotation,
           scale,
           temp;
+
+   CALL("%p", object);
 
    /* translation */
    kmMat4Translation( &translation,
@@ -487,6 +510,7 @@ static void dlUpdateMatrix( dlObject *object )
 void dlDraw( dlObject *object )
 {
    unsigned int i;
+   CALL("%p", object);
 
    if(!object)
       return;
@@ -521,15 +545,17 @@ int dlObjectCalculateAABB( dlObject *object )
    kmVec3 min, max;
    kmAABB aabb_box;
 
+   CALL("%p", object);
+
    if(!object)
       return( RETURN_FAIL );
 
    dlVBO *vbo = object->vbo;
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!vbo->vertices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    min = vbo->vertices[0],
    max = vbo->vertices[0];
@@ -564,6 +590,7 @@ int dlObjectCalculateAABB( dlObject *object )
    printf("max: %f, %f, %f\n", max.x, max.y, max.z );
 #endif
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

@@ -57,9 +57,8 @@ dlVBO* dlNewVBO( void )
    vbo->colors    = NULL;
 #endif
 
-   logGreen();
-   dlPuts("[A:VBO]");
-   logNormal();
+
+   LOGOK("VBO", "NEW");
 
    /* Increase ref counter */
    vbo->refCounter++;
