@@ -2,7 +2,7 @@
 CFLAGS += -DGL_GLEXT_PROTOTYPES -D_GNU_SOURCE
 
 # Global CFLAGS
-CFLAGS += -fsingle-precision-constant
+CFLAGS += -std=c99 -fsingle-precision-constant
 
 # Standard libraries for projects
 # Order : Rightmost = first
@@ -48,18 +48,15 @@ ICONV_SJIS_PMD	:= 1
 # Assimp loader ( lib: assimp )
 ASSIMP 		:= 1
 
-# Disable Window logging
-DISABLE_WINDOW_LOG	:= 0
-
 # Release settings
 ifeq (${release}, 1)
      # Some of these flags cause crash on mingw binary, maybe it's just wine?
      ifeq (${CC},/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc)
 
      else ifeq (${wingw}, 0)
-          CFLAGS += -Wall -O2 -mfpmath=sse -funroll-loops -ffast-math -fomit-frame-pointer -s
+          CFLAGS += -Wall -O2 -funroll-loops -ffast-math -fomit-frame-pointer -s
      else
-          CFLAGS += -Wall -O2 -mfpmath=sse -funroll-loops -ffast-math -s
+          CFLAGS += -Wall -O2 -funroll-loops -ffast-math -s
      endif
      GL_LIBS += -s
 else
@@ -171,7 +168,7 @@ logfile:
 	@${MAKE} -C lib/logfile 	CFLAGS="${CFLAGS}"
 
 dlWindow: logfile
-	@${MAKE} -C lib/dlWindow	CFLAGS="${CFLAGS} -DDL_WINDOW_DISABLE_LOG=${DISABLE_WINDOW_LOG}"
+	@${MAKE} -C lib/dlWindow	CFLAGS="${CFLAGS}"
 
 dlInput:
 	@${MAKE} -C lib/dlInput 	CFLAGS="${CFLAGS}"
@@ -181,7 +178,7 @@ dl: kazmath SOIL openctm logfile
 
 test: dl dlWindow dlInput
 ifeq (${BUILD_TESTS}, 1)
-	@${MAKE} -C test 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}"
+	@${MAKE} -C test 		CFLAGS="${CFLAGS}" GL_LIBS="${GL_LIBS}" mingw="${mingw}"
 endif
 
 clean:
