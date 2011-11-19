@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-int                 dlCreateWindow(int, int, int, unsigned int);
+int                 dlCreateWindow(int width, int height, int bitdepth, unsigned int sdl_flags);
+char*               dlWindowGetError(void);
 struct SDL_Surface *dlGetSDLSurface(void);
 void                dlCloseWindow(void);
 void                dlSwapBuffers(void);
