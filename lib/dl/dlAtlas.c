@@ -11,25 +11,28 @@
 #include "SOIL.h"
 #include "SDL/SDL_rotozoom.h"
 
+#define DL_DEBUG_CHANNEL "ATLAS"
+
 /* allocate new atlas */
 dlAtlas* dlNewAtlas(void)
 {
    dlAtlas *atlas;
+   TRACE();
 
    dlSetAlloc( ALLOC_ATLAS );
    atlas = dlCalloc( 1, sizeof(dlAtlas) );
    if(!atlas)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* nullify */
    atlas->rect    = NULL;
    atlas->texture = NULL;
 
-   logGreen();
-   dlPuts("[A:ATLAS]");
-   logNormal();
+   LOGOK("NEW");
 
    atlas->refCounter++;
+
+   RET("%p", atlas);
    return( atlas );
 }
 
@@ -37,10 +40,11 @@ dlAtlas* dlNewAtlas(void)
 dlAtlas* dlRefAtlas( dlAtlas *src )
 {
    dlAtlas *atlas;
+   CALL("%p", src);
 
    /* non valid */
    if(!src)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* point */
    atlas = src;
@@ -49,11 +53,11 @@ dlAtlas* dlRefAtlas( dlAtlas *src )
    atlas->rect    = dlAtlasRefTextures( atlas );
    atlas->texture = dlRefTexture( atlas->texture );
 
-   logYellow();
-   dlPuts("[R:ATLAS]");
-   logNormal();
+   LOGWARN("REFERENCE");
 
    atlas->refCounter++;
+
+   RET("%p", atlas);
    return( atlas );
 }
 
@@ -88,9 +92,7 @@ int dlFreeAtlas( dlAtlas *atlas )
    atlas->rect          = NULL;
    atlas->num_textures  = 0;
 
-   logRed();
-   dlPuts("[F:ATLAS]");
-   logNormal();
+   LOGERR("FREE");
 
    dlFree( atlas, sizeof(dlAtlas) );
    return( RETURN_OK );

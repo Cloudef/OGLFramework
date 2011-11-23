@@ -6,6 +6,8 @@
 #include <malloc.h>
 #include <string.h>
 
+#define DL_DEBUG_CHANNEL "ALLOC"
+
 #ifdef DEBUG
 dleAlloc   DL_D_ALLOC                     = ALLOC_CORE;
 static size_t     DL_ALLOC [ ALLOC_LAST ] =
@@ -22,6 +24,7 @@ static char*      DL_ALLOCN[ ALLOC_LAST ] =
  * use when doing allocations using normal operation, but want to keep statistics */
 void dlFakeAlloc( size_t size )
 {
+   CALL("%llu", size);
 #ifdef DEBUG
    DL_ALLOC[ DL_D_ALLOC ] += size;
 #endif
@@ -31,19 +34,23 @@ void dlFakeAlloc( size_t size )
  * keep track of allocations and prints output on failure */
 void* dlMalloc( size_t size )
 {
-   void *ptr = malloc( size );
+   void *ptr;
+   CALL("%llu", size);
+
+   ptr = malloc( size );
    if(!ptr)
    {
-      logRed();
-      dlPrint("[ALLOC] failed to allocate %lu bytes\n", (size_t)size);
-      logNormal();
+      LOGERRP("Failed to allocate %llu bytes", (size_t)size);
 
+      RET("%p", NULL);
       return(NULL);
    }
 
 #ifdef DEBUG
    DL_ALLOC[ DL_D_ALLOC ] += size;
 #endif
+
+   RET("%p", ptr);
    return( ptr );
 }
 
@@ -51,19 +58,23 @@ void* dlMalloc( size_t size )
  * keep track of allocations and prints output on failure */
 void* dlCalloc( unsigned int items, size_t size )
 {
-   void *ptr = calloc( items, size );
+   void *ptr;
+   CALL("%llu", size);
+
+   ptr = calloc( items, size );
    if(!ptr)
    {
-      logRed();
-      dlPrint("[ALLOC] failed to allocate %lu bytes\n", (size_t)items * size);
-      logNormal();
+      LOGERRP("Failed to allocate %llu bytes", (size_t)items * size);
 
+      RET("%p", NULL);
       return(NULL);
    }
 
 #ifdef DEBUG
    DL_ALLOC[ DL_D_ALLOC ] += items * size;
 #endif
+
+   RET("%p", ptr);
    return( ptr );
 }
 
@@ -71,16 +82,19 @@ void* dlCalloc( unsigned int items, size_t size )
  * keep track of allocations and prints output on failure */
 void* dlRealloc( void *ptr, unsigned int old_items, unsigned int items, size_t size )
 {
-   void *ptr2 = realloc( ptr, (size_t)items * size );
+   void *ptr2;
+   CALL("%p, %u, %u, %llu", ptr, old_items, items, size);
+
+   ptr2 = realloc( ptr, (size_t)items * size );
    if(!ptr2)
    {
-      ptr2 = dlCalloc( items, size );
+      ptr2 = dlMalloc( items * size );
       if(!ptr2)
       {
-         logRed();
-         dlPrint("[ALLOC] failed to allocate %lu bytes for copy from reallocate\n",
-               (size_t)items * size);
-         logNormal();
+         LOGERRP("Failed to allocate %llu bytes for copy reallocation",
+                (size_t)items * size);
+
+         RET("%p", ptr);
          return( ptr );
       }
 
@@ -98,6 +112,8 @@ void* dlRealloc( void *ptr, unsigned int old_items, unsigned int items, size_t s
    DL_ALLOC[ DL_D_ALLOC ] -= old_items * size;
    DL_ALLOC[ DL_D_ALLOC ] += items * size;
 #endif
+
+   RET("%p", ptr);
    return( ptr );
 }
 
@@ -105,21 +121,25 @@ void* dlRealloc( void *ptr, unsigned int old_items, unsigned int items, size_t s
  * keep track of allocations and prints output on failure */
 void* dlCopy( void *ptr, size_t size )
 {
-   if(!ptr)
-      return(NULL);
+   void *ptr2;
+   CALL("%p, %llu", ptr, size);
 
-   void *ptr2 = dlCalloc( 1, size );
+   if(!ptr)
+   { RET("%p", NULL); return(NULL); }
+
+   ptr2 = dlMalloc( size );
    if(!ptr2)
    {
-      logRed();
-      dlPrint("[ALLOC] failed to allocate %lu bytes for copy\n", size);
-      logNormal();
+      LOGERRP("Failed to allocate %lu bytes for copy", size);
 
+      RET("%p", NULL);
       return(NULL);
    }
 
-   /* no need to increase size, dlCalloc does it already */
+   /* no need to increase size, dlMalloc does it already */
    memcpy(ptr2, ptr, size);
+
+   RET("%p", ptr2);
    return(ptr2);
 }
 
@@ -127,19 +147,24 @@ void* dlCopy( void *ptr, size_t size )
  * keep track of allocations and prints output on failure */
 int dlFree( void *ptr, size_t size )
 {
+   CALL("%p, %llu", ptr, size);
+
    if(!ptr)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    free( ptr ); ptr = NULL;
 #ifdef DEBUG
    DL_ALLOC[ DL_D_ALLOC ] -= size;
 #endif
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* output memory usage graph */
 void dlMemoryGraph( void )
 {
+   TRACE();
 #ifdef DEBUG
    unsigned int i;
 

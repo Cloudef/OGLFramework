@@ -5,6 +5,7 @@
 #include "DL/dl.h"
 #include "DL/dlWindow.h"
 #include "DL/dlInput.h"
+#include "logfile.h"
 
 #ifdef WIN32
 #define LINE_MAX 256
@@ -64,7 +65,7 @@ int main( int argc, char **argv )
 
    char           WIN_TITLE[LINE_MAX];
 
-   unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
+   unsigned int   flags = SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE;
    int            width = 800;
    int            height= 480;
    int            bits  = 32;

@@ -23,6 +23,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "VBO"
+
 /* Allocate VBO object */
 dlVBO* dlNewVBO( void )
 {
@@ -58,7 +60,7 @@ dlVBO* dlNewVBO( void )
 #endif
 
 
-   LOGOK("VBO", "NEW");
+   LOGOK("NEW");
 
    /* Increase ref counter */
    vbo->refCounter++;

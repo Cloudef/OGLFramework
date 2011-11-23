@@ -44,7 +44,6 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    unsigned int i, i2; /* the god of iterators, and his child */
    const char *textureFilename, *comment, *attribName;
    char *texturePath = NULL;
-   dlTexture *texture;
 
    logBlue(); dlPrint("[OCTM] attempt to load: %s\n", file ); logNormal();
 

@@ -14,6 +14,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "CAMERA"
+
 /* Calculate projection matrix */
 static void dlCameraCalculateProjectionMatrix( dlCamera *object )
 {
@@ -98,9 +100,7 @@ dlCamera* dlNewCamera( void )
    /* Reset */
    dlCameraReset( object );
 
-   logGreen();
-   dlPuts("[A:CAMERA]");
-   logNormal();
+   LOGOK("NEW");
 
    /* Increase ref counter */
    object->refCounter++;
@@ -123,9 +123,7 @@ dlCamera* dlCopyCamera( dlCamera *src )
    if(!object)
       return( NULL );
 
-   logYellow();
-   dlPuts("[C:CAMERA]");
-   logNormal();
+   LOGWARN("COPY");
 
    /* Increase ref counter */
    object->refCounter++;
@@ -145,9 +143,7 @@ dlCamera* dlRefCamera( dlCamera *src )
    /* Point magic */
    object                      = src;
 
-   logYellow();
-   dlPuts("[R:CAMERA]");
-   logNormal();
+   LOGWARN("REFERENCE");
 
    /* Increase ref counter */
    object->refCounter++;
@@ -171,9 +167,7 @@ int dlFreeCamera( dlCamera *object )
    if(dlGetCamera() == object)
       dlSetCamera( NULL );
 
-   logRed();
-   dlPuts("[F:CAMERA]");
-   logNormal();
+   LOGERR("FREE");
 
    /* Free camera */
    dlFree( object, sizeof(dlCamera) );

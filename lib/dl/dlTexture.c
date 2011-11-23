@@ -20,6 +20,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "TEXTURE"
+
 /* Allocate texture
  * Takes filename as argument, pass NULL to use user data */
 dlTexture* dlNewTexture( const char *file, unsigned int flags )
@@ -68,10 +70,7 @@ dlTexture* dlNewTexture( const char *file, unsigned int flags )
 #endif
 
       dlTextureAddCache( obj );
-
-      logGreen();
-      dlPrint("[A:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
-      logNormal();
+      LOGOKP("NEW %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
    }
 
    /* Increase ref counter */
@@ -99,9 +98,7 @@ dlTexture* dlCopyTexture( dlTexture *src )
    obj->file   = strdup(src->file);
    obj->data   = dlCopy(src->data, src->size);
 
-   logYellow();
-   dlPrint("[C:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
-   logNormal();
+   LOGWARNP("COPY %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
 
    /* Increase ref counter */
    obj->refCounter++;
@@ -122,9 +119,7 @@ dlTexture* dlRefTexture( dlTexture *src )
    /*  pointer to pointer */
    obj = src;
 
-   logYellow();
-   dlPrint("[R:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
-   logNormal();
+   LOGWARNP("REFERENCE %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
 
    /* Increase ref counter */
    obj->refCounter++;
@@ -143,9 +138,7 @@ int dlFreeTexture( dlTexture *obj )
    /* There is still references to this object alive */
    if(--obj->refCounter != 0) return( RETURN_NOTHING );
 
-   logRed();
-   dlPrint("[F:TEXTURE] %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
-   logNormal();
+   LOGERRP("FREE %dx%d %.2f MiB\n", obj->width, obj->height, (float)obj->size / 1048576);
 
    /* remove from cache */
    dlTextureRemoveCache( obj );

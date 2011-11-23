@@ -5,25 +5,32 @@
 #include "logfile.h"
 
 /* TO-DO: add log channels */
-#define TRACE()           #ifdef DEBUG LOGWARNP("CALL", "%s()", __FUNCTION__);                        #endif
-#define CALL(a,...)       #ifdef DEBUG LOGWARNP("CALL", "%s("a")", __FUNCTION__, ##__VA_ARGS__);      #endif
-#define RET(a,...)        #ifdef DEBUG LOGWARNP("RET",  "%s => ("a")", __FUNCTION__, ##__VA_ARGS__);  #endif
-#define LOGERR(e,m)       logRed();    dlPuts("["e"] "m);                     logNormal();
-#define LOGERRP(e,m,...)  logRed();    dlPrint("["e"] "m"\n",##__VA_ARGS__);  logNormal();
-#define LOGWARN(e,m)      logYellow(); dlPuts("["e"] "m);                     logNormal();
-#define LOGWARNP(e,m,...) logYellow(); dlPrint("["e"] "m"\n",##__VA_ARGS__);  logNormal();
-#define LOGINFO(e,m)      logBlue();   dlPuts("["e"] "m);                     logNormal();
-#define LOGINFOP(e,m,...) logBlue();   dlPrint("["e"] "m"\n",##__VA_ARGS__);  logNormal();
-#define LOGOK(e,m)        logGreen();  dlPuts("["e"] "m);                     logNormal();
-#define LOGOKP(e,m,...)   logGreen();  dlPrint("["e"] "m"\n",##__VA_ARGS__);  logNormal();
+#define TRACE()         if(dlDEBTRACE()) { LOGWARNP("%s()", __FUNCTION__); }
+#define CALL(a,...)     if(dlDEBTRACE()) { LOGWARNP("%s("a")", __FUNCTION__, ##__VA_ARGS__); }
+#define RET(a,...)      if(dlDEBTRACE()) { LOGWARNP("%s => ("a")", __FUNCTION__, ##__VA_ARGS__); }
+#define LOGERR(m)       logRed();    dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
+#define LOGERRP(m,...)  logRed();    dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
+#define LOGWARN(m)      logYellow(); dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
+#define LOGWARNP(m,...) logYellow(); dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
+#define LOGINFO(m)      logBlue();   dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
+#define LOGINFOP(m,...) logBlue();   dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
+#define LOGOK(m)        logGreen();  dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
+#define LOGOKP(m,...)   logGreen();  dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+int dlDEBTRACE(void);
+int dlDEBCHAN(const char *channel);
+void dlDEBADD(const char *channel);
+void dlDEBRM(const char *channel);
+
 void dlLogOpen(void);
-void dlPrint(const char* output, ...);
-void dlPuts(const char* output);
+void dlDPrint(const char *channel, const char *output, ...);
+void dlDPuts(const char *channel, const char *output);
+void dlPrint(const char *output, ...);
+void dlPuts(const char *output);
 void dlLogClose(void);
 
 #ifdef __cplusplus

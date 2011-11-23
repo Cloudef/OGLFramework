@@ -42,7 +42,6 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
    float                   blend;
 
    char *texturePath;
-   dlTexture *texture;
 
    numDiffuse = aiGetMaterialTextureCount( mtl, aiTextureType_DIFFUSE );
    if(!numDiffuse)

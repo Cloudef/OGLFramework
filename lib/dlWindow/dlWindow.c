@@ -61,6 +61,9 @@ int dlCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
 {
    uint8_t rgb[4];
 
+   /* null error string */
+   memset( DLWINERR, 0, 256 );
+
    switch(bitsperpixel)
    {
       case 8:
@@ -126,7 +129,6 @@ int dlCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
    SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, rgb[1] );
    SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE,  rgb[2] );
    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, rgb[3] );
-   SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, flags & SDL_DOUBLEBUF );
 #endif
 
    /* Create SDL Window */

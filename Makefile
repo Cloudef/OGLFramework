@@ -1,8 +1,10 @@
 # Needed global defines
-CFLAGS += -DGL_GLEXT_PROTOTYPES -D_GNU_SOURCE
+CFLAGS  += -DGL_GLEXT_PROTOTYPES -D_GNU_SOURCE
 
-# Global CFLAGS
-CFLAGS += -std=c99 -fsingle-precision-constant
+# If you want to use your own CFLAGS
+# This disables all default optimizations,
+# but does still append defines for library.
+OWN_CFLAGS	:= 0
 
 # Standard libraries for projects
 # Order : Rightmost = first
@@ -48,19 +50,30 @@ ICONV_SJIS_PMD	:= 1
 # Assimp loader ( lib: assimp )
 ASSIMP 		:= 1
 
+# Global CFLAGS
+ifeq (${OWN_CFLAGS}, 0)
+     CFLAGS  += -fsingle-precision-constant
+endif
+
 # Release settings
 ifeq (${release}, 1)
-     # Some of these flags cause crash on mingw binary, maybe it's just wine?
-     ifeq (${CC},/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc)
-
-     else ifeq (${wingw}, 0)
-          CFLAGS += -Wall -O2 -funroll-loops -ffast-math -fomit-frame-pointer -s
-     else
-          CFLAGS += -Wall -O2 -funroll-loops -ffast-math -s
+     ifeq (${OWN_CFLAGS},0)
+          # Some of these flags cause crash on mingw binary, maybe it's just wine?
+          ifeq (${CC},/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc)
+	       # ARM
+          else ifeq (${wingw}, 0)
+               CFLAGS += -Wall -O2 -funroll-loops -ffast-math -fomit-frame-pointer -s
+          else
+               CFLAGS += -Wall -O2 -funroll-loops -ffast-math -s
+          endif
      endif
      GL_LIBS += -s
 else
-     CFLAGS += -Wall -O0 -g -DDEBUG
+     ifeq (${OWN_CFLAGS}, 0)
+     	CFLAGS += -Wall -O0 -g -DDEBUG
+     else
+   	CFLAGS += -DDEBUG
+     endif
 endif
 
 # mingw:
@@ -74,7 +87,8 @@ ifeq (${mingw}, 1)
      # Enable x86
      x86 = 1
 else
-     GL_LIBS += -lSDL
+     # -lSDL
+     GL_LIBS += `pkg-config --libs sdl`
 endif
 
 # OpenCTM
@@ -115,7 +129,8 @@ endif
 # Check which GL mode we are on
 ifeq (${GL},0)
      ifeq (${mingw}, 0)
-          GL_LIBS += -lGL -lGLEW
+   	  # -lGL -lGLEW
+          GL_LIBS += `pkg-config --libs gl glew`
      else
           GL_LIBS += -lopengl32 -lglew32
      endif
@@ -174,7 +189,7 @@ dlInput:
 	@${MAKE} -C lib/dlInput 	CFLAGS="${CFLAGS}"
 
 dl: kazmath SOIL openctm logfile
-	@${MAKE} -C lib/dl 		CFLAGS="${CFLAGS}"
+	@${MAKE} -C lib/dl 		CFLAGS="${CFLAGS} -std=c99"
 
 test: dl dlWindow dlInput
 ifeq (${BUILD_TESTS}, 1)

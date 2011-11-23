@@ -20,18 +20,21 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "IBO"
+
 /* Allocate IBO object */
 dlIBO* dlNewIBO( void )
 {
 #if USE_BUFFERS
    unsigned int i;
 #endif
+   TRACE();
 
    /* Allocate IBO object */
    dlSetAlloc( ALLOC_IBO );
    dlIBO *ibo = (dlIBO*)dlCalloc( 1, sizeof(dlIBO) );
    if(!ibo)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Default hint */
    ibo->hint = GL_STATIC_DRAW;
@@ -45,14 +48,13 @@ dlIBO* dlNewIBO( void )
    ibo->indices = NULL;
 #endif
 
-   logGreen();
-   dlPuts("[A:IBO]");
-   logNormal();
+   LOGOK("NEW");
 
    /* Increase ref counter */
    ibo->refCounter++;
 
    /* Return IBO object */
+   RET("%p", ibo);
    return( ibo );
 }
 
@@ -60,15 +62,16 @@ dlIBO* dlNewIBO( void )
 dlIBO* dlCopyIBO( dlIBO *src )
 {
    dlIBO *ibo;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Allocate IBO object */
    dlSetAlloc( ALLOC_IBO );
    ibo = (dlIBO*)dlCalloc( 1, sizeof(dlIBO) );
    if(!ibo)
-      return( NULL );
+   return( NULL );
 
    /* Copy data */
    dlCopyIndexBuffer( ibo, src );

@@ -14,6 +14,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "SCENEOBJECT"
+
 /* Allocate scene object */
 dlObject* dlNewObject( void )
 {
@@ -23,7 +25,7 @@ dlObject* dlNewObject( void )
    dlSetAlloc( ALLOC_SCENEOBJECT );
    dlObject *object = (dlObject*)dlCalloc( 1, sizeof(dlObject) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Nullify pointers */
    object->material	   = NULL;
@@ -42,7 +44,7 @@ dlObject* dlNewObject( void )
    /* Update matrix on start */
    object->transform_changed = 1;
 
-   LOGOK("SCENEOBJECT", "NEW");
+   LOGOK("NEW");
 
    /* Increase ref counter */
    object->refCounter++;
@@ -59,13 +61,13 @@ dlObject* dlCopyObject( dlObject *src )
    CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Allocate scene object */
    dlSetAlloc( ALLOC_SCENEOBJECT );
    object = (dlObject*)dlCalloc( 1, sizeof(dlObject) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Copy data */
    object->matrix                = src->matrix;
@@ -97,7 +99,7 @@ dlObject* dlCopyObject( dlObject *src )
    /* Update it */
    object->transform_changed = 1;
 
-   LOGWARN("SCENEOBJECT", "COPY");
+   LOGWARN("COPY");
 
    /* Increase ref counter */
    object->refCounter++;
@@ -114,18 +116,18 @@ dlObject* dlRefObject( dlObject *src )
    CALL("%p", src);
 
   /* Fuuuuuuuuu--- We have non valid object */
-  if(!src) return( NULL );
+  if(!src) { RET("%p", NULL); return( NULL ); }
 
   /* Point magic */
   object                      = src;
 
   /* Reference data */
-  object->material	    = dlRefMaterial( src->material );
-  object->vbo		    = dlRefVBO( src->vbo );
+  object->material	      = dlRefMaterial( src->material );
+  object->vbo		      = dlRefVBO( src->vbo );
   object->ibo                 = dlRefIBO( src->ibo );
   object->animator            = dlRefAnimator( src->animator );
 
-  LOGWARN("SCENEOBJECT", "REF");
+  LOGWARN("REFERENCE");
 
   /* Increase ref counter */
   object->refCounter++;
@@ -178,7 +180,7 @@ int dlFreeObject( dlObject *object )
    object->child = NULL;
    object->num_childs = 0;
 
-   LOGERR("SCENEOBJECT", "FREE");
+   LOGERR("FREE");
 
    /* Free scene object */
    dlFree( object, sizeof(dlObject) );
@@ -313,9 +315,9 @@ int dlObjectAddChild( dlObject *object, dlObject *child )
    CALL("%p, %p", object, child);
 
    if(!object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* alloc */
    dlSetAlloc( ALLOC_SCENEOBJECT );
@@ -328,7 +330,7 @@ int dlObjectAddChild( dlObject *object, dlObject *child )
 
    /* check success */
    if(!object->child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* assign */
    object->child[ object->num_childs - 1 ] = child;
@@ -344,9 +346,9 @@ dlObject** dlObjectRefChilds( dlObject *object )
    CALL("%p", object);
 
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!object->child)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* reference all */
    i = 0;
@@ -363,18 +365,18 @@ dlObject** dlObjectRefChilds( dlObject *object )
 dlObject** dlObjectCopyChilds( dlObject *object )
 {
    unsigned int i;
-   dlObject     **newList;
+   dlObject   **newList;
    CALL("%p", object);
 
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!object->child)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    dlSetAlloc( ALLOC_SCENEOBJECT );
    newList = dlCalloc( object->num_childs, sizeof(dlObject*) );
    if(!newList)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* reference all */
    i = 0;
@@ -392,22 +394,22 @@ int dlObjectFreeChild( dlObject *object, dlObject *child )
 {
    unsigned int i;
    unsigned int found;
-   dlObject     **tmp;
+   dlObject     **tmp, **tmp2;
 
    CALL("%p, %p", object, child);
 
    if(!object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!object->child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* allocate tmp list */
    dlSetAlloc( ALLOC_SCENEOBJECT );
    tmp = dlCalloc( object->num_childs, sizeof(dlObject*) );
    if(!tmp)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* add everything expect the one we are looking for to tmp list */
    i = 0;
@@ -423,9 +425,14 @@ int dlObjectFreeChild( dlObject *object, dlObject *child )
    if(found)
    {
       /* resize list */
-      tmp = dlRealloc( tmp, object->num_childs, found, sizeof(dlObject*) );
-      if(!tmp)
-         return( RETURN_FAIL );
+      tmp2 = dlRealloc( tmp, object->num_childs, found, sizeof(dlObject*) );
+      if(!tmp2)
+      {
+         dlFree( tmp, object->num_childs * sizeof(dlObject*) );
+         tmp = NULL;
+
+         RET("%d", RETURN_FAIL); return( RETURN_FAIL );
+      }
    }
    else
    {
@@ -452,9 +459,9 @@ int dlObjectFreeChilds( dlObject *object )
    CALL("%p", object);
 
    if(!object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!object->child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* free all */
    i = 0;
@@ -595,11 +602,13 @@ int dlObjectCalculateAABB( dlObject *object )
 }
 
 /* position sceneobject */
-void dlPositionObject( dlObject *object, kmVec3 position )
+void dlPositionObject( dlObject *object, kmVec3 *position )
 {
    unsigned int i;
+   CALL( "%p, %f, %f, %f", object,
+         position->x, position->y, position->z );
 
-   object->translation        = position;
+   object->translation        = *position;
    object->transform_changed  = 1;
 
    i = 0;
@@ -614,15 +623,17 @@ void dlPositionObjectf( dlObject *object,
    kmVec3 position;
    position.x = x; position.y = y; position.z = z;
 
-   dlPositionObject( object, position );
+   dlPositionObject( object, &position );
 }
 
 /* move sceneobject */
-void dlMoveObject( dlObject *object, const kmVec3 move )
+void dlMoveObject( dlObject *object, kmVec3 *move )
 {
    unsigned int i;
+   CALL("%p, %f, %f, %f", object,
+         move->x, move->y, move->z);
 
-   kmVec3Add( &object->translation, &object->translation, &move );
+   kmVec3Add( &object->translation, &object->translation, move );
    object->transform_changed  = 1;
 
    i = 0;
@@ -637,15 +648,17 @@ void dlMoveObjectf( dlObject *object,
    kmVec3 move;
    move.x = x; move.y = y; move.z = z;
 
-   dlMoveObject( object, move );
+   dlMoveObject( object, &move );
 }
 
 /* rotate sceneobject */
-void dlRotateObject( dlObject *object, const kmVec3 rotate )
+void dlRotateObject( dlObject *object, kmVec3 *rotate )
 {
    unsigned int i;
+   CALL("%p, %f, %f, %f", object,
+         rotate->x, rotate->y, rotate->z);
 
-   object->rotation = rotate;
+   object->rotation = *rotate;
    object->transform_changed = 1;
 
    i = 0;
@@ -660,15 +673,17 @@ void dlRotateObjectf( dlObject *object,
    kmVec3 rotate;
    rotate.x = x, rotate.y = y; rotate.z = z;
 
-   dlRotateObject( object, rotate );
+   dlRotateObject( object, &rotate );
 }
 
 /* scale sceneobject */
-void dlScaleObject( dlObject *object, const kmVec3 scale )
+void dlScaleObject( dlObject *object, kmVec3 *scale )
 {
    unsigned int i;
+   CALL("%p, %f, %f, %f", object,
+         scale->x, scale->y, scale->z);
 
-   object->scale = scale;
+   object->scale = *scale;
    object->transform_changed = 1;
 
    i = 0;
@@ -683,7 +698,7 @@ void dlScaleObjectf( dlObject *object,
    kmVec3 scale;
    scale.x = x; scale.y = y; scale.z = z;
 
-   dlScaleObject( object, scale );
+   dlScaleObject( object, &scale );
 }
 
 /* shift object's texture */
@@ -693,6 +708,8 @@ void dlShiftObject( dlObject *object, int width, int height, unsigned int index,
    unsigned int windex, hindex, x;
    float awidth, aheight;
    kmVec2 pos;
+
+   CALL("%p, %d, %d, %u, %p", object, width, height, baseCoords);
 
    if(!object)
       return;
@@ -750,6 +767,9 @@ void dlOffsetObjectTexture( dlObject *object, int px, int py, int width, int hei
    float awidth, aheight;
    unsigned int x;
 
+   CALL("%p, %d, %d, %d, %d, %p", object, px, py,
+         width, height, baseCoords);
+
    if(!object)
       return;
    if(!object->vbo)
@@ -779,5 +799,3 @@ void dlOffsetObjectTexture( dlObject *object, int px, int py, int width, int hei
    object->vbo->up_to_date = 0;
    dlVBOUpdate( object->vbo );
 }
-
-/* EoF */

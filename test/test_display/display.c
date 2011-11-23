@@ -4,6 +4,7 @@
 #include "DL/dl.h"
 #include "DL/dlWindow.h"
 #include "DL/dlInput.h"
+#include "logfile.h"
 
 static void keyHandle( void )
 {
@@ -43,7 +44,7 @@ static void cleanup( int ret )
 
 int main( int argc, char **argv )
 {
-   unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
+   unsigned int   flags = SDL_SWSURFACE | SDL_OPENGL | SDL_RESIZABLE;
    int            width = 800;
    int            height= 480;
    int            bits  = 32;
@@ -58,7 +59,16 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    if(dlCreateWindow( width, height, bits, flags ) != 0)
+   {
+      logRed();
+      puts(dlWindowGetError());
+      logNormal();
       cleanup(EXIT_FAILURE);
+   } else {
+      logGreen();
+      puts(dlWindowGetError());
+      logNormal();
+   }
 
    if(dlCreateDisplay( width, height, DL_RENDER_DEFAULT ) != 0)
       cleanup(EXIT_FAILURE);
@@ -70,7 +80,14 @@ int main( int argc, char **argv )
    while(!dlKeyPress(SDLK_ESCAPE))
    {
       keyHandle();
+
+      /* It's good idea to do this when we are not drawing anything */
+      glFlush();
+      glFinish();
+
+      /* Actual swap and clear */
       dlSwapBuffers();
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    }
 
    cleanup(EXIT_SUCCESS);

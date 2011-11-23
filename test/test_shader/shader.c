@@ -5,6 +5,7 @@
 #include "DL/dl.h"
 #include "DL/dlWindow.h"
 #include "DL/dlInput.h"
+#include "logfile.h"
 
 #ifdef WIN32
 #define LINE_MAX 256
@@ -63,7 +64,7 @@ int main( int argc, char **argv )
 
    char           WIN_TITLE[LINE_MAX];
 
-   unsigned int   flags = SDL_OPENGL | SDL_RESIZABLE;
+   unsigned int   flags = SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE;
    int            width = 800;
    int            height= 480;
    int            bits  = 32;
@@ -78,7 +79,16 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
    if(dlCreateWindow( width, height, bits, flags ) != 0)
+   {
+      logRed();
+      puts(dlWindowGetError());
+      logNormal();
       cleanup(EXIT_FAILURE);
+   } else {
+      logGreen();
+      puts(dlWindowGetError());
+      logNormal();
+   }
 
    if(dlCreateDisplay( width, height, DL_RENDER_OGL3 ) != 0)
       cleanup(EXIT_FAILURE);

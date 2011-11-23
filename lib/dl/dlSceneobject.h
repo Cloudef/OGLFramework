@@ -67,21 +67,21 @@ int         dlObjectFreeChilds( dlObject* );               /* Free all childs */
 int dlObjectCalculateAABB( dlObject* );
 
 /* Translation */
-void dlPositionObject(  dlObject*, const kmVec3 );
+void dlPositionObject(  dlObject*, kmVec3* );
 void dlPositionObjectf( dlObject*,
                         const kmScalar x, const kmScalar y, const kmScalar z );
 
-void dlMoveObject(  dlObject*, const kmVec3 );
+void dlMoveObject(  dlObject*, kmVec3* );
 void dlMoveObjectf( dlObject*,
                     const kmScalar x, const kmScalar y, const kmScalar z );
 
 /* Rotation */
-void dlRotateObject(  dlObject*, const kmVec3 );
+void dlRotateObject(  dlObject*, kmVec3* );
 void dlRotateObjectf( dlObject*,
                       const kmScalar x, const kmScalar y, const kmScalar z );
 
 /* Scaling */
-void dlScaleObject(  dlObject*, const kmVec3 );
+void dlScaleObject(  dlObject*, kmVec3* );
 void dlScaleObjectf( dlObject*,
                      const kmScalar x, const kmScalar y, const kmScalar z );
 
