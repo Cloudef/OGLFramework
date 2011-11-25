@@ -7,17 +7,20 @@
 #include "dlLog.h"
 #include "dlTypes.h"
 
+#define DL_DEBUG_CHANNEL "STATICMODEL"
+
 /* create static object from model file */
 dlObject* dlNewStaticModel( const char *file )
 {
 #if 0
    unsigned int i = 0;
 #endif
+   dlObject *object;
 
    /* new sceneobject */
-   dlObject *object = dlNewObject();
+   object = dlNewObject();
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    /* check VBO */
    if(!object->vbo)
@@ -31,6 +34,8 @@ dlObject* dlNewStaticModel( const char *file )
    if(dlImportModel( object, file, 0 ) != RETURN_OK)
    {
       dlFreeObject( object );
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -73,10 +78,13 @@ dlObject* dlNewStaticModel( const char *file )
    /* assign aabb */
    if(dlObjectCalculateAABB(object) != RETURN_OK)
    {
-      dlPuts("[STATIC MODEL] failed to calculate AABB\n");
+      LOGERR("Failed to calculate AABB");
       dlFreeObject( object );
+
+      RET("%p", NULL);
       return( NULL );
    }
 
+   RET("%p", object);
    return(object);
 }

@@ -54,5 +54,3 @@ int dlMaterialFreeTexturesAll( dlMaterial *object );
 #endif
 
 #endif /* DL_MATERIAL_H */
-
-/* EoF */

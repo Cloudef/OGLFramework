@@ -21,6 +21,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "SHADER"
+
 #if SHADER_SUPPORT
 
 #define MAX_SHADER_SIZE   1024 * 10 /* 10240 characters */
@@ -155,6 +157,7 @@ static char* getFile( const char *file )
    FILE *f;
    size_t size;
    char *data;
+   CALL("%s", file);
 
    f = fopen( file, "r" );
    if(!f) return( NULL );
@@ -165,7 +168,9 @@ static char* getFile( const char *file )
    if(size > MAX_SHADER_SIZE)
    {
       fclose(f);
-      logRed(); dlPuts("Shader file is too big."); logNormal();
+      LOGERRP("Shader file is too big [ %llu > %llu ]", size, MAX_SHADER_SIZE);
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -174,6 +179,7 @@ static char* getFile( const char *file )
 
    data[ size-1 ] = '\0';
 
+   RET("%s", data);
    return( data );
 }
 
@@ -181,17 +187,17 @@ static char* getFile( const char *file )
  * str == char array which to append, str2 == char array that gets appended */
 static char* append( char *str, char *str2 )
 {
-   char *data = NULL;
-   char *ostr = NULL;
+   char *data = NULL, *ostr = NULL;
+   CALL("%s, %s", str, str2);
 
-   if(!str2) return( str );
+   if(!str2) { RET("%s", str); return( str ); }
    if(str)
    { ostr = strdup(str); data = realloc( str, strlen(str) + strlen(str2) + 1 ); }
    if(!data)
    {
       if(str) data = malloc( strlen(str) + strlen(str2) + 1 );
       else    data = malloc( strlen(str2) + 1 );
-      if(!data) return( str );
+      if(!data) { RET("%s", str);  return( str ); }
 
       if(str)
          strcpy( data, str );
@@ -203,6 +209,7 @@ static char* append( char *str, char *str2 )
    else
       strcpy( str, str2 );
 
+   RET("%s", str);
    return( str );
 }
 
@@ -210,9 +217,12 @@ static char* append( char *str, char *str2 )
 static char *str_replace(const char *s, const char *old, const char *new)
 {
   size_t slen = strlen(s)+1;
-  char *cout=0, *p=0, *tmp=NULL; cout=malloc(slen); p=cout;
+  char *cout=0, *p=0, *tmp=NULL;
+  CALL("%s, %s, %s", s, old, new);
+
+  cout=malloc(slen); p=cout;
   if( !p )
-    return 0;
+  { RET("%p", NULL); return( NULL ); }
   while( *s )
     if( !strncmp(s, old, strlen(old)) )
     {
@@ -226,7 +236,8 @@ static char *str_replace(const char *s, const char *old, const char *new)
      *p++=*s++;
 
   *p=0;
-  return cout;
+  RET("%s", cout);
+  return( cout );
 }
 
 /* link shader program */
@@ -235,12 +246,13 @@ static int link_shader( dlShader *shader )
    GLint    status = 0, logLen = 0;
    GLsizei  length = 0;
    char     *log;
+   CALL("%p", shader);
 
    glLinkProgram( shader->object );
    glGetProgramiv( shader->object, GL_LINK_STATUS, &status );
    if(!status)
    {
-      logRed(); dlPuts("[SHADER] Program failed to link"); logNormal();
+      LOGERR("Program failed to link");
       glGetProgramiv( shader->object, GL_INFO_LOG_LENGTH, &logLen );
 
       log = malloc( logLen );
@@ -248,9 +260,11 @@ static int link_shader( dlShader *shader )
       logWhite(); dlPuts( log ); logNormal(); /* prints error */
       free( log );
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -261,13 +275,16 @@ static int process_shader( dlShader *shader )
    GLint uniformCount = 0, maxLen = 0, size = 0;
    GLenum type;
    char *buffer;
+   CALL("%p", shader);
 
    glGetProgramiv( shader->object, GL_ACTIVE_UNIFORMS, &uniformCount );
    glGetProgramiv( shader->object, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxLen );
 
    if( !uniformCount || !maxLen )
    {
-      logRed(); dlPuts("[SHADER] Failed to retieve uniform information"); logNormal();
+      LOGERR("Failed to retieve uniform information");
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -275,14 +292,18 @@ static int process_shader( dlShader *shader )
    shader->uniforms     = dlCalloc( uniformCount, sizeof( dlShaderUniform ) );
    if(!shader->uniforms)
    {
-      logRed(); dlPuts("[SHADER] Failed to alloc uniform list"); logNormal();
+      LOGERR("Failed to alloc uniform list");
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    buffer = malloc(maxLen);
    if(!buffer)
    {
-      logRed(); dlPuts("[SHADER] Failed to alloc uniform name buffer"); logNormal();
+      LOGERR("Failed to alloc uniform name buffer");
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -306,6 +327,7 @@ static int process_shader( dlShader *shader )
    shader->projection = dlShaderGetUniform( shader, DL_PROJECTION );
    shader->view       = dlShaderGetUniform( shader, DL_VIEW );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -313,6 +335,7 @@ static unsigned int process_vertex_GLSL( char *data )
 {
    char *data2 = NULL, *tmp;
    unsigned int vertexShader;
+   CALL("%s", data);
 
    /* vertex shader */
    data2 = append( data2, "#define "VERTEX_SHADER" 1\n" );
@@ -343,6 +366,7 @@ static unsigned int process_vertex_GLSL( char *data )
    glCompileShader(vertexShader);
    free(data2); data2 = NULL;
 
+   RET("%u", vertexShader);
    return( vertexShader );
 }
 
@@ -350,6 +374,7 @@ static unsigned int process_fragment_GLSL( char *data )
 {
    char *data2 = NULL, *tmp;
    unsigned int fragmentShader;
+   CALL("%s", data);
 
    /* fragment shader */
    data2 = append( data2, "#define "FRAGMENT_SHADER" 1\n" );
@@ -372,6 +397,7 @@ static unsigned int process_fragment_GLSL( char *data )
    glCompileShader(fragmentShader);
    free(data2); data2 = NULL;
 
+   RET("%u", fragmentShader);
    return( fragmentShader );
 }
 
@@ -381,9 +407,10 @@ dlShader* dlNewShader( const char *file )
    dlShader *shader;
    char *data = NULL;
    unsigned int vertexShader, fragmentShader;
+   CALL("%s", file);
 
    data = getFile( file );
-   if(!data) return( NULL );
+   if(!data) { RET("%p", NULL); return( NULL ); }
 
    /* process GLSL code */
    vertexShader   = process_vertex_GLSL( data );
@@ -399,6 +426,8 @@ dlShader* dlNewShader( const char *file )
    {
       glDeleteShader(vertexShader);
       glDeleteShader(fragmentShader);
+
+      RET("%p", NULL);
       return( NULL );
    }
    shader->uniforms  = NULL;
@@ -417,12 +446,15 @@ dlShader* dlNewShader( const char *file )
 
    /* link shader */
    if(link_shader( shader ) != RETURN_OK)
-   { dlFreeShader( shader ); return( NULL ); }
+   { dlFreeShader( shader ); RET("%p", NULL); return( NULL ); }
 
    /* get uniform amount */
    if(process_shader( shader ) != RETURN_OK)
-   { dlFreeShader( shader ); return( NULL ); }
+   { dlFreeShader( shader ); RET("%p", NULL); return( NULL ); }
 
+   LOGOK("NEW");
+
+   RET("%p", shader);
    return( shader );
 }
 
@@ -430,8 +462,10 @@ dlShader* dlNewShader( const char *file )
 int dlFreeShader( dlShader *shader )
 {
    unsigned int i;
+   CALL("%p", shader);
 
-   if(!shader) return( RETURN_NOTHING );
+   if(!shader)
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_SHADER );
 
@@ -450,8 +484,12 @@ int dlFreeShader( dlShader *shader )
    /* delete program */
    glDeleteProgram( shader->object );
 
+   LOGFREE("FREE");
+
    /* free shader */
    dlFree( shader, sizeof( dlShader ) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -459,6 +497,8 @@ int dlFreeShader( dlShader *shader )
 static GLuint _DL_BIND_SHADER = 0;
 void dlBindShader( dlShader *shader )
 {
+   CALL("%p", shader);
+
    if(!shader && _DL_BIND_SHADER)
    {
       glUseProgram( 0 ); _DL_BIND_SHADER = 0;
@@ -476,6 +516,8 @@ void dlBindShader( dlShader *shader )
 /* bind using ID */
 void dlBindShaderi( GLuint shader )
 {
+   CALL("%u", shader);
+
    if( _DL_BIND_SHADER == shader )
       return;
 
@@ -486,6 +528,8 @@ void dlBindShaderi( GLuint shader )
 /* set shader uniform */
 void dlShaderUniformMatrix4( dlShaderUniform *uniform, kmMat4 *mat  )
 {
+   CALL("%p, %p", uniform, mat);
+
    if(!uniform) return;
    glUniformMatrix4fv( uniform->object, 1, GL_FALSE, &mat->mat[0] );
 }
@@ -494,11 +538,15 @@ void dlShaderUniformMatrix4( dlShaderUniform *uniform, kmMat4 *mat  )
 dlShaderUniform* dlShaderGetUniform( dlShader *shader, const char *name )
 {
    unsigned int i = 0;
+   CALL("%p, %s", shader, name);
+
    for(; i != shader->uniformCount; ++i)
    {
       if(strcmp( name, shader->uniforms[i].name) == 0)
-         return( &shader->uniforms[i] );
+      { RET("%p", &shader->uniforms[i]); return( &shader->uniforms[i] ); }
    }
+
+   RET("%p", NULL);
    return( NULL );
 }
 
@@ -507,34 +555,43 @@ dlShaderUniform* dlShaderGetUniform( dlShader *shader, const char *name )
 /* allocate new shader */
 dlShader* dlNewShader( const char *file )
 {
+   CALL("%s", file);
+   RET("%p", NULL);
    return( NULL );
 }
 
 /* free shader */
 int dlFreeShader( dlShader *shader )
 {
+   CALL("%p", shader);
+   RET("%p", NULL);
    return( RETURN_OK );
 }
 
 /* bind shader */
 void dlBindShader( dlShader *shader )
 {
+   CALL("%p", shader);
    return;
 }
 
 /* bind using ID */
 void dlBindShaderi( GLuint shader )
 {
+   CALL("%u", shader),
    return;
 }
 
 void dlShaderUniformMatrix4( dlShaderUniform *uniform, kmMat4 *mat )
 {
+   CALL("%p, %p", uniform, mat);
    return;
 }
 
 dlShaderUniform* dlShaderGetUniform( dlShader *shader, const char *name )
 {
+   CALL("%p, %s", shader, name);
+   RET("%p", NULL);
    return( NULL );
 }
 

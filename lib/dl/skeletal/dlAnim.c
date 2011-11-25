@@ -2,14 +2,19 @@
 #include "dlAnim.h"
 #include "dlAlloc.h"
 #include "dlTypes.h"
+#include "dlLog.h"
+
+#define DL_DEBUG_CHANNEL "ANIM"
 
 /* new anim */
 dlAnim* dlNewAnim(void)
 {
+   TRACE();
+
    dlSetAlloc( ALLOC_ANIM );
    dlAnim *anim = dlCalloc( 1, sizeof(dlAnim) );
    if(!anim)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* NULL */
    anim->name     = NULL;
@@ -19,20 +24,29 @@ dlAnim* dlNewAnim(void)
    anim->ticksPerSecond = 25.f;
    anim->duration       = 0.0f;
 
+   LOGOK("NEW");
+
    /* increase ref */
    anim->refCounter++;
 
+   RET("%p", anim);
    return( anim );
 }
 
 /* ref anim */
 dlAnim* dlRefAnim( dlAnim *anim )
 {
+   CALL("%p", anim);
+
    if(!anim)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
+
+   LOGWARN("REFERENCE");
 
    /* increase ref */
    anim->refCounter++;
+
+   RET("%p", anim);
    return( anim );
 }
 
@@ -42,12 +56,13 @@ int dlFreeAnim( dlAnim *anim )
    dlNodeAnim  *node, *next;
    dlVectorKey *vkey, *nextvkey;
    dlQuatKey   *qkey, *nextqkey;
+   CALL("%p", anim);
 
    if(!anim)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    if(--anim->refCounter!=0)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_ANIM );
 
@@ -84,9 +99,13 @@ int dlFreeAnim( dlAnim *anim )
    }
    anim->node = NULL;
 
+   LOGFREE("FREE");
+
    /* free object */
    dlFree( anim, sizeof(dlAnim) );
    anim = NULL;
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -94,10 +113,11 @@ int dlFreeAnim( dlAnim *anim )
 dlNodeAnim* dlAnimAddNode( dlAnim *anim )
 {
    dlNodeAnim *node, **ptr;
+   CALL("%p", anim);
 
    /* not valid animation */
    if(!anim)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find next empty node */
    ptr = &anim->node;
@@ -109,7 +129,7 @@ dlNodeAnim* dlAnimAddNode( dlAnim *anim )
    dlSetAlloc( ALLOC_ANIM );
    *ptr = dlCalloc( 1, sizeof(dlNodeAnim) );
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null next */
    (*ptr)->next = NULL;
@@ -126,17 +146,19 @@ dlNodeAnim* dlAnimAddNode( dlAnim *anim )
    (*ptr)->num_scaling     = 0;
 
    /* success */
+   RET("%p", *ptr);
    return( *ptr );
 }
 
 /* add new translation key to node */
-dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim *node, kmVec3 value, float time )
+dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim *node, kmVec3 *value, float time )
 {
    dlVectorKey *key, **ptr;
+   CALL("%p, vec3[%f, %f, %f], %f", node, value->x, value->y, value->z, time);
 
    /* not valid animation */
    if(!node)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find next empty node */
    ptr = &node->translation;
@@ -148,10 +170,10 @@ dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim *node, kmVec3 value, float time 
    dlSetAlloc( ALLOC_ANIM );
    *ptr = dlCalloc( 1, sizeof(dlVectorKey) );
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assing values */
-   (*ptr)->value = value;
+   (*ptr)->value = *value;
    (*ptr)->time  = time;
 
    /* null next */
@@ -161,17 +183,20 @@ dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim *node, kmVec3 value, float time 
    node->num_translation++;
 
    /* success */
+   RET("%p", *ptr);
    return( *ptr );
 }
 
 /* add new rotation key to node */
-dlQuatKey* dlNodeAddRotationKey(dlNodeAnim *node, kmQuaternion value, float time)
+dlQuatKey* dlNodeAddRotationKey(dlNodeAnim *node, kmQuaternion *value, float time)
 {
    dlQuatKey *key, **ptr;
+   CALL("%p, quat[%f, %f, %f, %f], %f", node,
+         value->x, value->y, value->z, value->w, time);
 
    /* not valid animation */
    if(!node)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find next empty node */
    ptr = &node->rotation;
@@ -179,15 +204,14 @@ dlQuatKey* dlNodeAddRotationKey(dlNodeAnim *node, kmQuaternion value, float time
    for(; key; key = key->next)
       ptr = &key->next;
 
-
    /* allocate new node */
    dlSetAlloc( ALLOC_ANIM );
    *ptr = dlCalloc( 1, sizeof(dlQuatKey) );
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assing values */
-   (*ptr)->value = value;
+   (*ptr)->value = *value;
    (*ptr)->time  = time;
 
    /* null next */
@@ -197,17 +221,20 @@ dlQuatKey* dlNodeAddRotationKey(dlNodeAnim *node, kmQuaternion value, float time
    node->num_rotation++;
 
    /* success */
+   RET("%p", *ptr);
    return( *ptr );
 }
 
 /* add new scale key to node */
-dlVectorKey* dlNodeAddScalingKey(dlNodeAnim *node, kmVec3 value, float time)
+dlVectorKey* dlNodeAddScalingKey(dlNodeAnim *node, kmVec3 *value, float time)
 {
    dlVectorKey *key, **ptr;
+   CALL("%p, vec3[%f, %f, %f], %f", node,
+         value->x, value->y, value->z, time);
 
    /* not valid animation */
    if(!node)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find next empty node */
    ptr = &node->scaling;
@@ -219,10 +246,10 @@ dlVectorKey* dlNodeAddScalingKey(dlNodeAnim *node, kmVec3 value, float time)
    dlSetAlloc( ALLOC_ANIM );
    *ptr = dlCalloc( 1, sizeof(dlVectorKey) );
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assing values */
-   (*ptr)->value = value;
+   (*ptr)->value = *value;
    (*ptr)->time  = time;
 
    /* null next */
@@ -232,5 +259,6 @@ dlVectorKey* dlNodeAddScalingKey(dlNodeAnim *node, kmVec3 value, float time)
    node->num_scaling++;
 
    /* success */
+   RET("%p", *ptr);
    return( *ptr );
 }

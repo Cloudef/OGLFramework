@@ -16,5 +16,3 @@
 #include "shader/dlShader.h"
 
 #endif /* DL_H */
-
-/* EoF */

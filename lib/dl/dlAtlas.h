@@ -71,5 +71,3 @@ int dlAtlasGetTransformed( dlAtlas *atlas, dlTexture *texture, kmVec2 *coord );
 #endif
 
 #endif /* DL_ATLAS_H */
-
-/* EoF */

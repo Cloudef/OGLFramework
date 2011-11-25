@@ -72,9 +72,9 @@ int     dlFreeAnim(dlAnim*);
 
 dlNodeAnim* dlAnimAddNode( dlAnim *node );
 
-dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim*, kmVec3, float);
-dlQuatKey*   dlNodeAddRotationKey(dlNodeAnim*, kmQuaternion, float);
-dlVectorKey* dlNodeAddScalingKey(dlNodeAnim*, kmVec3, float);
+dlVectorKey* dlNodeAddTranslationKey(dlNodeAnim*, kmVec3*, float);
+dlQuatKey*   dlNodeAddRotationKey(dlNodeAnim*, kmQuaternion*, float);
+dlVectorKey* dlNodeAddScalingKey(dlNodeAnim*, kmVec3*, float);
 
 #ifdef __cplusplus
 }

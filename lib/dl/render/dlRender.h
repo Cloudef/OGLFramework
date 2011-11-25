@@ -16,5 +16,3 @@ int dlOGL3( void );
 #endif
 
 #endif /* DL_RENDER_H */
-
-/* EoF */

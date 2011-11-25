@@ -5,29 +5,31 @@
 #include "dlTypes.h"
 #include "dlLog.h"
 
+#define DL_DEBUG_CHANNEL "ANIMATOR"
+
 /* new animator */
 dlAnimator* dlNewAnimator( void )
 {
    dlAnimator *object;
+   TRACE();
 
    /* create new animator */
    dlSetAlloc( ALLOC_ANIMATOR );
    object = (dlAnimator*)dlCalloc( 1, sizeof(dlAnimator) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null */
    object->anim = NULL;
    object->bone = NULL;
    object->tick = NULL;
 
-   object->current   = NULL;
+   object->current = NULL;
 
-   logGreen();
-   dlPuts("[A:ANIMATOR]");
-   logNormal();
-
+   LOGOK("NEW");
    object->refCounter++;
+
+   RET("%p", object);
    return( object );
 }
 
@@ -35,23 +37,24 @@ dlAnimator* dlNewAnimator( void )
 dlAnimator* dlCopyAnimator( dlAnimator *src )
 {
    dlAnimator *object;
+   CALL("%p", src);
 
    /* invalid source */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* allocate object */
    dlSetAlloc( ALLOC_ANIMATOR );
    object = (dlAnimator*)dlCalloc( 1, sizeof(dlAnimator) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null */
    object->tick    = NULL;
    object->current = NULL;
 
    /* reference animations */
-   object->anim                  = dlAnimatorRefAnims( src );
-   object->bone                  = dlAnimatorRefBones( src );
+   object->anim   = dlAnimatorRefAnims( src );
+   object->bone   = dlAnimatorRefBones( src );
 
    if(src->current)
    {
@@ -59,34 +62,33 @@ dlAnimator* dlCopyAnimator( dlAnimator *src )
       object->current   = src->current;
    }
 
-   logYellow();
-   dlPuts("[C:ANIMATOR]");
-   logNormal();
-
+   LOGWARN("COPY");
    object->refCounter++;
+
+   RET("%p", object);
    return( object );
 }
 
 dlAnimator* dlRefAnimator( dlAnimator *src )
 {
    dlAnimator *object;
+   CALL("%p", src);
 
    /* invalid source */
    if(!src)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* point */
    object = src;
 
    /* reference animations */
-   object->anim                  = dlAnimatorRefAnims( src );
-   object->bone                  = dlAnimatorRefBones( src );
+   object->anim   = dlAnimatorRefAnims( src );
+   object->bone   = dlAnimatorRefBones( src );
 
-   logYellow();
-   dlPuts("[R:ANIMATOR]");
-   logNormal();
-
+   LOGWARN("REFERENCE");
    object->refCounter++;
+
+   RET("%p", object);
    return( object );
 }
 
@@ -94,17 +96,11 @@ int dlFreeAnimator( dlAnimator *object )
 {
    dlBone *bone, *nextbone;
    dlAnim *anim, *nextanim;
+   CALL("%p", object);
 
    /* invalid object */
    if(!object)
-      return( RETURN_NOTHING );
-
-   if(object->refCounter - 1 == 0)
-   {
-      /* free animation ticker */
-      dlFreeAnimTick( object->tick );
-      object->tick = NULL;
-   }
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* free bones */
    bone = object->bone;
@@ -120,18 +116,21 @@ int dlFreeAnimator( dlAnimator *object )
      if(dlFreeAnim(anim) == RETURN_OK) object->anim = NULL; /* truly freed */
      anim = nextanim; }
 
-   if(--object->refCounter!=0)
-      return( RETURN_NOTHING );
+   if(--object->refCounter!=0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
+
+   /* free animation ticker */
+   dlFreeAnimTick( object->tick );
+   object->tick = NULL;
 
    dlSetAlloc( ALLOC_ANIMATOR );
 
-   logRed();
-   dlPuts("[F:ANIMATOR]");
-   logNormal();
+   LOGFREE("FREE");
 
    /* free object */
    dlFree( object, sizeof(dlAnimator) );
    object = NULL;
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -140,6 +139,7 @@ void dlAnimatorSetAnim( dlAnimator *object, DL_NODE_TYPE index )
 {
    dlAnim *node;
    DL_NODE_TYPE i;
+   CALL("%p, %d", object, index);
 
    /* invalid object */
    if(!object)
@@ -162,6 +162,8 @@ void dlAnimatorSetAnim( dlAnimator *object, DL_NODE_TYPE index )
 /* Tick animation */
 void dlAnimatorTick( dlAnimator *object, float time )
 {
+   CALL("%p, %f", object, time);
+
    if(!object)
       return;
    if(!object->tick)
@@ -176,10 +178,11 @@ void dlAnimatorTick( dlAnimator *object, float time )
 dlBone* dlAnimatorAddBone( dlAnimator *object )
 {
    dlBone *bone, **ptr;
+   CALL("%p", object);
 
    /* invalid object */
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find empty slot */
    ptr  = &object->bone;
@@ -190,12 +193,13 @@ dlBone* dlAnimatorAddBone( dlAnimator *object )
    /* assign new bone */
    *ptr = dlNewBone();
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null next */
    (*ptr)->next   = NULL;
    (*ptr)->parent = NULL;
 
+   RET("%p", *ptr);
    return( *ptr );
 }
 
@@ -203,17 +207,19 @@ dlBone* dlAnimatorAddBone( dlAnimator *object )
 dlBone* dlAnimatorRefBones( dlAnimator *object )
 {
    dlBone *bone;
+   CALL("%p", object);
 
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!object->bone)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* reference everything */
    bone = object->bone;
    for(; bone; bone = bone->next)
       dlRefBone( bone );
 
+   RET("%p", object->bone);
    return( object->bone );
 }
 
@@ -221,16 +227,21 @@ dlBone* dlAnimatorRefBones( dlAnimator *object )
 dlBone* dlAnimatorGetBone( dlAnimator *object, const char *name )
 {
    dlBone *bone;
+   CALL("%p, %s", object, name);
 
    if(!object || !name)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find */
    bone = object->bone;
    for(; bone; bone = bone->next)
-   { if(bone->name) if(strcmp( bone->name, name ) == 0) return( bone ); }
+   {
+      if(bone->name) if(strcmp( bone->name, name ) == 0)
+      { RET("%p", bone); return( bone ); }
+   }
 
    /* return */
+   RET("%p", NULL);
    return( NULL );
 }
 
@@ -238,10 +249,11 @@ dlBone* dlAnimatorGetBone( dlAnimator *object, const char *name )
 dlAnim* dlAnimatorAddAnim( dlAnimator *object )
 {
    dlAnim *anim, **ptr;
+   CALL("%p", object);
 
    /* invalid object */
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find empty slot */
    ptr  = &object->anim;
@@ -252,11 +264,12 @@ dlAnim* dlAnimatorAddAnim( dlAnimator *object )
    /* assign new animation */
    *ptr = dlNewAnim();
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null next */
    (*ptr)->next = NULL;
 
+   RET("%p", NULL);
    return( *ptr );
 }
 
@@ -264,17 +277,19 @@ dlAnim* dlAnimatorAddAnim( dlAnimator *object )
 dlAnim* dlAnimatorRefAnims( dlAnimator *object )
 {
    dlAnim *anim;
+   CALL("%p", object);
 
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!object->anim)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* reference everything */
    anim = object->anim;
    for(; anim; anim = anim->next)
       dlRefAnim( anim );
 
+   RET("%p", object->anim);
    return( object->anim );
 }
 
@@ -283,6 +298,7 @@ void dlAnimatorCalculateGlobalTransformations( dlAnimator *object )
 {
    dlBone *parent, *bone;
    kmMat4 globalMat;
+   CALL("%p", object);
 
    if(!object)
       return;

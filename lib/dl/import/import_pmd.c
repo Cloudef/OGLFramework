@@ -28,6 +28,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "IMPORT_PMD"
+
 /* only needed for printing comment and name as utf-8
  * in most cases uselsess.
  *
@@ -55,20 +57,26 @@ static char* convertSjisToUtf8( char *sjis )
    char *p_src, *p_dst, *p_start;
    size_t n_src, n_dst;
 
+   CALL("%p", sjis);
+
    p_src = sjis;
    n_src = strlen(p_src);
    n_dst = n_src * 2;
 
    if(!p_src || !n_src)
    {
-      logRed(); dlPuts("[SJIS->UTF8] String null or empty"); logNormal();
+      LOGERR("ICONV :: String null or empty");
+
+      RET("%p", NULL);
       return( NULL );
    }
 
    p_dst = calloc( n_dst, 1 );
    if(!p_dst)
    {
-      logRed(); dlPuts("[SJIS->UTF8] Failed to alloc UTF8 string"); logNormal();
+      LOGERR("ICONV :: Failed to alloc UTF8 string");;
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -77,39 +85,42 @@ static char* convertSjisToUtf8( char *sjis )
    {
       logRed();
       if(errno == EINVAL)
-         dlPrint("[SJIS->UTF8] Conversion from '%s' to '%s' is not supported.\n",INSET,OUTSET);
+      { LOGERRP("ICONV :: Conversion from '%s' to '%s' is not supported.",INSET,OUTSET); }
       else
-         dlPrint("[SJIS->UTF8] Initialization failure: %s\n", strerror(errno));
+      { LOGERRP("ICONV :: Initialization failure: %s", strerror(errno)); }
 
-      logNormal();
+      RET("%p", NULL);
       return( NULL );
    }
    p_start = p_dst;
    iret = iconv(icd, &p_src, &n_src, &p_dst, &n_dst);
    if(iret == (size_t)-1)
    {
-      logRed(); dlPuts("[SJIS->UTF8] Conversion failure.");
+      LOGERR("ICONV :: Conversion failure.");
       switch (errno)
       {
          /* See "man 3 iconv" for an explanation. */
          case EILSEQ:
-            dlPuts("Invalid multibyte sequence.");
+            LOGERR("Invalid multibyte sequence.");
             break;
          case EINVAL:
-            dlPuts("Incomplete multibyte sequence.");
+            LOGERR("Incomplete multibyte sequence.");
             break;
          case E2BIG:
-            dlPuts("No more room.\n");
+            LOGERR("No more room.");
             break;
          default:
-            dlPrint("Error: %s.\n", strerror (errno));
+            LOGERRP("%s", strerror (errno));
       }
-      logNormal();
       free(p_start);
+
+      RET("%p", NULL);
       return( NULL );
    }
 
    iconv_close(icd);
+
+   RET("%s", p_start);
    return( p_start );
 }
 #endif
@@ -139,47 +150,35 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    mmd_header header;
    mmd_data   *mmd;
 
-   logBlue(); dlPrint("[PMD] attempt to load: %s\n", file ); logNormal();
+
+   CALL("%p, %s, %d", object, file, bAnimated)
+   LOGINFOP("Attempt to load: %s", file);
 
    /* Yush! Open the file */
    f = fopen( (char*)file, "rb" );
    if(!f)
    {
-      logRed();
-      dlPrint("[PMD] file: %s, could not open\n", file );
-      logNormal();
+      LOGERRP("File: %s, could not open", file);
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    if( mmd_readHeader( f, &header ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read header");
-      logNormal();
+      LOGERR("Failed to read header");
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* print info about our PMD */
 #if ICONV_SJIS_PMD
-   dlPuts("");
-
    if((utf8 = convertSjisToUtf8( header.name )))
-   { dlPuts( utf8 ); free( utf8 ); }
-
-   dlPrint("VER: %f\n", header.version);
-   dlPuts("");
+   { LOGINFO( utf8 ); free( utf8 ); }
 
    if((utf8 = convertSjisToUtf8( header.comment )))
-   { dlPuts( utf8 ); free( utf8 ); }
-
-   dlPuts("");
-#else
-   dlPuts("");
-   dlPrint("LEN: %d\n", strlen( header.name ));
-   dlPrint("VER: %f\n", header.version);
-   dlPuts("");
+   { LOGINFO( utf8 ); free( utf8 ); }
 #endif
 
    /* ok, lets create MMD data structure that holds
@@ -188,118 +187,110 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    if(!mmd)
    {
       /* yikes, failed to allocate */
-      logRed();
-      dlPuts("[PMD] failed to allocate MMD data structure");
-      logNormal();
-
+      LOGERR("Failed to allocate MMD data structure");
       fclose(f);
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read vertex data */
    if( mmd_readVertexData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read vertex data");
-      logNormal();
 
+      LOGERR("Failed to read vertex data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read index data */
    if( mmd_readIndexData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read index data");
-      logNormal();
-
+      LOGERR("Failed to read index data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read material data */
    if( mmd_readMaterialData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read material data");
-      logNormal();
-
+      LOGERR("Failed to read material data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read bone data */
    if( mmd_readBoneData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read bone data");
-      logNormal();
-
+      LOGERR("Failed to read bone data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read IK data */
    if( mmd_readIKData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read IK data");
-      logNormal();
-
+      LOGERR("Failed to read IK data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read Skin data */
    if( mmd_readSkinData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read Skin data");
-      logNormal();
-
+      LOGERR("Failed to read Skin data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read Skin display data */
    if( mmd_readSkinDisplayData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read Skin display data");
-      logNormal();
-
+      LOGERR("Failed to read Skin display data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* read bone name data */
    if( mmd_readBoneNameData( f, mmd ) != RETURN_OK )
    {
-      logRed();
-      dlPuts("[PMD] failed to read bone name data");
-      logNormal();
-
+      LOGERR("Failed to read bone name data");
       fclose(f);
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
    /* print vertex info */
-   dlPrint("V: %d\n", mmd->num_vertices);
-   dlPrint("I: %d\n", mmd->num_indices);
-   dlPrint("B: %d\n", mmd->num_bones);
-   dlPrint("BN: %d\n", mmd->num_bone_names);
-   dlPrint("IK: %d\n", mmd->num_ik);
-   dlPrint("S: %d\n", mmd->num_skins);
-   dlPrint("SD: %d\n", mmd->num_skin_displays);
+   LOGINFOP("V: %d", mmd->num_vertices);
+   LOGINFOP("I: %d", mmd->num_indices);
+   LOGINFOP("B: %d", mmd->num_bones);
+   LOGINFOP("BN: %d", mmd->num_bone_names);
+   LOGINFOP("IK: %d", mmd->num_ik);
+   LOGINFOP("S: %d", mmd->num_skins);
+   LOGINFOP("SD: %d", mmd->num_skin_displays);
 
    /* close file */
    fclose(f);
@@ -310,11 +301,10 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    textureList = malloc( sizeof(dlTexture*) * mmd->num_materials );
    if(!textureList)
    {
-      logRed();
-      dlPuts( "[PMD] failed to allocate texture list for atlas usage" );
-      logNormal();
-
+      LOGERR("Failed to allocate texture list for atlas usage");
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -322,12 +312,11 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    atlas = dlNewAtlas();
    if(!atlas)
    {
-      logRed();
-      dlPuts( "[PMD] failed to allocate texture atlas" );
-      logNormal();
-
+      LOGERR("Failed to allocate texture atlas");
       free( textureList );
       freeMMD( mmd );
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -399,7 +388,6 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
          dlAtlasGetTransformed( atlas, textureList[i], &object->vbo->uvw[0].coords[i2] );
 
          dlInsertIndex( object->ibo, i2 );
-
       }
       //dlPuts("");
       start += num_faces;
@@ -449,11 +437,10 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
          mObject = dlNewObject();
          if(!mObject)
          {
-            logRed();
-            dlPuts( "[PMD] could not allocate child object" );
-            logNormal();
-
+            LOGERR("Could not allocate child object");
             freeMMD( mmd );
+
+            RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
 
@@ -462,12 +449,11 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
          mObject->ibo = dlNewIBO();
          if(!mObject->ibo)
          {
-            logRed();
-            dlPuts( "[PMD] could not allocate child IBO" );
-            logNormal();
-
+            LOGERR("Could not allocate child IBO");
             dlFreeObject( mObject );
             freeMMD( mmd );
+
+            RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
 
@@ -506,6 +492,7 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
    /* free mmd_data structure */
    freeMMD( mmd );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

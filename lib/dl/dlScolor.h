@@ -21,5 +21,3 @@ typedef struct
 #endif
 
 #endif /* DL_SCOLOR_H */
-
-/* EoF */

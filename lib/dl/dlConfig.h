@@ -51,5 +51,3 @@
 #endif
 
 #endif /* DL_CONFIG_H */
-
-/* EoF */

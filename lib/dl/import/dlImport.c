@@ -13,6 +13,8 @@
 #include "dlCore.h"
 #include "dlLog.h"
 
+#define DL_DEBUG_CHANNEL "IMPORT"
+
 /* I used to have own image importers,
  * but then I stumbled against SOIL which seems to do a lots
  * of stuff with it's tiny size, so why reinvent the wheel?
@@ -72,12 +74,15 @@ static char* parseHeader( const char *file )
    FILE *f;
    unsigned int bytesRead = 0;
    size_t bytesTotal;
+   CALL("%s", file);
 
    /* open file */
    f = fopen( file, "rb" );
    if(!f)
    {
-      logRed(); dlPrint( "[IMPORT] file: %s, could not open\n", file ); logNormal();
+      LOGERRP("File: %s, could not open", file);
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -135,48 +140,49 @@ static char* parseHeader( const char *file )
    /* if nothing */
    if(!bytesRead)
    {
-      logRed();
-      dlPrint( "[IMPORT] file: %s, failed to parse header\n", file );
-      logNormal();
-
+      LOGERRP( "File: %s, failed to parse header", file );
       free( MAGIC_HEADER );
+
+      RET("%p", NULL);
       return( NULL );
    }
    MAGIC_HEADER[ bytesRead ] = '\0';
 
+   RET("%s", MAGIC_HEADER);
    return( MAGIC_HEADER );
 }
 
 /* check against known model format headers */
 static model_format_t modelFormat( const char *MAGIC_HEADER )
 {
+   CALL("%s", MAGIC_HEADER);
+
    /* --------- FORMAT HEADER CHECKING ------------ */
 
 #if WITH_OPENCTM
    /* OpenCTM check */
    if( strcmp( MODEL_FORMAT_OCTM, MAGIC_HEADER ) == 0 )
-      return( M_OCTM );
+   { RET("%s", "M_OCTM"); return( M_OCTM ); }
 #endif /* WITH_OPENCTM */
 
 #if WITH_PMD
    /* PMD check */
    if( strcmp( MODEL_FORMAT_PMD, MAGIC_HEADER ) == 0 )
-      return( M_PMD );
+   { RET("%s", "M_PMD"); return( M_PMD ); }
 #endif /* WITH_PMD */
 
 #if WITH_ASSIMP
    /* Our importers cant handle this, let's try ASSIMP */
-   return( M_ASSIMP );
+   RET("%s", "M_ASSIMP"); return( M_ASSIMP );
 #endif /* WITH_ASSIMP */
 
    /* ------- ^^ FORMAT HEADER CHECKING ^^ -------- */
 
-   logRed();
-   dlPuts("[IMPORT] no suitable importers found");
-   dlPuts("[IMPORT] if the model format is supported, make sure you have compiled library with it.");
-   dlPrint("[IMPORT] magic header: %s\n", MAGIC_HEADER);
-   logNormal();
+   LOGERR("No suitable importers found");
+   LOGERR("If the model format is supported, make sure you have compiled library with it.");
+   LOGERRP("Magic header: %s", MAGIC_HEADER);
 
+   RET("%s", "M_NOT_FOUND");
    return( M_NOT_FOUND );
 }
 
@@ -195,17 +201,18 @@ int dlImportModel( dlObject *object,
    /* default for fail, as in no importer found */
    int import_return = RETURN_FAIL;
 
-   logBlue(); dlPrint( "[MODEL IMPORT] %s\n", file ); logNormal();
+   CALL("%p, %s, %d", object, file, bAnimated);
+   LOGINFOP("Model: %s", file);
 
    /* read file header */
    header = parseHeader( file );
    if(!header)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* figure out the model format */
    fileFormat = modelFormat( header ); free(header); /* free header after use */
    if( fileFormat == M_NOT_FOUND )
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* --------- FORMAT IMPORT CALL ----------- */
 
@@ -239,6 +246,7 @@ int dlImportModel( dlObject *object,
 
    /* ---------- ^^ FORMAT IMPORT ^^ ---------- */
 
+   RET("%d", import_return);
    return( import_return );
 }
 
@@ -247,7 +255,8 @@ int dlImportImage( dlTexture *texture,
                    const char *file, unsigned int flags )
 {
    int channels = 0;
-   logBlue(); dlPrint( "[IMAGE IMPORT] %s\n", file ); logNormal();
+   CALL("%p, %s, %u", texture, file, flags);
+   LOGINFOP("Image: %s", file);
 
    /* load using SOIL */
    texture->object = SOIL_load_OGL_texture_EX
@@ -265,9 +274,14 @@ int dlImportImage( dlTexture *texture,
 
    /* check succes */
    if( !texture->object )
-   { logRed(); dlPrint( "[IMAGE IMPORT] Failed to load %s\n", file ); logNormal();
-     return( RETURN_FAIL ); }
+   {
+      LOGERRP("Failed to load %s", file);
 
+      RET("%d", RETURN_FAIL);
+      return( RETURN_FAIL );
+   }
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -276,7 +290,12 @@ int dlImportImage( dlTexture *texture,
 
 char *gnu_basename(char *path)
 {
-    char *base = strrchr(path, '/');
+    char *base;
+    CALL("%s", path);
+
+    base = strrchr(path, '/');
+
+    RET("%s", base ? base+1 : path);
     return base ? base+1 : path;
 }
 
@@ -288,13 +307,14 @@ char* dlImportTexturePath( const char* oddTexturePath,
 {
    char *textureFile, *modelFolder;
    char textureInModelFolder[PATH_MAX];
+   CALL("%s, %s", oddTexturePath, modelPath);
 
    /* these are must to check */
    if(!oddTexturePath)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    if(strcmp( oddTexturePath, "" ) == 0)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* lets try first if it contains real path to the texture */
    textureFile = (char*)oddTexturePath;
@@ -303,19 +323,19 @@ char* dlImportTexturePath( const char* oddTexturePath,
    if(access( textureFile, F_OK ) != 0)
       textureFile = gnu_basename( (char*)oddTexturePath );
    else
-      return( strdup( textureFile ) );
+   { RET("%s", textureFile); return( strdup(textureFile) ); }
 
    /* hrmm, we could not even basename it?
     * I think we have a invalid path here Watson! */
    if(!textureFile)
-      return( NULL ); /* Sherlock, you are a genius */
+   { RET("%p", NULL); return( NULL ); } /* Sherlock, you are a genius */
 
    /* these are must to check */
    if(!modelPath)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    if(strcmp( modelPath, "" ) == 0)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* grab the folder where model resides */
    modelFolder = dirname( strdup( modelPath ) );
@@ -329,8 +349,9 @@ char* dlImportTexturePath( const char* oddTexturePath,
 
    /* gah, don't give me missing textures damnit!! */
    if(access( textureInModelFolder, F_OK ) != 0)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* return, remember to free */
+   RET("%s", textureInModelFolder);
    return( strdup( textureInModelFolder ) );
 }

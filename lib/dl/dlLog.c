@@ -1,4 +1,7 @@
 #include <stdarg.h>
+#include <string.h>
+#include <malloc.h>
+#include <ctype.h>
 
 #include "dlConfig.h"
 #include "dlCore.h"
@@ -63,6 +66,62 @@ static DEBCHAN DEBUG_CHANNELS[] =
    { "TRACE",           0 },
 };
 
+/*
+convert char string to uppercase
+remember to free the returned string.
+*/
+static char *upstr(const char *s)
+{
+   char* p = malloc(strlen(s) + 1);
+   int i;
+
+   strcpy( p, s );
+   for (i = 0; i != strlen(p); i++)
+      p[i] = (char)toupper(p[i]);
+
+   return p;
+}
+
+/* split string */
+static int strsplit(char ***dst, char *str, char *token) {
+   char *saveptr, *ptr, *start;
+   int32_t t_len, i;
+
+   if (!(saveptr=strdup(str)))
+      return 0;
+
+   *dst=NULL;
+   t_len=strlen(token);
+   i=0;
+
+   for (start=saveptr,ptr=start;;ptr++) {
+      if (!strncmp(ptr,token,t_len) || !*ptr) {
+         while (!strncmp(ptr,token,t_len)) {
+            *ptr=0;
+            ptr+=t_len;
+         }
+
+         if (!((*dst)=realloc(*dst,(i+2)*sizeof(char*))))
+            return 0;
+         (*dst)[i]=start;
+         (*dst)[i+1]=NULL;
+         i++;
+
+         if (!*ptr)
+            break;
+         start=ptr;
+      }
+   }
+   return i;
+}
+
+/* free split */
+static void strsplit_clear(char ***dst) {
+   if ((*dst)[0])
+      free((*dst)[0]);
+   free((*dst));
+}
+
 /* do tracing? */
 int dlDEBTRACE(void)
 {
@@ -87,11 +146,15 @@ int dlDEBCHAN(const char *channel)
 void dlDEBADD(const char *channel)
 {
    unsigned int i;
+   char *uchannel = upstr(channel);
+   if(!uchannel) return;
 
    i = 0;
-   for(; DEBUG_CHANNELS[i].channel; ++i)
-      if(!strcmp(channel, DEBUG_CHANNELS[i].channel))
-      { DEBUG_CHANNELS[i].active = 1; return; }
+   for(; i != LENGTH(DEBUG_CHANNELS); ++i)
+      if(!strcmp(uchannel, DEBUG_CHANNELS[i].channel) ||
+         (!strcmp(uchannel, "ALL") &&
+         i != LENGTH(DEBUG_CHANNELS) - 1))
+      DEBUG_CHANNELS[i].active = 1;
 
    return;
 }
@@ -100,13 +163,48 @@ void dlDEBADD(const char *channel)
 void dlDEBRM(const char *channel)
 {
    unsigned int i;
+   char *uchannel = upstr(channel);
+   if(!uchannel) return;
 
    i = 0;
-   for(; DEBUG_CHANNELS[i].channel; ++i)
-      if(!strcmp(channel, DEBUG_CHANNELS[i].channel))
-      { DEBUG_CHANNELS[i].active = 0; return; }
+   for(; i != LENGTH(DEBUG_CHANNELS); ++i)
+      if(!strcmp(uchannel, DEBUG_CHANNELS[i].channel) ||
+         (!strcmp(uchannel, "ALL") &&
+          i != LENGTH(DEBUG_CHANNELS) - 1))
+      DEBUG_CHANNELS[i].active = 0;
 
    return;
+}
+
+/* init debug system */
+void dlDEBINIT(int argc, const char **argv)
+{
+   int i, count;
+   char *match;
+   char **split;
+
+   i = 0; match = NULL;
+   for(; i != argc; ++i)
+   {
+      if(!strncmp(argv[i], "DEBUG=", strlen("DEBUG=")))
+      { match = (char*)(argv[i] + strlen("DEBUG=")); break; }
+   }
+   if(!match) return;
+
+   split = NULL;
+   count = strsplit(&split, match, ",");
+   if(!split) return;
+
+   i = 0;
+   for(; i != count; ++i)
+   {
+      if(!strncmp(split[i], "+", 1))
+         dlDEBADD(split[i] + 1);
+      else if(!strncmp(split[i], "-", 1))
+         dlDEBRM(split[i] + 1);
+   }
+
+   strsplit_clear(&split);
 }
 
 /* open log */

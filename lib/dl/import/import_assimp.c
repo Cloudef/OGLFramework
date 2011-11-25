@@ -29,6 +29,8 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "IMPORT_ASSIMP"
+
 /* Set material */
 static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mtl)
 {
@@ -43,16 +45,15 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
 
    char *texturePath;
 
+   CALL("%s, %p, %p", file, object, mtl);
+
    numDiffuse = aiGetMaterialTextureCount( mtl, aiTextureType_DIFFUSE );
    if(!numDiffuse)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    if(numDiffuse > _dlCore.info.maxTextureUnits)
    {
-      logBlue();
-      dlPrint("[ASSIMP] This model has more than %d Textures, some textures won't be shown", _dlCore.info.maxTextureUnits );
-      logNormal();
-
+      LOGINFOP("This model has more than %d Textures, some textures won't be shown", _dlCore.info.maxTextureUnits );
       numDiffuse = _dlCore.info.maxTextureUnits;
    }
 
@@ -64,10 +65,9 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
                                 &uvwIndex, &blend, &op,
                                 textureMapMode, &flags ) != AI_SUCCESS )
       {
-         logRed();
-         dlPuts("[ASSIMP] Failed to fetch texture info from material");
-         logNormal();
+         LOGERR("Failed to fetch texture info from material");
 
+         RET("%d", RETURN_FAIL);
          return( RETURN_FAIL );
       }
 
@@ -79,43 +79,49 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
          object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS );
          free( texturePath );
 
+         RET("%d", RETURN_OK);
          return( RETURN_OK ); /* add multiple material support */
       }
    }
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 const struct aiNode* findNode( const struct aiNode *nd, const char *name )
 {
    unsigned int f;
+   CALL("%p, %s", nd, name);
 
    f = 0;
    for(; f != nd->mNumChildren; ++f)
    {
       if(strcmp( nd->mChildren[f]->mName.data, name ) == 0)
-         return( nd->mChildren[f] );
+      { RET("%p", nd->mChildren[f]); return( nd->mChildren[f] ); }
       else
       {
          const struct aiNode *node = findNode( nd->mChildren[f], name );
-         if(node) return( node );
+         if(node) { RET("%p", node); return( node ); }
       }
    }
 
+   RET("%p", NULL);
    return( NULL );
 }
 
 const struct aiBone* findBone( const struct aiMesh *mesh, const char *name )
 {
    unsigned int f;
+   CALL("%p, %s", mesh, name);
 
    f = 0;
    for(; f != mesh->mNumBones; ++f)
    {
       if(strcmp( mesh->mBones[f]->mName.data, name ) == 0)
-         return( mesh->mBones[f] );
+      { RET("%p", mesh->mBones[f]); return( mesh->mBones[f] ); }
    }
 
+   RET("%p", NULL);
    return( NULL );
 }
 
@@ -128,13 +134,15 @@ add_bone(dlAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
    const struct aiBone* aBone;
    unsigned int f = 0;
 
+   CALL("%p, %p, %p", mesh, bND, nd);
+
    /* invalid bone node */
    if(!bND)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    assert( bND->mName.data );
    if(!strlen(bND->mName.data))
-         return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* could not find bone */
    aBone = findBone( mesh, bND->mName.data );
@@ -142,12 +150,18 @@ add_bone(dlAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
    /* add bone */
    bone = dlAnimatorAddBone( object );
    if(!bone)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assign name */
    bone->name = strdup(bND->mName.data);
-   if(!bone->name) { dlFreeBone( bone ); return( NULL ); }
-   logBlue(); dlPrint( "[ASSIMP] %s\n",  bone->name ); logNormal();
+   if(!bone->name)
+   {
+      dlFreeBone( bone );
+
+      RET("%p", NULL);
+      return( NULL );
+   }
+   LOGINFOP("%s",  bone->name);
 
    /* only if found, otherwise create dummy bone with only relative translation info */
    if(aBone)
@@ -182,7 +196,12 @@ add_bone(dlAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
       {
          if(!dlBoneAddWeight( bone, aBone->mWeights[f].mVertexId,
                               aBone->mWeights[f].mWeight ))
-         { dlFreeBone( bone ); return( NULL ); }
+         {
+            dlFreeBone( bone );
+
+            RET("%p", NULL);
+            return( NULL );
+         }
       }
    }
 
@@ -215,21 +234,30 @@ add_bone(dlAnimator *object, const struct aiMesh *mesh, const struct aiNode *bND
       dlBoneAddChild( bone, child );
    }
 
+   RET("%p", bone);
    return(bone);
 }
 
 /* Construct bones */
 static int construct_bones(dlAnimator *object, const struct aiNode *nd, const struct aiMesh *mesh)
 {
+   CALL("%p, %p, %p", object, nd, mesh);
+
    /* no bones, no milk */
    if(!mesh->mNumBones)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* assign bones */
-   logBlue(); dlPrint("[ASSIMP] Found %d bones\n", mesh->mNumBones); logNormal();
+   LOGINFOP("Found %d bones", mesh->mNumBones);
    if(!add_bone( object, mesh, nd, nd ))
-   { logRed(); dlPuts("[ASSIMP] Bones failed"); logNormal(); return( RETURN_FAIL ); }
+   {
+      LOGERR("Bones failed");
 
+      RET("%d", RETURN_FAIL);
+      return( RETURN_FAIL );
+   }
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -243,6 +271,8 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
    kmVec3         vec3value;
    kmQuaternion   quatvalue;
 
+   CALL("%p, %p, %p", object, sc, mesh);
+
 #if USE_KEY_ANIMATION
    /* mesh->mAnimMeshes
     * mesh->mNumAnimMeshes */
@@ -250,16 +280,17 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
 
    /* no need to do this */
    if(!sc->mNumAnimations)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
-   logBlue(); dlPrint("[ASSIMP] Found %d animations\n", sc->mNumAnimations); logNormal();
+   LOGINFOP("Found %d animations", sc->mNumAnimations);
 
    /* add animations */
    i = 0;
    for(; i != sc->mNumAnimations; ++i)
    {
       anim = dlAnimatorAddAnim( object );
-      if(!anim) return( RETURN_FAIL );
+      if(!anim)
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       anim->ticksPerSecond = sc->mAnimations[i]->mTicksPerSecond;
       anim->duration       = sc->mAnimations[i]->mDuration;
@@ -267,10 +298,12 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
       /* check name */
       assert( sc->mAnimations[i]->mName.data );
       anim->name = strdup(sc->mAnimations[i]->mName.data);
-      if(!anim->name) return(RETURN_FAIL);
+      if(!anim->name)
+      { RET("%d", RETURN_FAIL); return(RETURN_FAIL); }
 
-      logBlue(); dlPrint( "[ASSIMP] %s\n", anim->name );
-                 dlPrint( "[ASSIMP] %d channels\n", sc->mAnimations[i]->mNumChannels ); logNormal();
+      LOGINFOP("%s", anim->name);
+      LOGINFOP("%d channels", sc->mAnimations[i]->mNumChannels);
+
       /* add nodes */
       f = 0;
       for(; f != sc->mAnimations[i]->mNumChannels; ++f)
@@ -279,7 +312,8 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
          if(!bone || !bone->name) continue;
 
          node = dlAnimAddNode( anim );
-         if(!node) return( RETURN_FAIL );
+         if(!node)
+         { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
          /* pointer to affected bone */
          node->bone = bone;
@@ -292,9 +326,9 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
             vec3value.y = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mValue.y;
             vec3value.z = sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mValue.z;
 
-            if(!dlNodeAddTranslationKey( node, vec3value,
+            if(!dlNodeAddTranslationKey( node, &vec3value,
                 sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mTime ))
-               return( RETURN_FAIL );
+            { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
          }
 
          /* add rotation keys */
@@ -305,9 +339,9 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
             quatvalue.y = sc->mAnimations[i]->mChannels[f]->mRotationKeys[t].mValue.y;
             quatvalue.z = sc->mAnimations[i]->mChannels[f]->mRotationKeys[t].mValue.z;
             quatvalue.w = sc->mAnimations[i]->mChannels[f]->mRotationKeys[t].mValue.w;
-            if(!dlNodeAddRotationKey( node, quatvalue,
+            if(!dlNodeAddRotationKey( node, &quatvalue,
                 sc->mAnimations[i]->mChannels[f]->mRotationKeys[t].mTime ))
-               return( RETURN_FAIL );
+            { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
          }
 
          /* add scaling keys */
@@ -317,14 +351,15 @@ static int construct_animation(dlAnimator *object, const struct aiScene *sc, con
             vec3value.x = sc->mAnimations[i]->mChannels[f]->mScalingKeys[t].mValue.x;
             vec3value.y = sc->mAnimations[i]->mChannels[f]->mScalingKeys[t].mValue.y;
             vec3value.z = sc->mAnimations[i]->mChannels[f]->mScalingKeys[t].mValue.z;
-            if(!dlNodeAddScalingKey( node, vec3value,
+            if(!dlNodeAddScalingKey( node, &vec3value,
                 sc->mAnimations[i]->mChannels[f]->mPositionKeys[t].mTime ))
-               return( RETURN_FAIL );
+            { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
          }
       }
    }
 
    /* return */
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -334,6 +369,7 @@ static int construct(const char *file, dlObject *object, const struct aiScene *s
    unsigned int i = 0;
    unsigned int index = 0;
    unsigned int f = 0, t = 0;
+   CALL("%s, %p, %p, %p, %p, %d", file, object, sc, nd, mesh, bAnimated);
 
    /* Check out what our mesh has */
    if(mesh->mVertices)
@@ -361,9 +397,7 @@ static int construct(const char *file, dlObject *object, const struct aiScene *s
 
    /* Material check */
    if(mesh->mMaterialIndex)
-   {
       setMaterial( file, object,  sc->mMaterials[mesh->mMaterialIndex] );
-   }
 
    /* Yush! Then assing the data to our structure */
    for(; f != mesh->mNumFaces; ++f)
@@ -371,7 +405,7 @@ static int construct(const char *file, dlObject *object, const struct aiScene *s
       /* That's some beautiful face */
       const struct aiFace *face = &mesh->mFaces[f];
       if(!face)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       i = 0;
       for(; i != face->mNumIndices; ++i)
@@ -419,16 +453,28 @@ static int construct(const char *file, dlObject *object, const struct aiScene *s
 
    /* be done, if we only want static stuff */
    if(!bAnimated || object->animator)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    /* create new animator */
    object->animator = dlNewAnimator();
 
    /* assign bones and animations */
    if(construct_bones( object->animator, sc->mRootNode, mesh )     == RETURN_FAIL)
-   { dlFreeAnimator( object->animator ); object->animator = NULL; return( RETURN_OK ); }
+   {
+      dlFreeAnimator( object->animator );
+      object->animator = NULL;
+
+      RET("%d", RETURN_OK);
+      return( RETURN_OK );
+   }
    if(construct_animation( object->animator, sc, mesh ) == RETURN_FAIL)
-   { dlFreeAnimator( object->animator ); object->animator = NULL; return( RETURN_OK ); }
+   {
+      dlFreeAnimator( object->animator );
+      object->animator = NULL;
+
+      RET("%d", RETURN_OK);
+      return( RETURN_OK );
+   }
 
    /* calculate global transforms */
    dlAnimatorCalculateGlobalTransformations( object->animator );
@@ -437,6 +483,7 @@ static int construct(const char *file, dlObject *object, const struct aiScene *s
    dlObjectSetAnimation( object, 0 );
 
    /* return our beautiful object */
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -447,18 +494,23 @@ static int bConstructed = 0;
 /* Process our model */
 static int process(const char *file, dlObject *object, const struct aiScene *sc, const struct aiNode *nd, int bAnimated)
 {
-   dlObject *mObject = object;
+   dlObject *mObject;
+   unsigned int m;
+   const struct aiMesh *mesh;
 
-   unsigned int m = 0;
+   CALL("%s, %p, %p, %p, %d", file, object, sc, nd, bAnimated);
+
+   mObject = object;
+   m = 0;
    for(; m != nd->mNumMeshes; ++m)
    {
-      const struct aiMesh *mesh = sc->mMeshes[nd->mMeshes[m]];
+      mesh = sc->mMeshes[nd->mMeshes[m]];
 
       if(!bConstructed)
       {
          /* Construct */
          if(construct( file, mObject, sc, nd, mesh, bAnimated ) != RETURN_OK)
-            return( RETURN_FAIL );
+         { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
          /* We modified main object */
          bConstructed = 1;
@@ -468,18 +520,22 @@ static int process(const char *file, dlObject *object, const struct aiScene *sc,
 #if 0
          mObject = dlNewObject();
          if(!mObject)
-            return( RETURN_FAIL );
+         { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
          mObject->vbo = dlNewVBO();
          if(!mObject->vbo)
          {
             dlFreeObject( mObject );
+
+            RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
          mObject->ibo = dlNewIBO();
          if(!mObject->ibo)
          {
             dlFreeObject( mObject );
+
+            RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
 
@@ -489,6 +545,8 @@ static int process(const char *file, dlObject *object, const struct aiScene *sc,
          if(construct( file, mObject, sc, nd, mesh, bAnimated ) != RETURN_OK)
          {
             dlFreeObject( mObject );
+
+            RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
 #endif
@@ -500,38 +558,39 @@ static int process(const char *file, dlObject *object, const struct aiScene *sc,
    for(; m != nd->mNumChildren; ++m)
    {
       if(process( file, mObject, sc, nd->mChildren[m], bAnimated ) != RETURN_OK)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    }
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* Import using Assimp */
 int dlImportASSIMP( dlObject *object, const char *file, int bAnimated )
 {
-   logBlue(); dlPrint("[ASSIMP] attempt to load: %s\n", file ); logNormal();
+   const struct aiScene *scene;
+   LOGINFOP("Attempt to load: %s", file );
 
    /* Assimp magic */
-   const struct aiScene* scene = aiImportFile( file,
-                                 aiProcess_Triangulate               |
-                                 aiProcess_JoinIdenticalVertices     |
-                                 aiProcess_SortByPType               |
-                                 aiProcess_CalcTangentSpace          |
-                                 aiProcess_JoinIdenticalVertices     |
-                                 aiProcess_GenSmoothNormals          |
-                                 aiProcess_LimitBoneWeights          |
-                                 aiProcess_RemoveRedundantMaterials  |
-                                 aiProcess_OptimizeMeshes            |
-                                 aiProcess_GenUVCoords               |
-                                 aiProcess_TransformUVCoords            );
+   scene = aiImportFile(file,
+                        aiProcess_Triangulate               |
+                        aiProcess_JoinIdenticalVertices     |
+                        aiProcess_SortByPType               |
+                        aiProcess_CalcTangentSpace          |
+                        aiProcess_JoinIdenticalVertices     |
+                        aiProcess_GenSmoothNormals          |
+                        aiProcess_LimitBoneWeights          |
+                        aiProcess_RemoveRedundantMaterials  |
+                        aiProcess_OptimizeMeshes            |
+                        aiProcess_GenUVCoords               |
+                        aiProcess_TransformUVCoords         );
 
    /* Import failed */
    if(!scene)
    {
-      logRed();
-      dlPrint("[ASSIMP] %s\n", aiGetErrorString());
-      logNormal();
+      LOGERRP("%s", aiGetErrorString());
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -541,10 +600,9 @@ int dlImportASSIMP( dlObject *object, const char *file, int bAnimated )
    /* Process it */
    if(process( file, object, scene, scene->mRootNode, bAnimated ) != RETURN_OK)
    {
-      logRed();
-      dlPuts("[ASSIMP] processing of mesh failed");
-      logNormal();
+      LOGERR("Processing of mesh failed");
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -559,6 +617,7 @@ int dlImportASSIMP( dlObject *object, const char *file, int bAnimated )
    if(object->animator)
       dlVBOPrepareTstance( object->vbo );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

@@ -101,5 +101,3 @@ dlObject*   dlNewDynamicModel( const char *file );
 #endif
 
 #endif /* GL_SCENEOBJECT_H */
-
-/* EoF */

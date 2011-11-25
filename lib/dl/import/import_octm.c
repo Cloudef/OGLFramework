@@ -24,11 +24,14 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "IMPORT_OCTM"
+
 #define COLOR_ATTRIB "Color"
 
 /* We are totally in control with this custom read function */
 static CTMuint readOCTMFile( void *buf, CTMuint toRead, void *f )
 {
+   CALL("%p, %u, %p", buf, toRead, f);
    return( (CTMuint) fread( buf, 1, (size_t) toRead, (FILE *) f ) );
 }
 
@@ -45,7 +48,7 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    const char *textureFilename, *comment, *attribName;
    char *texturePath = NULL;
 
-   logBlue(); dlPrint("[OCTM] attempt to load: %s\n", file ); logNormal();
+   LOGINFOP("Attempt to load: %s", file);
 
    /* obiviously we need a import context
     * HEY! Maybe CTM_EXPORT would work!? */
@@ -54,10 +57,9 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    /* check if we fail at context creation */
    if(!context)
    {
-      logRed();
-      dlPuts("[OCTM] i suck at context creation");
-      logNormal();
+      LOGERR("I suck at context creation");
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -65,10 +67,9 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    f = fopen( (char*)file, "rb" );
    if(!f)
    {
-      logRed();
-      dlPrint("[OCTM] file: %s, could not open\n", file );
-      logNormal();
+      LOGERRP("File: %s, could not open", file);
 
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -82,11 +83,10 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    if((error = ctmGetError(context)) != CTM_NONE)
    {
       /* Go! Pikachu! Use the printf! */
-      logRed();
-      dlPrint("[OCTM] %s\n", ctmErrorString( error ));
-      logNormal();
-
+      LOGERRP("%s", ctmErrorString( error ));
       ctmFreeContext(context);
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
@@ -100,7 +100,7 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
 
    comment   = ctmGetString( context, CTM_FILE_COMMENT );
    if( comment )
-      puts(comment);
+      dlPuts(comment);
 
    /* ok, we go the info..
     * now.. how to deal with it? */
@@ -179,7 +179,7 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
       attribs     = ctmGetFloatArray( context, CTM_ATTRIB_MAP_1 + i );
 
       if(attribName)
-         puts(attribName);
+         LOGINFO(attribName);
 
 #if VERTEX_COLOR
       if( strcmp( attribName, COLOR_ATTRIB ) == 0 )
@@ -205,6 +205,7 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
    /* free the bird */
    ctmFreeContext(context);
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

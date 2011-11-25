@@ -47,5 +47,3 @@ int dlFree( void*, size_t );
 #endif
 
 #endif /* DL_MALLOC_H */
-
-/* EoF */

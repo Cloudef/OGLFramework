@@ -19,6 +19,8 @@
 /* Calculate projection matrix */
 static void dlCameraCalculateProjectionMatrix( dlCamera *object )
 {
+   CALL("%p", object);
+
    kmMat4PerspectiveProjection( &object->projection, object->fov, object->aspect,
                                 object->zNear, object->zFar );
 }
@@ -28,6 +30,8 @@ static void dlCameraCalculateViewMatrix( dlCamera *object )
 {
    kmVec3 tgtv, upvector;
    kmScalar dp;
+
+   CALL("%p", object);
 
    kmVec3Subtract( &tgtv, &object->target, &object->translation );
 
@@ -50,6 +54,8 @@ static void dlCameraCalculateViewMatrix( dlCamera *object )
 /* Reset camera */
 static void dlCameraReset( dlCamera *object )
 {
+   CALL("%p", object);
+
    object->upVector.x = 0;
    object->upVector.y = 1;
    object->upVector.z = 0;
@@ -86,11 +92,13 @@ static void dlCameraReset( dlCamera *object )
 /* Allocate camera */
 dlCamera* dlNewCamera( void )
 {
+   TRACE();
+
    /* Allocate camera */
    dlSetAlloc( ALLOC_CAMERA );
    dlCamera *object = (dlCamera*)dlCalloc( 1, sizeof(dlCamera) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Defaults */
    object->zNear = 1.0f;
@@ -106,6 +114,7 @@ dlCamera* dlNewCamera( void )
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
@@ -113,9 +122,10 @@ dlCamera* dlNewCamera( void )
 dlCamera* dlCopyCamera( dlCamera *src )
 {
    dlCamera *object;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Allocate scene object */
    dlSetAlloc( ALLOC_CAMERA );
@@ -129,6 +139,7 @@ dlCamera* dlCopyCamera( dlCamera *src )
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
@@ -155,11 +166,13 @@ dlCamera* dlRefCamera( dlCamera *src )
 /* Free camera */
 int dlFreeCamera( dlCamera *object )
 {
+   CALL("%p", object);
+
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!object) return( RETURN_NOTHING );
+   if(!object) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* There is still references to this object alive */
-   if(--object->refCounter != 0) return( RETURN_NOTHING );
+   if(--object->refCounter != 0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_CAMERA );
 
@@ -167,20 +180,24 @@ int dlFreeCamera( dlCamera *object )
    if(dlGetCamera() == object)
       dlSetCamera( NULL );
 
-   LOGERR("FREE");
+   LOGFREE("FREE");
 
    /* Free camera */
    dlFree( object, sizeof(dlCamera) );
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* Position camera */
-void dlPositionCamera( dlCamera *object, const kmVec3 position )
+void dlPositionCamera( dlCamera *object, kmVec3 *position )
 {
+   CALL("%p, vec3[%f, %f, %f]", object,
+         position->x, position->y, position->z);
+
    if(!object)
       return;
 
-   object->translation = position;
+   object->translation = *position;
    object->transform_changed = 1;
 }
 
@@ -193,16 +210,19 @@ void dlPositionCameraf( dlCamera *object, const kmScalar x, const kmScalar y,
    position.y = y;
    position.z = z;
 
-   dlPositionCamera( object, position );
+   dlPositionCamera( object, &position );
 }
 
 /* Move camera */
-void dlMoveCamera( dlCamera *object, const kmVec3 move )
+void dlMoveCamera( dlCamera *object, kmVec3 *move )
 {
+   CALL("%p, vec3[%f, %f, %f]", object,
+         move->x, move->y, move->z);
+
    if(!object)
       return;
 
-   kmVec3Add( &object->translation, &object->translation, &move );
+   kmVec3Add( &object->translation, &object->translation, move );
    object->transform_changed = 1;
 }
 
@@ -215,13 +235,16 @@ void dlMoveCameraf( dlCamera *object, const kmScalar x, const kmScalar y,
    move.y = y;
    move.z = z;
 
-   dlMoveCamera( object, move );
+   dlMoveCamera( object, &move );
 }
 
 /* Rotate camera */
-void dlRotateCamera( dlCamera *object, const kmVec3 rotation )
+void dlRotateCamera( dlCamera *object, kmVec3 *rotation )
 {
    kmVec3 rotToDir, forwards;
+   CALL("%p, vec3[%f, %f, %f]", object,
+         rotation->x, rotation->y, rotation->z);
+
    forwards.x = 0;
    forwards.y = 0;
    forwards.z = 1;
@@ -229,7 +252,7 @@ void dlRotateCamera( dlCamera *object, const kmVec3 rotation )
    if(!object)
       return;
 
-   object->rotation = rotation;
+   object->rotation = *rotation;
 
    /* update target */
    kmVec3RotationToDirection( &rotToDir, &object->rotation, &forwards );
@@ -247,18 +270,20 @@ void dlRotateCameraf( dlCamera *object, const kmScalar x, const kmScalar y,
    rotation.y = y;
    rotation.z = z;
 
-   dlRotateCamera( object, rotation );
+   dlRotateCamera( object, &rotation );
 }
 
 /* Target camera */
-void dlTargetCamera( dlCamera *object, const kmVec3 target )
+void dlTargetCamera( dlCamera *object, kmVec3 *target )
 {
    kmVec3 toTarget;
+   CALL("%p, vec3[%f, %f, %f]", object,
+         target->x, target->y, target->z);
 
    if(!object)
       return;
 
-   object->target = target;
+   object->target = *target;
    kmVec3Subtract( &toTarget, &object->target, &object->translation );
 
    /* update rotation */
@@ -276,13 +301,15 @@ void dlTargetCameraf( dlCamera *object, const kmScalar x, const kmScalar y,
    target.y = y;
    target.z = z;
 
-   dlTargetCamera( object, target );
+   dlTargetCamera( object, &target );
 }
 
 /* Set viewport of camera */
 void dlCameraSetView( dlCamera *object, const kmScalar x, const kmScalar y,
                                         const kmScalar w, const kmScalar h )
 {
+   CALL("%p, %f, %f, %f, %f", object, x, y, w, h);
+
    if(!object)
       return;
 
@@ -297,6 +324,8 @@ void dlCameraSetView( dlCamera *object, const kmScalar x, const kmScalar y,
 /* Set fov of camera */
 void dlCameraSetFov( dlCamera *object, const kmScalar fov )
 {
+   CALL("%p, %f", object, fov);
+
    if(!object)
       return;
 
@@ -306,6 +335,8 @@ void dlCameraSetFov( dlCamera *object, const kmScalar fov )
 /* Set camera range */
 void dlCameraSetRange( dlCamera *object, const kmScalar zNear, const kmScalar zFar )
 {
+   CALL("%p, %f, %f", object, zNear, zFar);
+
    if(!object)
       return;
 
@@ -316,6 +347,8 @@ void dlCameraSetRange( dlCamera *object, const kmScalar zNear, const kmScalar zF
 /* Render using this camera */
 void dlCameraRender( dlCamera *object )
 {
+   CALL("%p", object);
+
    if(!object)
       return;
 
@@ -335,5 +368,3 @@ void dlCameraRender( dlCamera *object )
    /* switch active */
    dlSetCamera( object );
 }
-
-/* EoF */

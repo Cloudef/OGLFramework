@@ -65,10 +65,11 @@ dlAtlas* dlRefAtlas( dlAtlas *src )
 int dlFreeAtlas( dlAtlas *atlas )
 {
    unsigned int i;
+   CALL("%p", atlas);
 
    /* non valid */
    if(!atlas)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* Free as in, decrease reference on childs */
    i = 0;
@@ -83,7 +84,7 @@ int dlFreeAtlas( dlAtlas *atlas )
 
    /* still hold reference? */
    if(--atlas->refCounter != 0)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_ATLAS );
 
@@ -92,9 +93,10 @@ int dlFreeAtlas( dlAtlas *atlas )
    atlas->rect          = NULL;
    atlas->num_textures  = 0;
 
-   LOGERR("FREE");
-
+   LOGFREE("FREE");
    dlFree( atlas, sizeof(dlAtlas) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -102,11 +104,12 @@ int dlFreeAtlas( dlAtlas *atlas )
 int dlAtlasAddTexture( dlAtlas *atlas, dlTexture *texture )
 {
    unsigned int i;
+   CALL("%p, %p", atlas, texture);
 
    if(!atlas)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!texture)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* don't add if we already have this texture */
    if(atlas->rect)
@@ -117,6 +120,8 @@ int dlAtlasAddTexture( dlAtlas *atlas, dlTexture *texture )
          if(atlas->rect[i].texture == texture)
          {
             dlFreeTexture( texture );
+
+            RET("%d", RETURN_OK);
             return( RETURN_OK );
          }
       }
@@ -134,12 +139,13 @@ int dlAtlasAddTexture( dlAtlas *atlas, dlTexture *texture )
 
    /* check success */
    if(!atlas->rect)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* assign */
    atlas->rect[ atlas->num_textures - 1 ].texture = texture;
    atlas->rect[ atlas->num_textures - 1 ].index   = atlas->num_textures - 1;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -148,20 +154,21 @@ int dlAtlasFreeTexture( dlAtlas *atlas, dlTexture *texture )
 {
    unsigned int i, found;
    dlAtlasRect *tmp;
+   CALL("%p, %p", atlas, texture);
 
    if(!atlas)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!atlas->rect)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!texture)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_ATLAS );
 
    /* allocate tmp list */
    tmp = dlCalloc( atlas->num_textures, sizeof(dlAtlasRect) );
    if(!tmp)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* add everything expect the one we are looking for to tmp list */
    i = 0;
@@ -179,7 +186,7 @@ int dlAtlasFreeTexture( dlAtlas *atlas, dlTexture *texture )
       /* resize list */
       tmp = dlRealloc( tmp, atlas->num_textures, found, sizeof(dlAtlasRect) );
       if(!tmp)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    }
    else
    {
@@ -195,6 +202,7 @@ int dlAtlasFreeTexture( dlAtlas *atlas, dlTexture *texture )
    atlas->rect           = tmp;
    atlas->num_textures   = found;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -202,19 +210,19 @@ int dlAtlasFreeTexture( dlAtlas *atlas, dlTexture *texture )
 dlAtlasRect* dlAtlasRefTextures( dlAtlas *atlas )
 {
    unsigned int i;
+   CALL("%p", atlas);
 
    if(!atlas)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!atlas->rect)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* reference all */
    i = 0;
    for(; i != atlas->num_textures; ++i)
-   {
       dlRefTexture( atlas->rect[i].texture );
-   }
 
+   RET("%p", atlas->rect);
    return( atlas->rect );
 }
 
@@ -222,11 +230,12 @@ dlAtlasRect* dlAtlasRefTextures( dlAtlas *atlas )
 int dlAtlasFreeTextures( dlAtlas *atlas )
 {
    unsigned int i;
+   CALL("%p", atlas);
 
    if(!atlas)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!atlas->rect)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* free all */
    i = 0;
@@ -242,6 +251,7 @@ int dlAtlasFreeTextures( dlAtlas *atlas )
    atlas->rect         = NULL;
    atlas->num_textures = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -251,6 +261,7 @@ dlTexture* dlAtlasPack( dlAtlas *atlas, int pow2, int border )
    unsigned int i;
    int width  = 0;
    int height = 0;
+   CALL("%p, %d, %d", atlas, pow2, border);
 
    dlTexturePacker *tp;
    dlTexture *texture = NULL;
@@ -268,11 +279,11 @@ dlTexture* dlAtlasPack( dlAtlas *atlas, int pow2, int border )
 #endif
 
    if(!atlas)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!atlas->rect)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!atlas->num_textures)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* create texture packer */
    tp = dlNewTexturePacker();
@@ -303,9 +314,9 @@ dlTexture* dlAtlasPack( dlAtlas *atlas, int pow2, int border )
             &atlas->rect[i].packed.x1, &atlas->rect[i].packed.y1,
             &atlas->rect[i].packed.x2, &atlas->rect[i].packed.y2 );
 
-      printf("%dx%d+%d,%d - %d\n", atlas->rect[i].packed.x2, atlas->rect[i].packed.y2,
-            atlas->rect[i].packed.x1, atlas->rect[i].packed.y1,
-            atlas->rect[i].packed.rotated );
+      LOGINFOP("%dx%d+%d,%d - %d", atlas->rect[i].packed.x2, atlas->rect[i].packed.y2,
+               atlas->rect[i].packed.x1, atlas->rect[i].packed.y1,
+               atlas->rect[i].packed.rotated );
 
       /* create surface from texture */
       surface = SDL_CreateRGBSurfaceFrom( atlas->rect[i].texture->data,
@@ -367,6 +378,8 @@ dlTexture* dlAtlasPack( dlAtlas *atlas, int pow2, int border )
 
    /* assign and return */
    atlas->texture = texture;
+
+   RET("%p", texture);
    return( texture );
 }
 
@@ -374,13 +387,14 @@ dlTexture* dlAtlasPack( dlAtlas *atlas, int pow2, int border )
 dlAtlasArea* dlAtlasGetPacked( dlAtlas *atlas, dlTexture *texture )
 {
    unsigned int i;
+   CALL("%p, %p", atlas, texture);
 
    if(!atlas)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!atlas->rect)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
    if(!texture)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    i = 0;
    for(; i != atlas->num_textures; ++i)
@@ -391,6 +405,7 @@ dlAtlasArea* dlAtlasGetPacked( dlAtlas *atlas, dlTexture *texture )
       }
    }
 
+   RET("%p", NULL);
    return( NULL );
 }
 
@@ -408,16 +423,18 @@ int dlAtlasGetTransformed( dlAtlas *atlas, dlTexture *texture, kmVec2 *coord )
 
    dlAtlasArea *packed;
 
+   CALL("%p, %p, %p", atlas, texture, coord);
+
    if(!atlas)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!atlas->texture)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!texture)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    packed = dlAtlasGetPacked( atlas, texture );
    if(!packed)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    atlasWidth  = atlas->texture->width;
    atlasHeight = atlas->texture->height;
@@ -443,5 +460,6 @@ int dlAtlasGetTransformed( dlAtlas *atlas, dlTexture *texture, kmVec2 *coord )
    coord->y *= height;
    coord->y += y;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }

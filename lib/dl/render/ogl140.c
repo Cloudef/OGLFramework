@@ -8,6 +8,7 @@
 #include "dlSceneobject.h"
 #include "dlTypes.h"
 #include "dlFramework.h"
+#include "dlLog.h"
 
 #define OGL140_NAME "OpenGL 1.4+"
 
@@ -18,6 +19,7 @@
 #  include <GL/glew.h>
 #  include <GL/gl.h>
 #endif
+#define DL_DEBUG_CHANNEL "OGL140"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -47,6 +49,8 @@ static dlState draw;
 /* bind VBO */
 static void bindVBO( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(_dlCore.render.mode == DL_MODE_VERTEX_ARRAY)
       return;
 
@@ -56,6 +60,8 @@ static void bindVBO( dlVBO *vbo )
 /* unbind VBO */
 static void unbindVBO( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(_dlCore.render.mode == DL_MODE_VERTEX_ARRAY)
       return;
 
@@ -65,6 +71,8 @@ static void unbindVBO( dlVBO *vbo )
 /* bind texture from UVW */
 static void bindTexture( dlObject *object )
 {
+   CALL("%p", object);
+
    if(!object->material->texture->object)
        return;
    if(object->material->texture->object == draw.last_texture)
@@ -78,6 +86,8 @@ static void bindTexture( dlObject *object )
 /* texture coordinates */
 static void coordPointer( dlVBO *vbo, unsigned int index, size_t offset )
 {
+   CALL("%p, %u, %llu", vbo, index, offset);
+
    if(!vbo->uvw[ index ].c_use)
       return;
 
@@ -95,6 +105,8 @@ static void coordPointer( dlVBO *vbo, unsigned int index, size_t offset )
 /* uvw */
 static void uvwPointer( dlObject *object, size_t offset )
 {
+   CALL("%p, %llu", object, offset);
+
    if(!draw.texture)
       return;
 
@@ -105,6 +117,8 @@ static void uvwPointer( dlObject *object, size_t offset )
 /* vertices */
 static void vertexPointer( dlVBO *vbo, size_t offset )
 {
+   CALL("%p, %llu", vbo, offset);
+
    if(!draw.vertex)
       return;
 
@@ -117,6 +131,8 @@ static void vertexPointer( dlVBO *vbo, size_t offset )
 /* normals */
 static void normalPointer( dlVBO *vbo, size_t offset )
 {
+   CALL("%p, %llu", vbo, offset);
+
    if(!draw.normal)
       return;
 
@@ -130,6 +146,8 @@ static void normalPointer( dlVBO *vbo, size_t offset )
 /* colors */
 static void colorPointer( dlVBO *vbo, size_t offset )
 {
+   CALL("%p, %llu", vbo, offset);
+
 #if VERTEX_COLOR
    if(_dlCore.render.mode == DL_MODE_VERTEX_ARRAY)
       glColorPointer( 4, GL_UNSIGNED_BYTE, 0, &vbo->colors[ offset ] );
@@ -149,6 +167,7 @@ static void elementDraw( dlObject *object, unsigned int index )
 #else
    unsigned int   *indices;
 #endif
+   CALL("%p, %u", object, index);
 
    if(!object->ibo)
    {
@@ -195,7 +214,10 @@ static void drawObject( dlObject *object )
 #if USE_BUFFERS
    unsigned int i = 0;
    size_t tmp;
+#endif
+   CALL("%p", object);
 
+#if USE_BUFFERS
    /* with indices */
    if( object->ibo )
    {
@@ -277,6 +299,8 @@ static void drawAABB( dlObject *object )
                       min.x, min.y, max.z,
                       min.x, max.y, max.z  };
 
+   CALL("%p", object);
+
    if(draw.texture)
       glDisable(GL_TEXTURE_2D);
    if(draw.coord)
@@ -298,6 +322,8 @@ static void dlOGL140_setup( dlObject *object )
 {
    /* current object's state */
    dlState state;
+   CALL("%p", object);
+
    state.depth  = 0;
    state.vertex = 0;
    state.normal = 0;
@@ -468,6 +494,8 @@ static void dlOGL140_setup( dlObject *object )
 
 static void dlOGL140_draw( dlObject *object )
 {
+   CALL("%p", object);
+
    glMatrixMode(GL_PROJECTION);
    glLoadMatrixf( (float*)&_dlCore.render.projection );
 
@@ -483,6 +511,8 @@ static void dlOGL140_draw( dlObject *object )
 /* OpenGL 1.4+ renderer */
 int dlOGL140( void )
 {
+   TRACE();
+
    _dlCore.render.draw     = dlOGL140_draw;
    _dlCore.render.string   = OGL140_NAME;
 
@@ -503,9 +533,8 @@ int dlOGL140( void )
    draw.active_texture = 0;
    draw.last_texture   = 0;
 
+   RET("%d", RETURN_OK);
    return(RETURN_OK);
 }
 
 #endif /* GLES2 define don't want this */
-
-/* EoF */

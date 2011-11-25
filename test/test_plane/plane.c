@@ -76,20 +76,14 @@ int main( int argc, char **argv )
    bits  = 16;
 #endif
 
+   /* init debug channels */
+   dlDEBINIT(argc, argv);
+
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
    if(dlCreateWindow( width, height, bits, flags ) != 0)
-   {
-      logRed();
-      puts(dlWindowGetError());
-      logNormal();
       cleanup(EXIT_FAILURE);
-   } else {
-      logGreen();
-      puts(dlWindowGetError());
-      logNormal();
-   }
 
    if(dlCreateDisplay( width, height, DL_RENDER_OGL140 ) != 0)
       cleanup(EXIT_FAILURE);

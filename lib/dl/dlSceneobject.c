@@ -115,26 +115,26 @@ dlObject* dlRefObject( dlObject *src )
    dlObject* object;
    CALL("%p", src);
 
-  /* Fuuuuuuuuu--- We have non valid object */
-  if(!src) { RET("%p", NULL); return( NULL ); }
+   /* Fuuuuuuuuu--- We have non valid object */
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
-  /* Point magic */
-  object                      = src;
+   /* Point magic */
+   object                      = src;
 
-  /* Reference data */
-  object->material	      = dlRefMaterial( src->material );
-  object->vbo		      = dlRefVBO( src->vbo );
-  object->ibo                 = dlRefIBO( src->ibo );
-  object->animator            = dlRefAnimator( src->animator );
+   /* Reference data */
+   object->material	      = dlRefMaterial( src->material );
+   object->vbo		      = dlRefVBO( src->vbo );
+   object->ibo                 = dlRefIBO( src->ibo );
+   object->animator            = dlRefAnimator( src->animator );
 
-  LOGWARN("REFERENCE");
+   LOGWARN("REFERENCE");
 
-  /* Increase ref counter */
-  object->refCounter++;
+   /* Increase ref counter */
+   object->refCounter++;
 
-  /* Return the instance */
-  RET("%p", object);
-  return( object );
+   /* Return the instance */
+   RET("%p", object);
+   return( object );
 }
 
 /* Free scene object */
@@ -180,7 +180,7 @@ int dlFreeObject( dlObject *object )
    object->child = NULL;
    object->num_childs = 0;
 
-   LOGERR("FREE");
+   LOGFREE("FREE");
 
    /* Free scene object */
    dlFree( object, sizeof(dlObject) );
@@ -605,7 +605,7 @@ int dlObjectCalculateAABB( dlObject *object )
 void dlPositionObject( dlObject *object, kmVec3 *position )
 {
    unsigned int i;
-   CALL( "%p, %f, %f, %f", object,
+   CALL( "%p, vec3[%f, %f, %f]", object,
          position->x, position->y, position->z );
 
    object->translation        = *position;
@@ -630,7 +630,7 @@ void dlPositionObjectf( dlObject *object,
 void dlMoveObject( dlObject *object, kmVec3 *move )
 {
    unsigned int i;
-   CALL("%p, %f, %f, %f", object,
+   CALL("%p, vec3[%f, %f, %f]", object,
          move->x, move->y, move->z);
 
    kmVec3Add( &object->translation, &object->translation, move );
@@ -655,7 +655,7 @@ void dlMoveObjectf( dlObject *object,
 void dlRotateObject( dlObject *object, kmVec3 *rotate )
 {
    unsigned int i;
-   CALL("%p, %f, %f, %f", object,
+   CALL("%p, vec3[%f, %f, %f]", object,
          rotate->x, rotate->y, rotate->z);
 
    object->rotation = *rotate;
@@ -680,7 +680,7 @@ void dlRotateObjectf( dlObject *object,
 void dlScaleObject( dlObject *object, kmVec3 *scale )
 {
    unsigned int i;
-   CALL("%p, %f, %f, %f", object,
+   CALL("%p, vec3[%f, %f, %f]", object,
          scale->x, scale->y, scale->z);
 
    object->scale = *scale;

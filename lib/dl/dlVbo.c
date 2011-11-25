@@ -34,7 +34,7 @@ dlVBO* dlNewVBO( void )
    dlSetAlloc( ALLOC_VBO );
    dlVBO *vbo = (dlVBO*)dlCalloc( 1, sizeof(dlVBO) );
    if(!vbo)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Default hint */
    vbo->hint = GL_STATIC_DRAW;
@@ -44,6 +44,8 @@ dlVBO* dlNewVBO( void )
    if(!vbo->uvw)
    {
       dlFree(vbo, sizeof(dlVBO));
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -66,6 +68,7 @@ dlVBO* dlNewVBO( void )
    vbo->refCounter++;
 
    /* Return VBO object */
+   RET("%p", vbo);
    return( vbo );
 }
 
@@ -74,21 +77,24 @@ dlVBO* dlCopyVBO( dlVBO *src )
 {
    unsigned int i = 0;
    dlVBO *vbo;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Allocate VBO object */
    dlSetAlloc( ALLOC_VBO );
    vbo = (dlVBO*)dlCalloc( 1, sizeof(dlVBO) );
    if(!vbo)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Allocate uvws */
    vbo->uvw = dlCalloc( _dlCore.info.maxTextureUnits, sizeof(dlUVW) );
    if(!vbo->uvw)
    {
       dlFree(vbo, sizeof(dlVBO));
+
+      RET("%p", NULL);
       return( NULL );
    }
 
@@ -106,14 +112,13 @@ dlVBO* dlCopyVBO( dlVBO *src )
    vbo->vbo_size  = src->vbo_size;
    vbo->hint      = src->hint;
 
-   logYellow();
-   dlPuts("[C:VBO]");
-   logNormal();
+   LOGWARN("COPY");
 
    /* Increase ref counter */
    vbo->refCounter++;
 
    /* Return VBO object */
+   RET("%p", vbo);
    return( vbo );
 }
 
@@ -121,21 +126,21 @@ dlVBO* dlCopyVBO( dlVBO *src )
 dlVBO* dlRefVBO( dlVBO *src )
 {
    dlVBO *vbo;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Simple return pointer to same place */
    vbo = src;
 
-   logYellow();
-   dlPuts("[R:VBO]");
-   logNormal();
+   LOGWARN("REFERENCE");
 
    /* Increase ref counter */
    vbo->refCounter++;
 
    /* Return VBO object */
+   RET("%p", vbo);
    return( vbo );
 }
 
@@ -143,12 +148,13 @@ dlVBO* dlRefVBO( dlVBO *src )
 int dlFreeVBO( dlVBO *vbo )
 {
    unsigned int i;
+   CALL("%p", vbo);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!vbo) return( RETURN_NOTHING );
+   if(!vbo) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* There is still references to this object alive */
-   if(--vbo->refCounter != 0) return( RETURN_NOTHING );
+   if(--vbo->refCounter != 0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -169,12 +175,12 @@ int dlFreeVBO( dlVBO *vbo )
    if( vbo->object ) glDeleteBuffers(1, &vbo->object);
    vbo->object = 0;
 
-   logRed();
-   dlPuts("[F:VBO]");
-   logNormal();
+   LOGFREE("FREE");
 
    /* Free VBO object */
    dlFree( vbo, sizeof(dlVBO) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -184,16 +190,17 @@ int dlVBOUpdate( dlVBO* vbo )
    unsigned int i;
    size_t vboOffset = 0, vboSize = 0;
    size_t tmp;
+   CALL("%p", vbo);
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(!vbo->object)
       return( dlVBOConstruct( vbo ) );
 
    /* already up to date */
    if(vbo->up_to_date)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* bind buffer */
    glBindBuffer(GL_ARRAY_BUFFER, vbo->object);
@@ -266,25 +273,28 @@ int dlVBOUpdate( dlVBO* vbo )
    /* mark as up to date */
    vbo->up_to_date = 1;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* construct new VBO data */
 int dlVBOConstruct( dlVBO* vbo )
 {
+   CALL("%p", vbo);
+
    if(_dlCore.render.mode == DL_MODE_VERTEX_ARRAY)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(vbo->object)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    /* generate VBO */
    glGenBuffers(1, &vbo->object );
    if(!vbo->object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* this vbo isn't up to date */
    vbo->up_to_date = 0;
@@ -292,9 +302,12 @@ int dlVBOConstruct( dlVBO* vbo )
    {
       glDeleteBuffers(1, &vbo->object);
       vbo->object = 0;
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -302,10 +315,12 @@ int dlVBOConstruct( dlVBO* vbo )
 /* not tracked by allocator! */
 int dlVBOPrepareTstance( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    if(!vbo->vertices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* free old */
    if(vbo->tstance)
@@ -314,36 +329,42 @@ int dlVBOPrepareTstance( dlVBO *vbo )
    /* copy new tstance vertices */
    vbo->tstance = malloc( vbo->v_num * sizeof(kmVec3) );
    if(!vbo->tstance)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    memcpy( vbo->tstance, vbo->vertices,
          vbo->v_num * sizeof(kmVec3) );
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* vertices */
 int dlCopyVertexBuffer( dlVBO *vbo, dlVBO *src )
 {
+   CALL("%p, %p", vbo, src);
+
    if(!vbo || !src)
-      return(RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return(RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
    vbo->vertices  = dlCopy( src->vertices, src->v_num * sizeof(kmVec3) );
    if(!vbo->vertices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->v_num     = src->v_num;
    vbo->v_use     = src->v_use;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlFreeVertexBuffer( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -355,13 +376,16 @@ int dlFreeVertexBuffer( dlVBO *vbo )
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlResetVertexBuffer( dlVBO *vbo, unsigned int vertices )
 {
+   CALL("%p, %u", vbo, vertices);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -375,7 +399,7 @@ int dlResetVertexBuffer( dlVBO *vbo, unsigned int vertices )
    }
 
    if(!vbo->vertices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->v_use = 0;
    vbo->v_num = vertices;
@@ -383,6 +407,7 @@ int dlResetVertexBuffer( dlVBO *vbo, unsigned int vertices )
    /* Mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -390,12 +415,13 @@ int dlInsertVertex( dlVBO *vbo,
       const kmScalar x, const kmScalar y, const kmScalar z )
 {
    kmVec3 vertex;
+   CALL("%p, %f, %f, %f", vbo, x, y, z);
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(!vbo->vertices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -406,7 +432,7 @@ int dlInsertVertex( dlVBO *vbo,
        * use the reset function above */
       vbo->vertices = dlRealloc(vbo->vertices, vbo->v_num, vbo->v_use, sizeof(kmVec3));
       if(!vbo->vertices)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       vbo->v_num = vbo->v_use;
    }
@@ -418,37 +444,43 @@ int dlInsertVertex( dlVBO *vbo,
    /* Mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* vertex uvw */
 int dlCopyCoordBuffer( dlVBO *vbo, dlVBO *src, unsigned int index )
 {
+   CALL("%p, %p, %u", vbo, src, index);
+
    if(!vbo || !src)
-      return(RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
    vbo->uvw[index].coords        = dlCopy( src->uvw[index].coords, src->uvw[index].c_num * sizeof(kmVec2) );
    if(!vbo->uvw[index].coords)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->uvw[index].c_num         = src->uvw[index].c_num;
    vbo->uvw[index].c_use         = src->uvw[index].c_use;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlFreeCoordBuffer( dlVBO *vbo, unsigned int index )
 {
+   CALL("%p, %u", vbo, index);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -461,16 +493,19 @@ int dlFreeCoordBuffer( dlVBO *vbo, unsigned int index )
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlResetCoordBuffer( dlVBO *vbo, unsigned int index, unsigned int vertices )
 {
+   CALL("%p, %u, %u", vbo, index, vertices);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -484,7 +519,7 @@ int dlResetCoordBuffer( dlVBO *vbo, unsigned int index, unsigned int vertices )
    }
 
    if(!vbo->uvw[index].coords)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->uvw[index].c_use = 0;
    vbo->uvw[index].c_num = vertices;
@@ -492,6 +527,7 @@ int dlResetCoordBuffer( dlVBO *vbo, unsigned int index, unsigned int vertices )
    /* Mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -499,15 +535,16 @@ int dlInsertCoord( dlVBO *vbo, unsigned int index,
       const kmScalar x, const kmScalar y )
 {
    kmVec2 vertex;
+   CALL("%p, %u, %f, %f", vbo, index, x, y);
 
    if(index > _dlCore.info.maxTextureUnits)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(!vbo->uvw[index].coords)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -518,7 +555,7 @@ int dlInsertCoord( dlVBO *vbo, unsigned int index,
        * use the reset function above */
       vbo->uvw[index].coords = dlRealloc(vbo->uvw[index].coords, vbo->uvw[index].c_num, vbo->uvw[index].c_use, sizeof(kmVec2));
       if(!vbo->uvw[index].coords)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       vbo->uvw[index].c_num = vbo->uvw[index].c_use;
    }
@@ -530,30 +567,36 @@ int dlInsertCoord( dlVBO *vbo, unsigned int index,
    /* Mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* vertex normal */
 int dlCopyNormalBuffer( dlVBO *vbo, dlVBO *src )
 {
+   CALL("%p, %p", vbo, src);
+
    if(!vbo || !src)
-      return(RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
    vbo->normals   = dlCopy( src->normals, src->n_num * sizeof(kmVec3) );
    if(!vbo->normals)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    vbo->n_num     = src->n_num;
    vbo->n_use     = src->n_use;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlFreeNormalBuffer( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -565,13 +608,16 @@ int dlFreeNormalBuffer( dlVBO *vbo )
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlResetNormalBuffer( dlVBO *vbo, unsigned int vertices )
 {
+   CALL("%p, %u", vbo, vertices);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -585,7 +631,7 @@ int dlResetNormalBuffer( dlVBO *vbo, unsigned int vertices )
    }
 
    if(!vbo->normals)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->n_use = 0;
    vbo->n_num = vertices;
@@ -593,6 +639,7 @@ int dlResetNormalBuffer( dlVBO *vbo, unsigned int vertices )
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -600,9 +647,10 @@ int dlInsertNormal( dlVBO *vbo,
       const kmScalar x, const kmScalar y, const kmScalar z )
 {
    kmVec3 vertex;
+   CALL("%p, %f, %f, %f", vbo, x, y, z);
 
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -613,7 +661,7 @@ int dlInsertNormal( dlVBO *vbo,
        * use the reset function above */
       vbo->normals = dlRealloc(vbo->normals, vbo->n_num, vbo->n_use, sizeof(kmVec3));
       if(!vbo->normals)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       vbo->n_num = vbo->n_use;
    }
@@ -625,6 +673,7 @@ int dlInsertNormal( dlVBO *vbo,
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -632,24 +681,29 @@ int dlInsertNormal( dlVBO *vbo,
 /* vertex color */
 int dlCopyColorBuffer( dlVBO *vbo, dlVBO *src )
 {
+   CALL("%p, %p", vbo ,src);
+
    if(!vbo || !src)
-      return(RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return(RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
    vbo->colors    = dlCopy( src->colors, src->c_num * sizeof(dlColor) );
    if(!vbo->colors)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
    vbo->c_num     = src->c_num;
    vbo->c_use     = src->c_use;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlFreeColorBuffer( dlVBO *vbo )
 {
+   CALL("%p", vbo);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", vbo); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -661,13 +715,16 @@ int dlFreeColorBuffer( dlVBO *vbo )
    /* mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlResetColorBuffer( dlVBO *vbo, unsigned int vertices )
 {
+   CALL("%p, %u", vbo, vertices);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -681,7 +738,7 @@ int dlResetColorBuffer( dlVBO *vbo, unsigned int vertices )
    }
 
    if(!vbo->colors)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    vbo->c_use = 0;
    vbo->c_num = vertices;
@@ -689,14 +746,17 @@ int dlResetColorBuffer( dlVBO *vbo, unsigned int vertices )
    /* mark VBO outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlInsertColor( dlVBO *vbo,
       const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a )
 {
+   CALL("%p, %c, %c, %c, %c", vbo, r, g, b, a);
+
    if(!vbo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_VBO );
 
@@ -707,7 +767,7 @@ int dlInsertColor( dlVBO *vbo,
        * use the reset function above */
       vbo->colors = dlRealloc(vbo->colors, vbo->c_num, vbo->c_use, sizeof(dlColor));
       if(!vbo->colors)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       vbo->c_num = vbo->c_use;
    }
@@ -719,6 +779,7 @@ int dlInsertColor( dlVBO *vbo,
    /* Mark vbo outdated */
    vbo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 #endif /* USE_COLOR */

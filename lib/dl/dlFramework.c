@@ -189,8 +189,6 @@ int dlCreateDisplay(int display_width, int display_height, dleRenderer renderer)
 {
    CALL("%d, %d, %d", display_width, display_height, renderer);
 
-   dlDEBADD("GL");
-
    /* NULL these */
    _dlCore.render.draw     = NULL;
    _dlCore.render.string   = NULL;
@@ -314,7 +312,7 @@ int dlFreeDisplay( void )
    /* Deinit texture cache */
    dlTextureFreeCache();
 
-   LOGERR("Destroyed");
+   LOGFREE("Destroyed");
 
    /* close log */
    dlLogClose( );
@@ -322,5 +320,3 @@ int dlFreeDisplay( void )
    RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
-
-/* EoF */

@@ -1,7 +1,9 @@
-                #include <stdio.h>
+#include <stdio.h>
 #include "dlSceneobject.h"
 #include "dlVbo.h"
 #include "dlLog.h"
+
+#define DL_DEBUG_CHANNEL "SPRITE"
 
 /* create new sprite */
 dlObject* dlNewSprite( const char *image, unsigned int flags, int center )
@@ -15,18 +17,22 @@ dlObject* dlNewSprite( const char *image, unsigned int flags, int center )
    kmVec3 min, max;
    kmAABB aabb_box;
 
+   dlObject *object;
+
+   CALL("%s, %u, %d ", image, flags, center);
+
    /* load image */
    texture = dlNewTexture( image, flags );
    if(!texture)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    width  = (float)texture->width  / 42000.0f;
    height = (float)texture->height / 42000.0f;
 
    /* new sceneobject */
-   dlObject *object = dlNewObject();
+   object = dlNewObject();
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    /* check VBO */
    if(!object->vbo)
@@ -90,5 +96,6 @@ dlObject* dlNewSprite( const char *image, unsigned int flags, int center )
       object = NULL;
    }
 
+   RET("%p", object);
    return(object);
 }

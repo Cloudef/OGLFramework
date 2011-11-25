@@ -42,16 +42,16 @@ int         dlFreeCamera( dlCamera *object );	   /* Free camera */
 
 /* translation */
 
-void dlTargetCamera( dlCamera *object, const kmVec3 ); /* Target camera */
+void dlTargetCamera( dlCamera *object, kmVec3* ); /* Target camera */
 void dlTargetCameraf( dlCamera *object, const kmScalar, const kmScalar,
                       const kmScalar );
-void dlPositionCamera( dlCamera *object, const kmVec3 ); /* Position camera */
+void dlPositionCamera( dlCamera *object, kmVec3* ); /* Position camera */
 void dlPositionCameraf( dlCamera *object, const kmScalar, const kmScalar,
                         const kmScalar );
-void dlMoveCamera( dlCamera *object, const kmVec3 ); /* Move camera */
+void dlMoveCamera( dlCamera *object, kmVec3* ); /* Move camera */
 void dlMoveCameraf( dlCamera *object, const kmScalar, const kmScalar,
                     const kmScalar );
-void dlRotateCamera( dlCamera *object, const kmVec3 ); /* Rotate camera */
+void dlRotateCamera( dlCamera *object, kmVec3* ); /* Rotate camera */
 void dlRotateCameraf( dlCamera *object, const kmScalar, const kmScalar,
                       const kmScalar );
 
@@ -71,5 +71,3 @@ void dlCameraRender( dlCamera *object ); /* Render using the camera */
 #endif
 
 #endif /* DL_CAMERA_H */
-
-/* EoF */

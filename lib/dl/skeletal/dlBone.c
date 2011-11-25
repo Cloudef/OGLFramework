@@ -1,15 +1,20 @@
 #include "dlBone.h"
 #include "dlAlloc.h"
 #include "dlTypes.h"
+#include "dlLog.h"
 #include <malloc.h>
+
+#define DL_DEBUG_CHANNEL "BONE"
 
 /* new bone */
 dlBone* dlNewBone(void)
 {
+   TRACE();
+
    dlSetAlloc( ALLOC_BONE );
    dlBone *bone = dlCalloc( 1, sizeof(dlBone) );
    if(!bone)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* null */
    bone->name   = NULL;
@@ -22,20 +27,29 @@ dlBone* dlNewBone(void)
    bone->num_child = 0;
 #endif
 
+   LOGWARN("NEW");
+
    /* inc ref */
    bone->refCounter++;
 
+   RET("%p", bone);
    return( bone );
 }
 
 /* refence bone */
 dlBone* dlRefBone( dlBone *bone )
 {
+   CALL("%p", bone);
+
    if(!bone)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
+
+   LOGWARN("REFERENCE");
 
    /* increase ref */
    bone->refCounter++;
+
+   RET("%p", bone);
    return( bone );
 }
 
@@ -43,12 +57,12 @@ dlBone* dlRefBone( dlBone *bone )
 int dlFreeBone( dlBone *bone )
 {
    dlVertexWeight *weight, *next;
+   CALL("%p", bone);
 
    if(!bone)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
-   if(--bone->refCounter!=0)
-      return( RETURN_NOTHING );
+   if(--bone->refCounter!=0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_BONE );
 
@@ -68,8 +82,12 @@ int dlFreeBone( dlBone *bone )
    bone->child = NULL;
 #endif
 
+   LOGFREE("FREE");
+
    /* free bone */
    dlFree( bone, sizeof(dlBone) ); bone = NULL;
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -77,9 +95,10 @@ int dlFreeBone( dlBone *bone )
 dlVertexWeight* dlBoneAddWeight( dlBone *bone, unsigned int vertex, float value )
 {
    dlVertexWeight *weight, **ptr;
+   CALL("%p, %u, %f", bone, vertex, value);
 
    if(!bone)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* find empty slot */
    ptr = &bone->weight;
@@ -91,7 +110,7 @@ dlVertexWeight* dlBoneAddWeight( dlBone *bone, unsigned int vertex, float value 
    dlSetAlloc( ALLOC_BONE );
    *ptr = dlCalloc( 1, sizeof(dlVertexWeight) );
    if(!*ptr)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assign values */
    (*ptr)->vertex = vertex;
@@ -100,14 +119,17 @@ dlVertexWeight* dlBoneAddWeight( dlBone *bone, unsigned int vertex, float value 
    /* null next */
    (*ptr)->next = NULL;
 
+   RET("%p", *ptr);
    return( *ptr );
 }
 
 /* add child bone to list */
 int dlBoneAddChild( dlBone *bone, dlBone *child )
 {
+   CALL("%p, %p", bone, child);
+
    if(!bone || !child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
 #if 0 /* child code */
    /* resize array */
@@ -119,12 +141,13 @@ int dlBoneAddChild( dlBone *bone, dlBone *child )
 
    /* fail */
    if(!bone->child)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* add child */
    bone->child[bone->num_child - 1] = child;
 #endif
    child->parent = bone;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }

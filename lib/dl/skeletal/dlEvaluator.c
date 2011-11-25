@@ -5,6 +5,8 @@
 
 #include <assert.h>
 
+#define DL_DEBUG_CHANNEL "EVALUATOR"
+
 dlAnimTick* dlNewAnimTick( dlAnim *anim )
 {
    dlNodeAnim           *node;
@@ -14,18 +16,20 @@ dlAnimTick* dlNewAnimTick( dlAnim *anim )
    dlQuatKey            *qkey;
    DL_NODE_TYPE         count;
 
+   CALL("%p", anim);
+
    if(!anim)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
 	/* Allocate animation handler object */
    dlSetAlloc( ALLOC_EVALUATOR );
 	dlAnimTick *animTick = (dlAnimTick*)dlCalloc( 1, sizeof(dlAnimTick) );
    if(!animTick)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* assign animation */
-   animTick->anim          = anim;
-   animTick->oldTime       = 0.0f;
+   animTick->anim       = anim;
+   animTick->oldTime    = 0.0f;
 
    /* null */
    animTick->oldNode    = NULL;
@@ -36,14 +40,24 @@ dlAnimTick* dlNewAnimTick( dlAnim *anim )
    {
       *oldNode = dlCalloc( 1, sizeof(dlAnimTickOldNode) );
       if(!*oldNode)
-      { dlFreeAnimTick( animTick ); return( NULL ); }
+      {
+         dlFreeAnimTick( animTick );
+
+         RET("%p", NULL);
+         return( NULL );
+      }
 
       /* store translations to pointer array */
       if(node->translation)
       {
          (*oldNode)->translation = dlCalloc( node->num_translation, sizeof(dlVectorKey*) );
          if(!(*oldNode)->translation)
-         { dlFreeAnimTick( animTick ); return( NULL ); }
+         {
+            dlFreeAnimTick( animTick );
+
+            RET("%p", NULL);
+            return( NULL );
+         }
 
          vkey = node->translation; count = 0;
          for(; vkey; vkey = vkey->next)
@@ -55,7 +69,12 @@ dlAnimTick* dlNewAnimTick( dlAnim *anim )
       {
          (*oldNode)->rotation = dlCalloc( node->num_rotation, sizeof(dlQuatKey*) );
          if(!(*oldNode)->rotation)
-         { dlFreeAnimTick( animTick ); return( NULL ); }
+         {
+            dlFreeAnimTick( animTick );
+
+            RET("%p", NULL);
+            return( NULL );
+         }
 
          qkey = node->rotation; count = 0;
          for(; qkey; qkey = qkey->next)
@@ -67,7 +86,12 @@ dlAnimTick* dlNewAnimTick( dlAnim *anim )
       {
          (*oldNode)->scaling = dlCalloc( node->num_scaling, sizeof(dlVectorKey*) );
          if(!(*oldNode)->scaling)
-         { dlFreeAnimTick( animTick ); return( NULL ); }
+         {
+            dlFreeAnimTick( animTick );
+
+            RET("%p", NULL);
+            return( NULL );
+         }
 
          vkey = node->scaling; count = 0;
          for(; vkey; vkey = vkey->next)
@@ -79,13 +103,17 @@ dlAnimTick* dlNewAnimTick( dlAnim *anim )
 
    /* no animations, pointless */
    if(!anim->node)
-   { dlFreeAnimTick( animTick ); return( NULL ); }
+   {
+      dlFreeAnimTick( animTick );
 
-   logGreen();
-   dlPuts("[A:EVALUATOR]");
-   logNormal();
+      RET("%p", NULL);
+      return( NULL );
+   }
+
+   LOGOK("NEW");
 
    /* return */
+   RET("%p", animTick);
    return( animTick );
 }
 
@@ -93,17 +121,17 @@ int dlFreeAnimTick( dlAnimTick *animTick )
 {
    dlAnimTickOldNode    *oldNode, *nextOldNode;
    dlNodeAnim           *node;
+   CALL("%p", animTick);
 
    /* invalid object */
    if(!animTick)
-      return( RETURN_NOTHING );
+   { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_EVALUATOR );
 
    /* we should have animation */
    if(animTick->anim)
    {
-
       /* free nodes */
       oldNode = animTick->oldNode;
       node    = animTick->anim->node;
@@ -127,13 +155,13 @@ int dlFreeAnimTick( dlAnimTick *animTick )
       animTick->oldNode = NULL;
    }
 
-   logRed();
-   dlPuts("[F:EVALUAOTR]");
-   logNormal();
+   LOGFREE("FREE");
 
    /* free ticker */
    dlFree( animTick, sizeof(dlAnimTick) );
    animTick = NULL;
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -149,6 +177,8 @@ void dlAdvanceAnimTick( dlAnimTick *animTick, float pTime )
    kmQuaternion   presentRotation;
    float          diffTime, factor;
    float          ticksPerSecond;
+
+   CALL("%p, %f", animTick, pTime);
 
    /* get dlAnim */
    anim = animTick->anim;

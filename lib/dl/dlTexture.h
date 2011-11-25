@@ -93,5 +93,3 @@ int dlTextureFreeCache( void );
 #endif
 
 #endif /* DL_TEXTURE_H */
-
-/* EoF */

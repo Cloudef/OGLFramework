@@ -3,6 +3,8 @@
 #include "dlVbo.h"
 #include "dlLog.h"
 
+#define DL_DEBUG_CHANNEL "PLANE"
+
 /* create plane */
 dlObject* dlNewPlane( const kmScalar width, const kmScalar height, int center )
 {
@@ -12,10 +14,14 @@ dlObject* dlNewPlane( const kmScalar width, const kmScalar height, int center )
    kmVec3 min, max;
    kmAABB aabb_box;
 
+   dlObject *object;
+
+   CALL("%f, %f, %d", width, height, center);
+
    /* new sceneobject */
-   dlObject *object = dlNewObject();
+   object = dlNewObject();
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    /* check VBO */
    if(!object->vbo)
@@ -70,6 +76,7 @@ dlObject* dlNewPlane( const kmScalar width, const kmScalar height, int center )
    /* ^ No need to calculate */
    /* dlCalculateAABB(object); */
 
+   RET("%p", object);
    return(object);
 }
 
@@ -82,17 +89,23 @@ dlObject* dlNewGrid( int rows,
    kmVec3 min, max;
    kmAABB aabb_box;
 
+   dlObject *object;
+
+   CALL("%d, %d, %f", rows, columns, size);
+
    /* check */
    if(!rows || !columns)
    {
-      dlPuts("[GRID] rows && columns must be over 0");
+      LOGERR("Rows && columns must be over 0");
+
+      RET("%p", NULL);
       return(NULL);
    }
 
    /* new sceneobject */
-   dlObject *object = dlNewObject();
+   object = dlNewObject();
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    /* check VBO */
    if(!object->vbo)
@@ -150,5 +163,6 @@ dlObject* dlNewGrid( int rows,
    /* ^ No need to calculate */
    /* dlCalculateAABB(object); */
 
+   RET("%p", object);
    return(object);
 }

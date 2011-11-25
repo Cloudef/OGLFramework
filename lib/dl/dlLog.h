@@ -8,8 +8,10 @@
 #define TRACE()         if(dlDEBTRACE()) { LOGWARNP("%s()", __FUNCTION__); }
 #define CALL(a,...)     if(dlDEBTRACE()) { LOGWARNP("%s("a")", __FUNCTION__, ##__VA_ARGS__); }
 #define RET(a,...)      if(dlDEBTRACE()) { LOGWARNP("%s => ("a")", __FUNCTION__, ##__VA_ARGS__); }
-#define LOGERR(m)       logRed();    dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
-#define LOGERRP(m,...)  logRed();    dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
+#define LOGERR(m)       logRed();    dlPuts(m);                                       logNormal();
+#define LOGERRP(m,...)  logRed();    dlPrint(m"\n",##__VA_ARGS__);                    logNormal();
+#define LOGFREE(m)      logRed();    dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
+#define LOGFREEP(m,...) logRed();    dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
 #define LOGWARN(m)      logYellow(); dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
 #define LOGWARNP(m,...) logYellow(); dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
 #define LOGINFO(m)      logBlue();   dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
@@ -25,6 +27,7 @@ int dlDEBTRACE(void);
 int dlDEBCHAN(const char *channel);
 void dlDEBADD(const char *channel);
 void dlDEBRM(const char *channel);
+void dlDEBINIT(int argc, const char **argv);
 
 void dlLogOpen(void);
 void dlDPrint(const char *channel, const char *output, ...);

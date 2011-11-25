@@ -92,5 +92,3 @@ extern dlCoreConfig _dlCore;
 #endif
 
 #endif /* DL_CORE_H */
-
-/* EoF */

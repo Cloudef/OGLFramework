@@ -14,14 +14,18 @@
 #  include <GL/gl.h>
 #endif
 
+#define DL_DEBUG_CHANNEL "MATERIAL"
+
 /* Allocate material object */
 dlMaterial* dlNewMaterial( void )
 {
+   TRACE();
+
    /* Allocate material object */
    dlSetAlloc( ALLOC_MATERIAL );
    dlMaterial* object = (dlMaterial*)dlCalloc( 1, sizeof(dlMaterial) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Nullify pointers */
    object->texture = NULL;
@@ -30,26 +34,29 @@ dlMaterial* dlNewMaterial( void )
    object->blend1 = GL_SRC_ALPHA;
    object->blend2 = GL_ONE_MINUS_SRC_ALPHA;
 
-   logGreen();
-   dlPuts("[A:MATERIAL]");
-   logNormal();
+   LOGOK("NEW");
 
    /* Increase ref counter */
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
 /* Allocate new material from texture */
 dlMaterial* dlNewMaterialFromTexture( dlTexture *texture )
 {
-   dlMaterial *object = dlNewMaterial();
+   dlMaterial *object;
+   CALL("%p", texture);
+
+   object = dlNewMaterial();
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    object->texture = texture;
 
+   RET("%p", object);
    return(object);
 }
 
@@ -57,15 +64,17 @@ dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags )
 {
    dlTexture  *object;
    dlMaterial *material;
+   CALL("%p, %u", texture, flags);
 
    object = dlNewTexture( texture, flags );
    if(!object)
-      return(NULL);
+   { RET("%p", NULL); return(NULL); }
 
    material = dlNewMaterialFromTexture( object );
    if(!material)
       dlFreeTexture(object);
 
+   RET("%p", material);
    return(material);
 }
 
@@ -73,15 +82,16 @@ dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags )
 dlMaterial* dlCopyMaterial( dlMaterial *src )
 {
    dlMaterial *object;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Allocate scene object */
    dlSetAlloc( ALLOC_MATERIAL );
    object = (dlMaterial*)dlCalloc( 1, sizeof(dlMaterial) );
    if(!object)
-      return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Copy data */
    object->texture = dlCopyTexture(src->texture);
@@ -90,14 +100,13 @@ dlMaterial* dlCopyMaterial( dlMaterial *src )
    object->blend2 = src->blend2;
    object->flags  = src->flags;
 
-   logYellow();
-   dlPuts("[C:MATERIAL]");
-   logNormal();
+   LOGWARN("COPY");
 
    /* Increase ref counter */
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
@@ -105,48 +114,50 @@ dlMaterial* dlCopyMaterial( dlMaterial *src )
 dlMaterial* dlRefMaterial( dlMaterial *src )
 {
    dlMaterial* object;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Point magic */
-   object                      = src;
+   object = src;
 
    /* Ref textures */
    object->texture = dlRefTexture( object->texture );
 
-   logYellow();
-   dlPuts("[R:MATERIAL]");
-   logNormal();
+   LOGWARN("REFERENCE");
 
    /* Increase ref counter */
    object->refCounter++;
 
    /* Return the instance */
+   RET("%p", object);
    return( object );
 }
 
 /* Free material object */
 int dlFreeMaterial( dlMaterial *object )
 {
+   CALL("%p", object);
+
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!object) return( RETURN_NOTHING );
+   if(!object) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* Free texture */
    if(dlFreeTexture( object->texture ) == RETURN_OK)
       object->texture = NULL;
 
    /* There is still references to this object alive */
-   if(--object->refCounter != 0) return( RETURN_NOTHING );
+   if(--object->refCounter != 0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_MATERIAL );
 
-   logRed();
-   dlPuts("[F:MATERIAL]");
-   logNormal();
+   LOGFREE("FREE");
 
    /* Free scene object */
    dlFree( object, sizeof(dlMaterial) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -165,13 +176,14 @@ int dlMaterialAddTexture( dlMaterial *object,
 /* Free texture */
 int dlMaterialFreeTexture( dlMaterial *object )
 {
+   CALL("%p", object);
+
    if(!object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if( dlFreeTexture( object->texture ) == RETURN_OK )
       object->texture = NULL;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
-
-/* EoF */

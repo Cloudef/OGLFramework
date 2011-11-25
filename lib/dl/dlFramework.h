@@ -38,5 +38,3 @@ void dlMemoryGraph( void );
 #endif
 
 #endif /* FRAMEWORK_H */
-
-/* EOF */

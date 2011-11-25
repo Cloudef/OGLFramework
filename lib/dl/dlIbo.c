@@ -71,7 +71,7 @@ dlIBO* dlCopyIBO( dlIBO *src )
    dlSetAlloc( ALLOC_IBO );
    ibo = (dlIBO*)dlCalloc( 1, sizeof(dlIBO) );
    if(!ibo)
-   return( NULL );
+   { RET("%p", NULL); return( NULL ); }
 
    /* Copy data */
    dlCopyIndexBuffer( ibo, src );
@@ -79,14 +79,13 @@ dlIBO* dlCopyIBO( dlIBO *src )
    ibo->ibo_size  = src->ibo_size;
    ibo->hint	  = src->hint;
 
-   logYellow();
-   dlPuts("[C:IBO]");
-   logNormal();
+   LOGWARN("COPY");
 
    /* Increase ref counter */
    ibo->refCounter++;
 
    /* Return IBO object */
+   RET("%p", ibo);
    return( ibo );
 }
 
@@ -94,32 +93,34 @@ dlIBO* dlCopyIBO( dlIBO *src )
 dlIBO* dlRefIBO( dlIBO *src )
 {
    dlIBO *ibo;
+   CALL("%p", src);
 
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!src) return( NULL );
+   if(!src) { RET("%p", NULL); return( NULL ); }
 
    /* Simple return pointer to same place */
    ibo = src;
 
-   logYellow();
-   dlPuts("[R:IBO]");
-   logNormal();
+   LOGWARN("REFERENCE");
 
    /* Increase ref counter */
    ibo->refCounter++;
 
    /* Return IBO object */
+   RET("%p", ibo);
    return( ibo );
 }
 
 /* Free IBO object */
 int dlFreeIBO( dlIBO *ibo )
 {
+   CALL("%p", ibo);
+
    /* Fuuuuuuuuu--- We have non valid object */
-   if(!ibo) return( RETURN_NOTHING );
+   if(!ibo) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    /* There is still references to this object alive */
-   if(--ibo->refCounter != 0) return( RETURN_NOTHING );
+   if(--ibo->refCounter != 0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
    dlSetAlloc( ALLOC_IBO );
 
@@ -130,12 +131,12 @@ int dlFreeIBO( dlIBO *ibo )
    if( ibo->object ) glDeleteBuffers(1, &ibo->object);
    ibo->object = 0;
 
-   logRed();
-   dlPuts("[F:IBO]");
-   logNormal();
+   LOGFREE("FREE");
 
    /* Free IBO object */
    dlFree( ibo, sizeof(dlIBO) );
+
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -147,15 +148,17 @@ int dlIBOUpdate( dlIBO* ibo )
    size_t tmp;
 #endif
 
+   CALL("%p", ibo);
+
    if(!ibo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(!ibo->object)
-      return( dlIBOConstruct( ibo ) );
+      return( dlIBOConstruct(ibo) );
 
    /* already up to date */
    if(ibo->up_to_date)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    ibo->ibo_size = 0;
 #if USE_BUFFERS
@@ -195,25 +198,28 @@ int dlIBOUpdate( dlIBO* ibo )
    /* mark as up to date */
    ibo->up_to_date = 1;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 /* construct new IBO data */
 int dlIBOConstruct( dlIBO* ibo )
 {
+   CALL("%p", ibo);
+
    if(_dlCore.render.mode == DL_MODE_VERTEX_ARRAY)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    if(!ibo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(ibo->object)
-      return( RETURN_OK );
+   { RET("%d", RETURN_OK); return( RETURN_OK ); }
 
    /* generate IBO */
    glGenBuffers(1, &ibo->object );
    if(!ibo->object)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    /* this ibo isn't up to date */
    ibo->up_to_date = 0;
@@ -221,9 +227,12 @@ int dlIBOConstruct( dlIBO* ibo )
    {
       glDeleteBuffers(1, &ibo->object);
       ibo->object = 0;
+
+      RET("%d", RETURN_FAIL);
       return( RETURN_FAIL );
    }
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -234,8 +243,10 @@ int dlCopyIndexBuffer( dlIBO *ibo, dlIBO *src )
    unsigned int i;
 #endif
 
+   CALL("%p, %p", ibo, src);
+
    if(!ibo || !src)
-      return(RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return(RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_IBO );
 
@@ -253,6 +264,7 @@ int dlCopyIndexBuffer( dlIBO *ibo, dlIBO *src )
    ibo->i_use     = src->i_use;
 #endif
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
@@ -262,8 +274,10 @@ int dlFreeIndexBuffer( dlIBO *ibo )
    unsigned int i;
 #endif
 
+   CALL("%p", ibo);
+
    if(!ibo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_IBO );
 
@@ -288,20 +302,23 @@ int dlFreeIndexBuffer( dlIBO *ibo )
    /* mark IBO as outdated */
    ibo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
 {
+   CALL("%p, %u", ibo, indices);
+
    if(!ibo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_IBO );
 
 #if USE_BUFFERS
    unsigned int thisMany = indices / USHRT_MAX;
    if(thisMany > DL_MAX_BUFFERS)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    unsigned int i = 0;
    unsigned int actual_amount;
@@ -329,7 +346,7 @@ int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
       }
 
       if(!ibo->indices[i])
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       ibo->i_use[i] = 0;
       ibo->i_num[i] = actual_amount;
@@ -346,7 +363,7 @@ int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
    }
 
    if(!ibo->indices)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    ibo->i_use = 0;
    ibo->i_num = indices;
@@ -355,14 +372,17 @@ int dlResetIndexBuffer( dlIBO *ibo, unsigned int indices )
    /* mark IBO as outdated */
    ibo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 
 int dlInsertIndex( dlIBO *ibo,
                     unsigned int index )
 {
+   CALL("%p, %u", ibo, index);
+
    if(!ibo)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    dlSetAlloc( ALLOC_IBO );
 
@@ -370,7 +390,7 @@ int dlInsertIndex( dlIBO *ibo,
    /* select buffer to put the index */
    unsigned int i = index / USHRT_MAX;
    if(i > DL_MAX_BUFFERS)
-      return( RETURN_FAIL );
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
    if(i > ibo->index_buffer)
       ibo->index_buffer = i;
@@ -382,7 +402,7 @@ int dlInsertIndex( dlIBO *ibo,
        * use the reset function above */
       ibo->indices[ i ] = dlRealloc(ibo->indices[ i ], ibo->i_num[ i ], ibo->i_use[ i ], sizeof(unsigned short));
       if(!ibo->indices[ i ])
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       ibo->i_num[ i ] = ibo->i_use[ i ];
    }
@@ -395,7 +415,7 @@ int dlInsertIndex( dlIBO *ibo,
    {
       ibo->indices = dlRealloc(ibo->indices, ibo->i_num, ibo->i_use, sizeof(unsigned int));
       if(!ibo->indices)
-         return( RETURN_FAIL );
+      { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
 
       ibo->i_num = ibo->i_use;
    }
@@ -407,5 +427,6 @@ int dlInsertIndex( dlIBO *ibo,
    /* mark IBO as outdated */
    ibo->up_to_date = 0;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
