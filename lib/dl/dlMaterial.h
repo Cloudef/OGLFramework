@@ -37,7 +37,7 @@ dlMaterial*    dlRefMaterial( dlMaterial *src );	       /* Reference material  *
 int            dlFreeMaterial( dlMaterial *object );	       /* Free material */
 
 /* material from texture */
-dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags );
+dlMaterial* dlNewMaterialFromImage( const char *file, unsigned int flags );
 dlMaterial* dlNewMaterialFromTexture( dlTexture *texture );
 
 /* add texture */

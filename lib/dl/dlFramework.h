@@ -30,6 +30,9 @@ dlCamera* dlGetCamera( void );
 void dlSetShader( dlShader *shader );
 dlShader* dlGetShader( void );
 
+/* Set internal resolution */
+void dlSetResolution( int x, int y );
+
 /* Output memory graph */
 void dlMemoryGraph( void );
 

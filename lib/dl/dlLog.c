@@ -5,9 +5,9 @@
 
 #include "dlConfig.h"
 #include "dlCore.h"
+#include "dlLog.h"
 #include "logfile.h"
 
-#define DL_LOG_FORMAT "[%s] "
 #define LENGTH(X) (sizeof X / sizeof X[0])
 
 typedef struct DEBCHAN
@@ -177,7 +177,7 @@ void dlDEBRM(const char *channel)
 }
 
 /* init debug system */
-void dlDEBINIT(int argc, const char **argv)
+void dlDEBINIT(int argc, char **argv)
 {
    int i, count;
    char *match;
@@ -187,7 +187,7 @@ void dlDEBINIT(int argc, const char **argv)
    for(; i != argc; ++i)
    {
       if(!strncmp(argv[i], "DEBUG=", strlen("DEBUG=")))
-      { match = (char*)(argv[i] + strlen("DEBUG=")); break; }
+      { match = argv[i] + strlen("DEBUG="); break; }
    }
    if(!match) return;
 

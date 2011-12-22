@@ -142,12 +142,12 @@ int dlCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
 
 #if defined(GLES1) || defined(GLES2)
    /* OpenGL GLES */
-   static const EGLint s_configAttribs[] =
+   static EGLint s_configAttribs[] =
    {
-      EGL_RED_SIZE,           rgb[0],
-      EGL_GREEN_SIZE,         rgb[1],
-      EGL_BLUE_SIZE,          rgb[2],
-      EGL_DEPTH_SIZE,         rgb[3],
+      EGL_RED_SIZE,           0,
+      EGL_GREEN_SIZE,         0,
+      EGL_BLUE_SIZE,          0,
+      EGL_DEPTH_SIZE,         0,
       EGL_SURFACE_TYPE,       EGL_WINDOW_BIT,
       #ifdef GLES1
       EGL_RENDERABLE_TYPE,    EGL_OPENGL_ES_BIT,
@@ -157,6 +157,12 @@ int dlCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
       #endif
       EGL_NONE
    };
+
+   s_configAttribs[1] = rgb[0];
+   s_configAttribs[3] = rgb[1];
+   s_configAttribs[5] = rgb[2];
+   s_configAttribs[7] = rgb[3];
+
    EGLint numConfigsOut = 0;
 
    EGLConfig g_allConfigs[g_totalConfigsIn];
@@ -224,6 +230,12 @@ int dlCreateWindow(int window_width, int window_height, int bitsperpixel, unsign
    LOGERRP("WINDOW", "%dx%dx%d created", window_width, window_height, bitsperpixel);
 
    return( RETURN_OK );
+}
+
+/* Set new flags or width and height */
+void dlWindowSetMode(int width, int height, int bitdepth, unsigned int sdl_flags)
+{
+   SDL_SetVideoMode( width, height, bitdepth, sdl_flags );
 }
 
 /* Get window SDL surface */

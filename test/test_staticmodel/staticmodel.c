@@ -13,6 +13,19 @@
 #define LINE_MAX 256
 #endif
 
+#if defined(GLES1) || defined(GLES2)
+#  define WINDOW_FLAGS  SDL_RESIZABLE
+#  define WINDOW_WIDTH  800
+#  define WINDOW_HEIGHT 480
+#  define WINDOW_BITS   16
+#else
+#  define WINDOW_FLAGS  SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE
+#  define WINDOW_WIDTH  800
+#  define WINDOW_HEIGHT 480
+#  define WINDOW_BITS   32
+#endif
+
+
 static void keyHandle( void )
 {
    SDL_Event event;
@@ -29,6 +42,9 @@ static void keyHandle( void )
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
          case SDL_VIDEORESIZE:
+            dlWindowSetMode(event.resize.w, event.resize.h,
+                            WINDOW_BITS, WINDOW_FLAGS);
+            dlSetResolution(event.resize.w,event.resize.h);
          break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
             dlKeyAdd(SDLK_ESCAPE);
@@ -76,27 +92,16 @@ int main( int argc, char **argv )
 
    char           WIN_TITLE[LINE_MAX];
 
-   unsigned int   flags = SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE;
-   int            width = 800;
-   int            height= 480;
-   int            bits  = 32;
-#if defined(GLES1) || defined(GLES2)
-   flags = SDL_RESIZABLE;
-   width = 600;
-   height= 320;
-   bits  = 16;
-#endif
-
    /* init debug channels */
    dlDEBINIT(argc, argv);
 
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateWindow( width, height, bits, flags ) != 0)
+   if(dlCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_BITS, WINDOW_FLAGS ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateDisplay( width, height, DL_RENDER_OGL140 ) != 0)
+   if(dlCreateDisplay( WINDOW_WIDTH, WINDOW_HEIGHT, DL_RENDER_OGL140 ) != 0)
       cleanup(EXIT_FAILURE);
 
    camera = dlNewCamera();
@@ -104,14 +109,12 @@ int main( int argc, char **argv )
       cleanup(EXIT_FAILURE);
 
 #if WITH_PMD
-   dlPositionCameraf( camera, 0,0,2 );
+   dlPositionCameraf( camera, 0,10,45 );
+   dlTargetCameraf( camera, 0,10,0 );
 
-   plane = dlNewPlane( 0.02, 0.02, 1 );
+   plane = dlNewPlane( 0.08, 0.08, 0 );
    if(!plane)
       cleanup(EXIT_FAILURE);
-
-   dlPositionObjectf( plane, 0.021, -0.01, 0.5f );
-   dlScaleObjectf( plane, 1, 1, 1 );
 
    mokou = dlNewStaticModel( "model/Mokou/Mokou A.pmd" );
    if(!mokou)
@@ -125,33 +128,30 @@ int main( int argc, char **argv )
    if(!kaguya)
       cleanup(EXIT_FAILURE);
 
-   dlScaleObjectf( mokou, 0.002, 0.002, 0.002 );
-   dlPositionObjectf( mokou, 0, -0.02, 0 );
+   dlScaleObjectf( mokou,  1, 1, 1 );
+   dlScaleObjectf( reisen, 1, 1, 1 );
+   dlScaleObjectf( kaguya, 1, 1, 1 );
 
-   dlScaleObjectf( reisen, 0.002, 0.002, 0.002 );
-   dlPositionObjectf( reisen, 0, -0.02, 0 );
-
-   dlScaleObjectf( kaguya, 0.002, 0.002, 0.002 );
-   dlPositionObjectf( kaguya, 0, -0.02, 0 );
+   dlPositionObjectf( plane, 10.35,-1,10 );
 
    /* mokou by default */
    obj = mokou;
    plane->material = dlNewMaterialFromTexture( dlRefTexture( obj->material->texture ) );
 #elif WITH_ASSIMP
-   dlPositionCameraf( camera, 0,0,15 );
+   dlPositionCameraf( camera, 0,8,45 );
+   dlTargetCameraf( camera, 0,8,0 );
 
    obj = dlNewDynamicModel( "model/lovely.b3d" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   obj->material = dlNewMaterialWithTexture( "model/npc_1.tga",
-                                             SOIL_FLAG_DEFAULTS        |
-                                             SOIL_FLAG_TEXTURE_REPEATS );
+   obj->material = dlNewMaterialFromImage( "model/npc_1.tga",
+                                            SOIL_FLAG_DEFAULTS        |
+                                            SOIL_FLAG_TEXTURE_REPEATS );
    if(!obj->material)
       cleanup(EXIT_FAILURE);
 
-   dlScaleObjectf( obj, 0.005, 0.005, 0.005 );
-   dlPositionObjectf( obj, 0, -0.13, 0 );
+   dlScaleObjectf( obj, 0.35, 0.35, 0.35 );
 
    obj2 = dlCopyObject( obj );
    if(!obj2)
@@ -161,26 +161,23 @@ int main( int argc, char **argv )
    if(!obj3)
       cleanup(EXIT_FAILURE);
 
-   dlMoveObjectf( obj2, 0.22, 0, 0 );
-   dlMoveObjectf( obj3, -0.22, 0, 0 );
-   dlRotateObjectf( obj2, 0, 0, 0 );
+   dlMoveObjectf( obj2,   15, 0, 0 );
+   dlMoveObjectf( obj3,  -15, 0, 0 );
+   dlRotateObjectf( obj2, 0,  0, 0 );
    dlRotateObjectf( obj3, 0, 180, 0 );
 #elif WITH_OPENCTM
-   dlPositionCameraf( camera, 0,0,8 );
+   dlPositionCameraf( camera, 0,0,15 );
 
    obj = dlNewStaticModel( "model/raf22031.ctm" );
    if(!obj)
       cleanup(EXIT_FAILURE);
 
-   dlScaleObjectf( obj, 0.04, 0.04, 0.04 );
+   dlScaleObjectf( obj, 3, 3, 3 );
 #endif
 
    /* here if no import was done */
    if(!obj)
       cleanup(EXIT_FAILURE);
-
-   /* Sets this as active camera */
-   dlCameraRender( camera );
 
    /* Startup graph */
    dlMemoryGraph();
@@ -192,6 +189,7 @@ int main( int argc, char **argv )
       now   = SDL_GetTicks();
       delta = (now - last) / 1000.0f;
 
+      dlCameraRender( camera );
       keyHandle();
 
       x += 0.01f;
@@ -215,16 +213,16 @@ int main( int argc, char **argv )
          plane->material->texture = dlRefTexture( obj->material->texture );
       }
 
-      dlPositionObjectf( obj, 0, -0.02, 0 );
+      dlPositionObjectf( obj, 0, 0, 0 );
       dlRotateObjectf( obj, 0, x, 0 );
       dlDraw( obj );
 
       dlRotateObjectf( obj, 0, 0, 0 );
-      dlPositionObjectf( obj, 0.03, -0.02, 0 );
+      dlPositionObjectf( obj, 15, 0, 0 );
       dlDraw( obj );
 
       dlRotateObjectf( obj, 0, 180, 0 );
-      dlPositionObjectf( obj, -0.03, -0.02, 0 );
+      dlPositionObjectf( obj, -15, 0, 0 );
       dlDraw( obj );
 
       if(dlKeyHold(SDLK_4))

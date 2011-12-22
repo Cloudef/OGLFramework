@@ -76,7 +76,7 @@ static int setMaterial(const char *file, dlObject *object, struct aiMaterial *mt
       if( texturePath )
       {
          if(object->material) dlFreeMaterial(object->material);
-         object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS );
+         object->material = dlNewMaterialFromImage( texturePath, SOIL_FLAG_DEFAULTS );
          free( texturePath );
 
          RET("%d", RETURN_OK);
@@ -517,7 +517,7 @@ static int process(const char *file, dlObject *object, const struct aiScene *sc,
       }
       else
       {
-#if 0
+#if 1
          mObject = dlNewObject();
          if(!mObject)
          { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
@@ -549,6 +549,10 @@ static int process(const char *file, dlObject *object, const struct aiScene *sc,
             RET("%d", RETURN_FAIL);
             return( RETURN_FAIL );
          }
+
+         dlObjectAddChild(object, mObject);
+         dlObjectCalculateAABB(mObject);
+         mObject->primitive_type = GL_TRIANGLES;
 #endif
       }
    }

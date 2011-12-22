@@ -799,3 +799,66 @@ void dlOffsetObjectTexture( dlObject *object, int px, int py, int width, int hei
    object->vbo->up_to_date = 0;
    dlVBOUpdate( object->vbo );
 }
+
+/* texture this and all child objects */
+int dlTextureObject( dlObject *object, dlTexture *texture )
+{
+   int ret;
+   unsigned int i;
+   CALL("%p, %p", object, texture);
+
+   if(!object)
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
+
+   if(!object->material)
+   {
+      object->material = dlNewMaterialFromTexture( texture );
+      if(!object->material) ret = RETURN_FAIL;
+   }
+   else ret = dlMaterialAddTexture( object->material, texture );
+
+   i = 0;
+   for(; i != object->num_childs; ++i)
+      dlTextureObject( object->child[i], texture );
+
+   RET("%d", ret);
+   return( ret );
+}
+
+/* texture this with image file and flags */
+int dlImageObject( dlObject *object, const char *file, unsigned int flags )
+{
+   int ret;
+   CALL("%p, %s, %u", object, file, flags);
+
+   if(!object)
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
+
+   /* texture */
+   ret = dlTextureObject( object, dlNewTexture( file, flags ) );
+
+   RET("%d", ret);
+   return( ret );
+}
+
+/* set material flags for this and childs */
+int dlFlagObject( dlObject *object, unsigned int flags )
+{
+   unsigned int i;
+   CALL("%p, %u", object, flags);
+
+   if(!object->material)
+      object->material = dlNewMaterial();
+
+   if(!object->material)
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
+
+   object->material->flags = flags;
+
+   i = 0;
+   for(; i != object->num_childs; ++i)
+      dlFlagObject( object->child[i], flags );
+
+   RET("%d", RETURN_OK);
+   return( RETURN_OK );
+}

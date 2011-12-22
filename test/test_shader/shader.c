@@ -11,6 +11,19 @@
 #define LINE_MAX 256
 #endif
 
+#if defined(GLES1) || defined(GLES2)
+#  define WINDOW_FLAGS  SDL_RESIZABLE
+#  define WINDOW_WIDTH  800
+#  define WINDOW_HEIGHT 480
+#  define WINDOW_BITS   16
+#else
+#  define WINDOW_FLAGS  SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE
+#  define WINDOW_WIDTH  800
+#  define WINDOW_HEIGHT 480
+#  define WINDOW_BITS   32
+#endif
+
+
 static void keyHandle( void )
 {
    SDL_Event event;
@@ -27,6 +40,9 @@ static void keyHandle( void )
          case SDL_VIDEOEXPOSE:
          break;  /* SDL_VIDEOEXPOSE */
          case SDL_VIDEORESIZE:
+            dlWindowSetMode(event.resize.w, event.resize.h,
+                            WINDOW_BITS, WINDOW_FLAGS);
+            dlSetResolution(event.resize.w,event.resize.h);
          break;  /* SDL_VIDEORESIZE */
          case SDL_QUIT:
             dlKeyAdd(SDLK_ESCAPE);
@@ -64,27 +80,16 @@ int main( int argc, char **argv )
 
    char           WIN_TITLE[LINE_MAX];
 
-   unsigned int   flags = SDL_OPENGL | SDL_DOUBLEBUF | SDL_RESIZABLE;
-   int            width = 800;
-   int            height= 480;
-   int            bits  = 32;
-#if defined(GLES1) || defined(GLES2)
-   flags = SDL_RESIZABLE;
-   width = 800;
-   height= 480;
-   bits  = 16;
-#endif
-
    /* init debug channels */
    dlDEBINIT(argc, argv);
 
    if(SDL_Init(   SDL_INIT_VIDEO    ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateWindow( width, height, bits, flags ) != 0)
+   if(dlCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_BITS, WINDOW_FLAGS ) != 0)
       cleanup(EXIT_FAILURE);
 
-   if(dlCreateDisplay( width, height, DL_RENDER_OGL3 ) != 0)
+   if(dlCreateDisplay( WINDOW_WIDTH, WINDOW_HEIGHT, DL_RENDER_OGL3 ) != 0)
       cleanup(EXIT_FAILURE);
 
    /* create camera */
@@ -92,11 +97,8 @@ int main( int argc, char **argv )
    if(!camera)
       cleanup(EXIT_FAILURE);
 
-   /* sets this as active camera */
-   dlCameraRender( camera );
-
    /* create test plane */
-   object = dlNewPlane( 0.005, 0.005, 1 );
+   object = dlNewPlane( 0.1, 0.1, 1 );
    if(!object)
       cleanup(EXIT_FAILURE);
 
@@ -118,6 +120,8 @@ int main( int argc, char **argv )
       now   = SDL_GetTicks();
       delta = (now - last) / 1000.0f;
 
+      /* sets this as active camera */
+      dlCameraRender( camera );
       keyHandle();
 
       dlDraw( object );

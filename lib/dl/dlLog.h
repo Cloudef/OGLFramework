@@ -4,12 +4,14 @@
 #include <stdarg.h>
 #include "logfile.h"
 
+#define DL_LOG_FORMAT "[%s] "
+
 /* TO-DO: add log channels */
 #define TRACE()         if(dlDEBTRACE()) { LOGWARNP("%s()", __FUNCTION__); }
 #define CALL(a,...)     if(dlDEBTRACE()) { LOGWARNP("%s("a")", __FUNCTION__, ##__VA_ARGS__); }
 #define RET(a,...)      if(dlDEBTRACE()) { LOGWARNP("%s => ("a")", __FUNCTION__, ##__VA_ARGS__); }
-#define LOGERR(m)       logRed();    dlPuts(m);                                       logNormal();
-#define LOGERRP(m,...)  logRed();    dlPrint(m"\n",##__VA_ARGS__);                    logNormal();
+#define LOGERR(m)       logRed();    dlPrint(DL_LOG_FORMAT""m"\n",DL_DEBUG_CHANNEL);  logNormal();
+#define LOGERRP(m,...)  logRed();    dlPrint(DL_LOG_FORMAT""m"\n",DL_DEBUG_CHANNEL,##__VA_ARGS__); logNormal();
 #define LOGFREE(m)      logRed();    dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
 #define LOGFREEP(m,...) logRed();    dlDPrint(DL_DEBUG_CHANNEL,m"\n",##__VA_ARGS__);  logNormal();
 #define LOGWARN(m)      logYellow(); dlDPuts(DL_DEBUG_CHANNEL,m);                     logNormal();
@@ -27,7 +29,7 @@ int dlDEBTRACE(void);
 int dlDEBCHAN(const char *channel);
 void dlDEBADD(const char *channel);
 void dlDEBRM(const char *channel);
-void dlDEBINIT(int argc, const char **argv);
+void dlDEBINIT(int argc, char **argv);
 
 void dlLogOpen(void);
 void dlDPrint(const char *channel, const char *output, ...);

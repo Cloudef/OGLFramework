@@ -43,7 +43,7 @@ void dlSetCamera( dlCamera *camera )
 {
    CALL("%p", camera);
 
-   _dlCore.render.camera     = camera;
+   _dlCore.render.camera = camera;
 
    if(camera) /* camera can also be set NULL */
       _dlCore.render.projection = camera->matrix; /* we use camera's projection */
@@ -70,6 +70,27 @@ dlShader* dlGetShader( void )
    TRACE();
    RET("%p", _dlCore.render.shader);
    return( _dlCore.render.shader );
+}
+
+/* Changes internal resolution.
+ * NOTE: Any cameras not in use need to be set manually */
+void dlSetResolution( int x, int y )
+{
+   dlCamera *camera;
+   CALL("%d, %d", x, y);
+
+   _dlCore.display.width  = x;
+   _dlCore.display.height = y;
+
+   /* Check if we have active camera */
+   if(!(camera = dlGetCamera()))
+      return;
+
+   /* Hmm.. This camera seems to have viewcuts, we propably don't want to resize this */
+   if(camera->viewCut.x != 0 || camera->viewCut.y != 0)
+      return;
+
+   dlCameraSetView( camera, 0, 0, x, y );
 }
 
 /* Set render mode */

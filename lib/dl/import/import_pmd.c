@@ -465,9 +465,9 @@ int dlImportPMD( dlObject* object, const char *file, int bAnimated )
       texturePath = dlImportTexturePath( mmd->texture[i].file, file );
       if(texturePath)
       {
-         object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS |
-                                                                   SOIL_FLAG_INVERT_Y |
-                                                                   SOIL_FLAG_TEXTURE_REPEATS);
+         object->material = dlNewMaterialFromImage( texturePath, SOIL_FLAG_DEFAULTS |
+                                                    SOIL_FLAG_INVERT_Y |
+                                                    SOIL_FLAG_TEXTURE_REPEATS);
 
          free( texturePath );
       }

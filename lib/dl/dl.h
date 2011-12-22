@@ -12,6 +12,7 @@
 #include "dlConfig.h"
 #include "dlFramework.h"
 #include "dlSceneobject.h"
+#include "dlLog.h"
 #include "skeletal/dlEvaluator.h"
 #include "shader/dlShader.h"
 

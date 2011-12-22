@@ -8,7 +8,7 @@ OWN_CFLAGS	:= 0
 
 # Standard libraries for projects
 # Order : Rightmost = first
-GL_LIBS += -lDL -lDLwindow -lDLinput -llogfile -lSOIL -lkazmath
+GL_LIBS += -lDL -lDLwindow -lDLinput -llogfile -lSOIL -lkazmath -lm
 
 # 0 = OpenGL
 # 1 = GLES 1.0
@@ -141,13 +141,13 @@ else ifeq (${GL},1)
      GL_LIBS += -lGLES_CM -lEGL -lX11
      CFLAGS  += -DGLES1
      INDEX_BUFFERS = 1
-     ifneq (${CC},/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc)
+     ifeq (${x86},1)
           CFLAGS += -m32
      endif
 else ifeq (${GL}, 2)
      GL_LIBS += -lGLESv2 -lEGL -lX11
      CFLAGS  += -DGLES2
-     ifneq (${CC},/usr/local/angstrom/arm/bin/arm-angstrom-linux-gnueabi-gcc)
+     ifeq (${x86},1)
           CFLAGS += -m32
      endif
 endif

@@ -59,6 +59,7 @@ void dlRotateCameraf( dlCamera *object, const kmScalar, const kmScalar,
 
 void dlCameraSetView( dlCamera *object, const kmScalar, const kmScalar, const kmScalar,
                       const kmScalar );
+void dlCameraSetAspect( dlCamera *object, const kmScalar );
 void dlCameraSetFov( dlCamera *object, const kmScalar );
 void dlCameraSetRange( dlCamera *object, const kmScalar, const kmScalar );
 

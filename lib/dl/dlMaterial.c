@@ -60,7 +60,7 @@ dlMaterial* dlNewMaterialFromTexture( dlTexture *texture )
    return(object);
 }
 
-dlMaterial* dlNewMaterialWithTexture( const char *texture, unsigned int flags )
+dlMaterial* dlNewMaterialFromImage( const char *texture, unsigned int flags )
 {
    dlTexture  *object;
    dlMaterial *material;
@@ -165,11 +165,15 @@ int dlFreeMaterial( dlMaterial *object )
 int dlMaterialAddTexture( dlMaterial *object,
                           dlTexture *texture )
 {
-   if(!object)
-      return( RETURN_FAIL );
+   CALL("%p, %p", object, texture);
 
+   if(!object)
+   { RET("%d", RETURN_FAIL); return( RETURN_FAIL ); }
+
+   if(object->texture) dlFreeTexture(object->texture);
    object->texture = texture;
 
+   RET("%d", RETURN_OK);
    return( RETURN_OK );
 }
 

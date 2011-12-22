@@ -578,7 +578,7 @@ void dlBindShader( dlShader *shader )
 /* bind using ID */
 void dlBindShaderi( GLuint shader )
 {
-   CALL("%u", shader),
+   CALL("%u", shader);
    return;
 }
 

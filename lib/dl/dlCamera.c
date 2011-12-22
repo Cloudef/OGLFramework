@@ -74,14 +74,15 @@ static void dlCameraReset( dlCamera *object )
 
    object->viewCut.x = 0;
    object->viewCut.y = 0;
+
+   object->transform_changed = 1;
+   object->viewport_changed  = 0;
+
    object->viewSize.x = _dlCore.display.width;
    object->viewSize.y = _dlCore.display.height;
 
    glViewport( (int)object->viewCut.x,  (int)object->viewCut.y,
                (int)object->viewSize.x, (int)object->viewSize.y );
-
-   object->transform_changed = 1;
-   object->viewport_changed  = 1;
 
    object->aspect = object->viewSize.x / object->viewSize.y;
 
@@ -101,9 +102,9 @@ dlCamera* dlNewCamera( void )
    { RET("%p", NULL); return( NULL ); }
 
    /* Defaults */
-   object->zNear = 1.0f;
-   object->zFar  = 3800.0f;
-   object->fov   = kmPI / 2.0f;
+   object->zNear = 0.1f;
+   object->zFar  = 100.0f;
+   object->fov   = 35.0f; /* Equals to default blender fov */
 
    /* Reset */
    dlCameraReset( object );
@@ -186,6 +187,11 @@ int dlFreeCamera( dlCamera *object )
    dlFree( object, sizeof(dlCamera) );
    RET("%d", RETURN_OK);
    return( RETURN_OK );
+}
+
+/* Set camera resolution */
+void dlCameraSetResolution( int x, int y )
+{
 }
 
 /* Position camera */
@@ -308,6 +314,7 @@ void dlTargetCameraf( dlCamera *object, const kmScalar x, const kmScalar y,
 void dlCameraSetView( dlCamera *object, const kmScalar x, const kmScalar y,
                                         const kmScalar w, const kmScalar h )
 {
+   kmScalar newAspect;
    CALL("%p, %f, %f, %f, %f", object, x, y, w, h);
 
    if(!object)
@@ -319,7 +326,29 @@ void dlCameraSetView( dlCamera *object, const kmScalar x, const kmScalar y,
    object->viewSize.y = h;
 
    object->viewport_changed = 1;
+
+   newAspect = object->viewSize.x / object->viewSize.y;
+   if(newAspect == object->aspect)
+      return;
+
+   object->aspect = newAspect;
+   dlCameraCalculateProjectionMatrix( object );
+
+   object->transform_changed = 1;
 }
+
+/* Set aspect manually */
+void dlCameraSetAspect( dlCamera *object, const kmScalar aspect )
+{
+   CALL("%p, %f", object, aspect);
+
+   if(aspect == object->aspect)
+      return;
+
+   object->aspect = aspect;
+   dlCameraCalculateProjectionMatrix( object );
+}
+
 
 /* Set fov of camera */
 void dlCameraSetFov( dlCamera *object, const kmScalar fov )

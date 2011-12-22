@@ -35,6 +35,7 @@ ${TARGET}: ${OBJ}
 	cp ${PREF}Material.h	../../include/${INCF}/
 	cp ${PREF}Atlas.h	../../include/${INCF}/
 	cp ${PREF}Camera.h	../../include/${INCF}/
+	cp ${PREF}Log.h		../../include/${INCF}/
 	mkdir -p 		../../include/${INCF}/shader
 	cp shader/*.h		../../include/${INCF}/shader/
 	mkdir -p 		../../include/${INCF}/skeletal

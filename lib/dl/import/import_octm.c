@@ -142,7 +142,7 @@ int dlImportOCTM( dlObject* object, const char *file, int bAnimated )
       if(texturePath)
       {
          if(object->material) dlFreeMaterial(object->material);
-         object->material = dlNewMaterialWithTexture( texturePath, SOIL_FLAG_DEFAULTS );
+         object->material = dlNewMaterialFromImage( texturePath, SOIL_FLAG_DEFAULTS );
          free( texturePath );
       }
 

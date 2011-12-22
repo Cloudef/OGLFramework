@@ -61,6 +61,10 @@ dlObject**  dlObjectCopyChilds( dlObject* );               /* Reference childs *
 int         dlObjectFreeChild( dlObject*, dlObject* );     /* Remove child */
 int         dlObjectFreeChilds( dlObject* );               /* Free all childs */
 
+int         dlTextureObject( dlObject*, dlTexture* );
+int         dlImageObject( dlObject*, const char*, unsigned int );
+int         dlFlagObject( dlObject*, unsigned int );
+
 /* Operations */
 
 /* Calculate AABB */

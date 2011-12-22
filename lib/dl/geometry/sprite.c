@@ -26,8 +26,8 @@ dlObject* dlNewSprite( const char *image, unsigned int flags, int center )
    if(!texture)
    { RET("%p", NULL); return(NULL); }
 
-   width  = (float)texture->width  / 42000.0f;
-   height = (float)texture->height / 42000.0f;
+   width  = (float)texture->width  / 1200.0f;
+   height = (float)texture->height / 1200.0f;
 
    /* new sceneobject */
    object = dlNewObject();

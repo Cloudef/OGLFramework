@@ -25,13 +25,17 @@
 #include <OpenGL/gl.h>
 #include <Carbon/Carbon.h>
 #define APIENTRY
-#elif defined(GLES)
+#elif defined(GLES1)
+#include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES/gl.h>
 #include <GLES/glext.h>
+#define GL_CLAMP GL_CLAMP_TO_EDGE
 #elif defined(GLES2)
+#include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
+#define GL_CLAMP GL_CLAMP_TO_EDGE
 #else
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -56,11 +60,11 @@ enum{
 };
 static int has_cubemap_capability = SOIL_CAPABILITY_UNKNOWN;
 int query_cubemap_capability( void );
-#define SOIL_TEXTURE_WRAP_R                                     0x8072
-#define SOIL_CLAMP_TO_EDGE                                      0x812F
-#define SOIL_NORMAL_MAP                                         0x8511
-#define SOIL_REFLECTION_MAP                                     0x8512
-#define SOIL_TEXTURE_CUBE_MAP                           0x8513
+#define SOIL_TEXTURE_WRAP_R                     0x8072
+#define SOIL_CLAMP_TO_EDGE                      0x812F
+#define SOIL_NORMAL_MAP                         0x8511
+#define SOIL_REFLECTION_MAP                     0x8512
+#define SOIL_TEXTURE_CUBE_MAP                   0x8513
 #define SOIL_TEXTURE_BINDING_CUBE_MAP           0x8514
 #define SOIL_TEXTURE_CUBE_MAP_POSITIVE_X        0x8515
 #define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_X        0x8516
@@ -68,7 +72,7 @@ int query_cubemap_capability( void );
 #define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Y        0x8518
 #define SOIL_TEXTURE_CUBE_MAP_POSITIVE_Z        0x8519
 #define SOIL_TEXTURE_CUBE_MAP_NEGATIVE_Z        0x851A
-#define SOIL_PROXY_TEXTURE_CUBE_MAP                     0x851B
+#define SOIL_PROXY_TEXTURE_CUBE_MAP             0x851B
 #define SOIL_MAX_CUBE_MAP_TEXTURE_SIZE          0x851C
 /*      for non-power-of-two texture    */
 static int has_NPOT_capability = SOIL_CAPABILITY_UNKNOWN;
@@ -76,8 +80,8 @@ int query_NPOT_capability( void );
 /*      for texture rectangles  */
 static int has_tex_rectangle_capability = SOIL_CAPABILITY_UNKNOWN;
 int query_tex_rectangle_capability( void );
-#define SOIL_TEXTURE_RECTANGLE_ARB                              0x84F5
-#define SOIL_MAX_RECTANGLE_TEXTURE_SIZE_ARB             0x84F8
+#define SOIL_TEXTURE_RECTANGLE_ARB              0x84F5
+#define SOIL_MAX_RECTANGLE_TEXTURE_SIZE_ARB     0x84F8
 /*      for using DXT compression       */
 static int has_DXT_capability = SOIL_CAPABILITY_UNKNOWN;
 int query_DXT_capability( void );
@@ -85,8 +89,12 @@ int query_DXT_capability( void );
 #define SOIL_RGBA_S3TC_DXT1             0x83F1
 #define SOIL_RGBA_S3TC_DXT3             0x83F2
 #define SOIL_RGBA_S3TC_DXT5             0x83F3
+
+#if !defined(GLES1) && !defined(GLES2)
 typedef void (APIENTRY * P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC) (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const GLvoid * data);
 P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC soilGlCompressedTexImage2D = NULL;
+#endif
+
 unsigned int SOIL_direct_load_DDS(
       const char *filename,
       unsigned int reuse_texture_ID,
@@ -1285,6 +1293,7 @@ SOIL_internal_create_OGL_texture
       glBindTexture( opengl_texture_type, tex_id );
       check_for_GL_errors( "glBindTexture" );
       /*  upload the main image */
+#if !defined(GLES1) && !defined(GLES2)
       if( DXT_mode == SOIL_CAPABILITY_PRESENT )
       {
          /*     user wants me to do the DXT conversion! */
@@ -1319,6 +1328,7 @@ SOIL_internal_create_OGL_texture
             /*  printf( "OpenGL DXT compressor\n" );    */
          }
       } else
+#endif
       {
          /*     user want OpenGL to do all the work!    */
          glTexImage2D(
@@ -1343,6 +1353,7 @@ SOIL_internal_create_OGL_texture
                   resampled,
                   (1 << MIPlevel), (1 << MIPlevel) );
             /*  upload the MIPmaps      */
+#if !defined(GLES1) && !defined(GLES2)
             if( DXT_mode == SOIL_CAPABILITY_PRESENT )
             {
                /*       user wants me to do the DXT conversion! */
@@ -1377,6 +1388,7 @@ SOIL_internal_create_OGL_texture
                   check_for_GL_errors( "glTexImage2D" );
                }
             } else
+#endif
             {
                /*       user want OpenGL to do all the work!    */
                glTexImage2D(
@@ -1809,13 +1821,16 @@ unsigned int SOIL_direct_load_DDS_from_memory(
                   cf_target, 0,
                   S3TC_type, width, height, 0,
                   S3TC_type, GL_UNSIGNED_BYTE, DDS_data );
-         } else
+         }
+#if !defined(GLES1) && !defined(GLES2)
+         else
          {
             soilGlCompressedTexImage2D(
                   cf_target, 0,
                   S3TC_type, width, height, 0,
                   DDS_main_size, DDS_data );
          }
+#endif
          /*     upload the mipmaps, if we have them     */
          for( i = 1; i <= mipmaps; ++i )
          {
@@ -1838,7 +1853,9 @@ unsigned int SOIL_direct_load_DDS_from_memory(
                      cf_target, i,
                      S3TC_type, w, h, 0,
                      S3TC_type, GL_UNSIGNED_BYTE, &DDS_data[byte_offset] );
-            } else
+            }
+#if !defined(GLES1) && !defined(GLES2)
+            else
             {
                mip_size = ((w+3)/4)*((h+3)/4)*block_size;
                soilGlCompressedTexImage2D(
@@ -1846,6 +1863,7 @@ unsigned int SOIL_direct_load_DDS_from_memory(
                      S3TC_type, w, h, 0,
                      mip_size, &DDS_data[byte_offset] );
             }
+#endif
             /*  and move to the next mipmap     */
             byte_offset += mip_size;
          }
@@ -2023,6 +2041,9 @@ int query_cubemap_capability( void )
 
 int query_DXT_capability( void )
 {
+#if defined(GLES1) || defined(GLES2)
+   has_DXT_capability = SOIL_CAPABILITY_NONE;
+#else
    /*   check for the capability        */
    if( has_DXT_capability == SOIL_CAPABILITY_UNKNOWN )
    {
@@ -2067,13 +2088,8 @@ int query_DXT_capability( void )
          CFRelease( bundleURL );
          CFRelease( extensionName );
          CFRelease( bundle );
-#elif !defined(GLES1) && !defined(GLES2)
-         ext_addr = (P_SOIL_GLCOMPRESSEDTEXIMAGE2DPROC)
-            glXGetProcAddressARB
-            (
-             (const GLubyte *)"glCompressedTexImage2DARB"
-            );
 #endif
+
          /*     Flag it so no checks needed later       */
          if( NULL == ext_addr )
          {
@@ -2092,6 +2108,7 @@ int query_DXT_capability( void )
          }
       }
    }
+#endif
    /*   let the user know if we can do DXT or not       */
    return has_DXT_capability;
 }

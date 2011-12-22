@@ -102,6 +102,14 @@ int dlFreeAnimator( dlAnimator *object )
    if(!object)
    { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
 
+   /* free animation ticker
+    * needs to be freed before bones and animations. */
+   if(object->refCounter-1 == 0)
+   {
+      dlFreeAnimTick( object->tick );
+      object->tick = NULL;
+   }
+
    /* free bones */
    bone = object->bone;
    while(bone)
@@ -117,10 +125,6 @@ int dlFreeAnimator( dlAnimator *object )
      anim = nextanim; }
 
    if(--object->refCounter!=0) { RET("%d", RETURN_NOTHING); return( RETURN_NOTHING ); }
-
-   /* free animation ticker */
-   dlFreeAnimTick( object->tick );
-   object->tick = NULL;
 
    dlSetAlloc( ALLOC_ANIMATOR );
 

@@ -179,7 +179,7 @@ static model_format_t modelFormat( const char *MAGIC_HEADER )
    /* ------- ^^ FORMAT HEADER CHECKING ^^ -------- */
 
    LOGERR("No suitable importers found");
-   LOGERR("If the model format is supported, make sure you have compiled library with it.");
+   LOGERR("If the format is supported, make sure you have compiled the library with the support.");
    LOGERRP("Magic header: %s", MAGIC_HEADER);
 
    RET("%s", "M_NOT_FOUND");
