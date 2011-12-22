@@ -2,7 +2,7 @@
 #define DL_H
 
 #ifdef GLES1
-#  include <GLES1/gl.h>
+#  include <GLES/gl.h>
 #elif GLES2
 #  include <GLES2/gl2.h>
 #else
