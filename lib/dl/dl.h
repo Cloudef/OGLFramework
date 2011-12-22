@@ -1,7 +1,9 @@
 #ifndef DL_H
 #define DL_H
 
-#ifdef GLES2
+#ifdef GLES1
+#  include <GLES1/gl.h>
+#elif GLES2
 #  include <GLES2/gl2.h>
 #else
 #  include "GL/glew.h"

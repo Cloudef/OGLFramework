@@ -14,7 +14,9 @@
    #include <limits.h>
 #endif
 
-#ifdef GLES2
+#ifdef GLES1
+#  include <GLES/gl.h>
+#elif GLES2
 #  include <GLES2/gl.h>
 #else
 #  include <GL/glew.h>
